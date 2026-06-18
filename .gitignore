@@ -1,0 +1,6 @@
+.DS_Store
+*.bak
+.vscode/
+node_modules/
+.env
+*.log
