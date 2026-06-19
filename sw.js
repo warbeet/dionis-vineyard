@@ -1,6 +1,6 @@
 // Service Worker для PWA «Dionis vineyard» v2 (модульная архитектура)
-const CACHE_NAME = 'dionis-v0.53';
-const RUNTIME_CACHE = 'dionis-runtime-v0.53';
+const CACHE_NAME = 'dionis-v0.54';
+const RUNTIME_CACHE = 'dionis-runtime-v0.54';
 
 // Предзагрузка ключевых ресурсов
 const PRECACHE_URLS = [
@@ -36,6 +36,7 @@ const PRECACHE_URLS = [
   './js/ai.js',
   './js/weather.js',
   './js/stations.js',
+  './js/maps-yandex.js',
   './js/plots.js',
   './js/photos.js',
   './js/journal.js',
@@ -92,7 +93,10 @@ self.addEventListener('fetch', event => {
     url.hostname.includes('openrouter.ai') ||
     url.hostname.includes('open-meteo.com') ||
     url.hostname.includes('geocoding-api') ||
-    url.hostname.includes('api.weather.yandex')
+    url.hostname.includes('api.weather.yandex') ||
+    url.hostname.includes('api-maps.yandex.ru') ||
+    url.hostname.includes('yandex.net') ||
+    url.hostname.includes('maps.yandex')
   ) {
     return;
   }

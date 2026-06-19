@@ -872,7 +872,7 @@ function renderPlotMap(plotId) {
     </div>
     <div id="plot-map-${plotId}" style="height:500px; border-radius: var(--radius); box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);"></div>
   `;
-  setTimeout(() => initLeafletMap(plotId), 100);
+  setTimeout(() => initPlotMap(plotId), 100);
 }
 
 
@@ -958,12 +958,6 @@ function initLeafletMap(plotId) {
   leafletMaps[plotId] = map;
 }
 
-function centerMapOnPlot(plotId) {
-  const m = leafletMaps[plotId];
-  const plot = data.plots.find(p => p.id === plotId);
-  if (!m || !plot || !plot.center) return;
-  m.setView([plot.center.lat, plot.center.lng], 17);
-}
 
 function distributeSeedlingsByGrid(plotId) {
   const plot = data.plots.find(p => p.id === plotId);
@@ -987,7 +981,7 @@ function distributeSeedlingsByGrid(plotId) {
     s.gps = { lat, lng };
   });
   saveData();
-  initLeafletMap(plotId);
+  initPlotMap(plotId);
   toast(`✅ Распределено ${seedlings.length} кустов`, 'success');
 }
 

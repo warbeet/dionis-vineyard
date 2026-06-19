@@ -47,7 +47,7 @@ function getLocale() {
       region: 'krasnodar',
       units: 'metric',
       dateFormat: 'DD.MM.YYYY',
-      mapProvider: 'osm'
+      mapProvider: 'yandex'
     };
     saveSettingsLocal();
   }
@@ -124,7 +124,10 @@ function saveLocale() {
   settings.locale.currency = document.getElementById('loc-currency')?.value || 'RUB';
   settings.locale.timezone = document.getElementById('loc-timezone')?.value || 'Europe/Moscow';
   settings.locale.units = document.getElementById('loc-units')?.value || 'metric';
-  settings.locale.mapProvider = document.getElementById('loc-map-provider')?.value || 'osm';
+  settings.locale.mapProvider = document.getElementById('loc-map-provider')?.value || 'yandex';
+  const yKey = document.getElementById('loc-yandex-key')?.value?.trim();
+  if (yKey) settings.yandexMapsKey = yKey;
+  else delete settings.yandexMapsKey;
   // Применяем регион если выбран не custom
   if (settings.locale.region && settings.locale.region !== 'custom') {
     applyRegion(settings.locale.region);
@@ -181,14 +184,25 @@ function renderLocaleSettings() {
     <div class="form-row">
       <label>🗺 Карты</label>
       <select id="loc-map-provider">
-        <option value="osm" ${cur.mapProvider === 'osm' ? 'selected' : ''}>OpenStreetMap (рекомендуется — стабильно работает в РФ)</option>
-        <option value="yandex" ${cur.mapProvider === 'yandex' ? 'selected' : ''}>Яндекс.Карты</option>
-        <option value="yandex_sat" ${cur.mapProvider === 'yandex_sat' ? 'selected' : ''}>Яндекс Спутник</option>
+        <option value="yandex" ${cur.mapProvider === 'yandex' ? 'selected' : ''}>🟡 Яндекс.Карты (рекомендуется для РФ)</option>
+        <option value="yandex_sat" ${cur.mapProvider === 'yandex_sat' ? 'selected' : ''}>🛰 Яндекс Спутник</option>
+        <option value="yandex_hybrid" ${cur.mapProvider === 'yandex_hybrid' ? 'selected' : ''}>🗺 Яндекс Гибрид (спутник + надписи)</option>
+        <option value="osm" ${cur.mapProvider === 'osm' ? 'selected' : ''}>OpenStreetMap (резервный, без ключа)</option>
         <option value="2gis" ${cur.mapProvider === '2gis' ? 'selected' : ''}>2ГИС</option>
         <option value="esri_sat" ${cur.mapProvider === 'esri_sat' ? 'selected' : ''}>Esri Спутник (международный)</option>
       </select>
-      <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 Все провайдеры можно переключать прямо на карте (правый верхний угол)</p>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 На карте справа вверху можно переключаться между Картой / Спутником / Гибридом</p>
     </div>
+
+    <div class="form-row">
+      <label>🔑 Свой API-ключ Яндекс.Карт (опционально)</label>
+      <input type="text" id="loc-yandex-key" placeholder="оставьте пустым для дефолтного"
+        value="${escapeHtml(settings.yandexMapsKey || '')}">
+      <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+        💡 По умолчанию используется общий ключ. Для production-нагрузки получите свой: <a href="https://developer.tech.yandex.ru/services/" target="_blank">developer.tech.yandex.ru</a> (бесплатно 25 000 загрузок/день)
+      </p>
+    </div>
+
     <button class="btn primary" onclick="saveLocale()">💾 Сохранить локализацию</button>
   `;
 }
@@ -199,7 +213,7 @@ function renderLocaleSettings() {
     settings.locale = {
       lang: 'ru', country: 'RU', timezone: 'Europe/Moscow',
       currency: 'RUB', region: 'krasnodar', units: 'metric',
-      dateFormat: 'DD.MM.YYYY', mapProvider: 'osm'
+      dateFormat: 'DD.MM.YYYY', mapProvider: 'yandex'
     };
     saveSettingsLocal();
     // Применим регион (поставит координаты Краснодара если их нет)
