@@ -1,7 +1,7 @@
 {
   "name": "Dionis vineyard — Smart vineyard manager",
   "short_name": "Dionis",
-  "description": "Управление виноградником: фотоотчёты, AI-анализ, погода, план работ",
+  "description": "Dionis vineyard v0.50 — управление виноградником: фотоотчёты, AI-анализ, погода, метеостанции, план работ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -9,7 +9,11 @@
   "background_color": "#e8ebe2",
   "theme_color": "#6b8e5a",
   "lang": "ru",
-  "categories": ["productivity", "business", "utilities"],
+  "categories": [
+    "productivity",
+    "business",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -35,13 +39,24 @@
       "name": "Новый фотоотчёт",
       "short_name": "Фото",
       "url": "./index.html#photos",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "План на неделю",
       "short_name": "План",
       "url": "./index.html#plan",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
-  ]
+  ],
+  "version": "0.50"
 }

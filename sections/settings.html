@@ -65,11 +65,31 @@
 
     <div class="setting-group">
       <h3>ℹ️ О приложении</h3>
-      <p style="font-size:13px; color:#6b5a4a;">
-        🍇 <b>Dionis vineyard v1.1</b><br>
-        Smart-PWA для управления виноградником. Работает оффлайн, синхронизируется через Firebase, анализирует фото через AI.<br>
-        Сделано на <a href="https://arena.ai" target="_blank" style="color:#8b3a5c;">Arena.ai</a>.
+      <div style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+        <img src="assets/logo-mark-header.png" alt="Dionis" style="width:64px; height:64px; border-radius:16px; padding:8px; background:var(--bg); box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);">
+        <div style="flex:1; min-width:200px;">
+          <div style="font-size:18px; font-weight:700;">Dionis vineyard</div>
+          <div style="font-size:13px; color:var(--text-soft); margin:4px 0;">Версия <b id="about-version">0.50</b> · <span id="about-date">2026-06-19</span></div>
+          <div style="font-size:12px; color:var(--text-muted);">Smart-PWA для управления виноградником. Работает оффлайн, синхронизируется через Firebase, анализирует фото через AI.</div>
+        </div>
+      </div>
+      <button class="btn small secondary" onclick="showChangelog()" style="margin-top:12px;">📜 История изменений</button>
+      <button class="btn small secondary" onclick="checkForUpdate()" style="margin-top:12px;">🔄 Проверить обновления</button>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:14px;">
+        Сделано на <a href="https://arena.ai" target="_blank">Arena.ai</a> ·
+        <a href="https://github.com/warbeet/dionis-vineyard" target="_blank">GitHub</a>
       </p>
     </div>
   </div>
 </section>
+
+<!-- Модалка changelog -->
+<div class="modal-bg" id="changelog-modal">
+  <div class="modal" style="max-width:680px;">
+    <h3>📜 История изменений</h3>
+    <div id="changelog-content" style="max-height:60vh; overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="closeModal('changelog-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>

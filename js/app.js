@@ -175,6 +175,9 @@ async function init() {
   // Загрузим все секции
   await loadAllSections();
 
+  // Применим версию к UI
+  if (typeof applyVersionToUI === 'function') applyVersionToUI();
+
   // Подключим обработчики на нав-кнопки (после загрузки они появились в DOM)
   document.querySelectorAll('.tab-btn, .nav-btn').forEach(btn => {
     if (!btn.onclick && btn.dataset.tab) {
