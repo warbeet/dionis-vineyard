@@ -4,13 +4,17 @@
 
 // PHOTOS
 // ===========================================================================
-document.getElementById('photo-files').addEventListener('change', async (e) => {
-  const files = Array.from(e.target.files);
-  for (const f of files) {
-    const compressed = await compressImage(f);
-    pendingPhotos.push(compressed);
+// Делегируем событие на body, чтобы работало даже если #photo-files
+// добавится позже (через динамическую загрузку секций)
+document.addEventListener('change', async (e) => {
+  if (e.target && e.target.id === 'photo-files') {
+    const files = Array.from(e.target.files);
+    for (const f of files) {
+      const compressed = await compressImage(f);
+      pendingPhotos.push(compressed);
+    }
+    renderPhotoPreview();
   }
-  renderPhotoPreview();
 });
 
 async function compressImage(file) {

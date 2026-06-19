@@ -1,8 +1,34 @@
 {
-  "version": "0.50",
+  "version": "0.52",
   "release_date": "2026-06-19",
   "codename": "Modular",
   "changelog": [
+    {
+      "version": "0.52",
+      "date": "2026-06-19",
+      "type": "patch",
+      "title": "Критические багфиксы загрузки",
+      "changes": [
+        "🐛 deferredInstallPrompt: убран дубликат в app.js (был и в data.js)",
+        "🐛 photos.js: addEventListener делегирован на document (был на #photo-files до загрузки секции)",
+        "🐛 init/showTab/openModal экспортированы в window для надёжности",
+        "✨ Каскад ошибок устранён — приложение загружается до конца"
+      ]
+    },
+    {
+      "version": "0.51",
+      "date": "2026-06-19",
+      "type": "patch",
+      "title": "Исправление загрузки приложения",
+      "changes": [
+        "🐛 Auth-экран показывается всегда (inline-style + !important)",
+        "🐛 loadAllSections: параллельная загрузка + обработка ошибок",
+        "🐛 Startup: timeout-fallback 5 сек если Firebase зависает",
+        "🐛 Fallback-карточка с кнопкой перезагрузки при критической ошибке",
+        "✨ Детальные console.log для диагностики",
+        "✨ Спиннер заменяется на UI или ошибку, никогда не висит навсегда"
+      ]
+    },
     {
       "version": "0.50",
       "date": "2026-06-19",

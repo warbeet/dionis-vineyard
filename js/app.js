@@ -12,25 +12,44 @@ const SECTIONS = [
 async function loadAllSections() {
   const main = document.querySelector('main');
   if (!main) return;
-  // Очистим только секции, не модалки
+  console.log('[Dionis] Loading sections...');
+  
+  // Загружаем секции параллельно для скорости
+  const results = await Promise.allSettled(
+    SECTIONS.map(id =>
+      fetch(`sections/${id}.html`).then(r => {
+        if (!r.ok) throw new Error(`${id}: HTTP ${r.status}`);
+        return r.text().then(html => ({ id, html }));
+      })
+    )
+  );
+  
+  // Очищаем спиннер
   main.innerHTML = '';
-  for (const id of SECTIONS) {
-    try {
-      const r = await fetch(`sections/${id}.html`);
-      if (r.ok) {
-        const html = await r.text();
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = html;
-        // Все top-level элементы вставляем в main
-        while (wrapper.firstChild) {
-          main.appendChild(wrapper.firstChild);
-        }
-      } else {
-        console.warn(`Section ${id} not found`);
-      }
-    } catch (e) {
-      console.error(`Failed to load section ${id}:`, e);
+  
+  let loaded = 0, failed = 0;
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      const { id, html } = result.value;
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      while (wrapper.firstChild) main.appendChild(wrapper.firstChild);
+      loaded++;
+    } else {
+      console.error('[Dionis] Section failed:', result.reason);
+      failed++;
     }
+  }
+  console.log(`[Dionis] Sections loaded: ${loaded}/${SECTIONS.length} (${failed} failed)`);
+  
+  if (loaded === 0) {
+    main.innerHTML = `
+      <div class="card" style="margin:40px auto; max-width:500px; text-align:center;">
+        <h3 style="color:var(--danger);">⚠️ Не удалось загрузить разделы</h3>
+        <p style="color:var(--text-soft); margin:10px 0;">Возможно, проблема с сетью или хостингом. Попробуйте перезагрузить страницу.</p>
+        <button class="btn primary" onclick="location.reload(true)">🔄 Перезагрузить</button>
+      </div>
+    `;
   }
 }
 
@@ -104,7 +123,6 @@ function closeNav() {
 }
 
 // =========== PWA INSTALL ===========
-let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstallPrompt = e;
@@ -223,20 +241,81 @@ async function init() {
   renderAll();
 }
 
-// Стартовая логика
-(async () => {
-  const ok = await initFirebase();
-  if (ok && auth) {
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        onAuthChanged(user);
-      } else {
-        const screen = document.getElementById('auth-screen');
-        if (screen) screen.classList.remove('hidden');
-      }
-    });
-  } else {
-    const screen = document.getElementById('auth-screen');
-    if (screen) screen.classList.remove('hidden');
+// ===========================================================================
+// СТАРТОВАЯ ЛОГИКА (улучшенная: timeout + fallback)
+// ===========================================================================
+
+function showAuthScreen() {
+  const screen = document.getElementById('auth-screen');
+  if (screen) {
+    screen.classList.remove('hidden');
+    screen.style.display = 'flex';
   }
-})();
+}
+
+function hideAuthScreen() {
+  const screen = document.getElementById('auth-screen');
+  if (screen) {
+    screen.classList.add('hidden');
+    screen.style.display = 'none';
+  }
+}
+
+// Гарантированный запуск при DOMContentLoaded
+function startApp() {
+  console.log('[Dionis] Starting app v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '?'));
+  
+  // Сразу показываем auth screen, если он скрыт по умолчанию
+  showAuthScreen();
+  
+  // Пытаемся инициализировать Firebase
+  let firebaseTimeoutFired = false;
+  const fallbackTimer = setTimeout(() => {
+    firebaseTimeoutFired = true;
+    console.warn('[Dionis] Firebase init timeout — показываем auth screen');
+    showAuthScreen();
+  }, 5000);
+  
+  (async () => {
+    try {
+      const ok = await initFirebase();
+      if (firebaseTimeoutFired) return;
+      clearTimeout(fallbackTimer);
+      
+      if (ok && auth) {
+        // Firebase готов — слушаем auth state
+        auth.onAuthStateChanged(user => {
+          console.log('[Dionis] Auth state:', user ? 'logged in' : 'logged out');
+          if (user) {
+            onAuthChanged(user);
+          } else {
+            showAuthScreen();
+          }
+        });
+      } else {
+        // Firebase не настроен — показываем auth screen с опцией локального режима
+        showAuthScreen();
+      }
+    } catch(e) {
+      clearTimeout(fallbackTimer);
+      console.error('[Dionis] Startup error:', e);
+      showAuthScreen();
+    }
+  })();
+}
+
+// Экспорт ключевых функций в window для надёжности
+window.init = init;
+window.showTab = showTab;
+window.toggleTheme = toggleTheme;
+window.toggleNav = toggleNav;
+window.closeNav = closeNav;
+window.openModal = openModal;
+window.closeModal = closeModal;
+
+// Запуск
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
+}

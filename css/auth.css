@@ -10,7 +10,7 @@
     radial-gradient(at 80% 80%, rgba(212, 147, 107, 0.1) 0%, transparent 50%);
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
-#auth-screen.hidden { display: none; }
+#auth-screen.hidden { display: none !important; }
 .auth-card {
   background: var(--bg);
   border-radius: var(--radius-lg);
