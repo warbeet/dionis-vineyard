@@ -1,0 +1,71 @@
+<section id="dashboard" class="section active">
+  <h2>📊 Дашборд</h2>
+
+  <!-- Компактный summary-блок (объединил участки/площадь/фото в одну строку) -->
+  <div class="summary-strip">
+    <div class="summary-item">
+      <div class="num" id="sum-plots">0</div>
+      <div class="lbl">Участков</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="num" id="sum-area">0<span class="unit">га</span></div>
+      <div class="lbl">Площадь</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="num" id="sum-blocks">0</div>
+      <div class="lbl">Блоков-сортов</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="num" id="sum-seedlings">0</div>
+      <div class="lbl">Кустов</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="num" id="sum-photos">0</div>
+      <div class="lbl">Фотоотчётов</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="num" id="sum-stations">0</div>
+      <div class="lbl">Метеостанций</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="num" id="sum-tasks" style="color:var(--accent-2);">0</div>
+      <div class="lbl">Активных задач</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>🌿 Текущая фенофаза</h3>
+      <div id="current-pheno" style="padding:8px 0;">
+        <span class="badge purple" id="pheno-badge">Не указана</span>
+        <p style="margin-top:10px; color:var(--text-soft); font-size:13px;" id="pheno-desc">Перейдите в «Погода», чтобы установить стадию.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🌦 Погода сейчас</h3>
+      <div id="today-weather"><p style="color:var(--text-muted); font-size:13px;">Не настроено. Откройте раздел «Погода» и укажите координаты.</p></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>🗺 Карта здоровья участков</h3>
+    <div id="dashboard-plots-mini"></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>⚠️ Активные риски</h3>
+    <div id="active-risks"><p style="color:var(--text-muted); font-size:13px;">Нет активных рисков.</p></div>
+  </div>
+
+  <div class="card" style="margin-top:18px;">
+    <h3>📅 Последние события</h3>
+    <div id="recent-events" class="timeline"><p style="color:var(--text-muted); font-size:13px; padding:14px;">События появятся по мере добавления данных.</p></div>
+  </div>
+</section>

@@ -1,0 +1,75 @@
+<section id="settings" class="section">
+  <h2>⚙️ Настройки</h2>
+
+  <div class="card">
+    <div class="setting-group">
+      <h3>🔑 OpenRouter API (AI-анализ фото)</h3>
+      <p style="font-size:13px; color:#6b5a4a; margin-bottom:10px;">
+        Получите ключ на <a href="https://openrouter.ai/keys" target="_blank" style="color:#8b3a5c;">openrouter.ai/keys</a>.
+        Поддерживает GPT-4o, Claude 3.5, Gemini и десятки других моделей одним ключом.
+      </p>
+      <div class="form-row"><label>API-ключ</label><input type="password" id="openrouter-key" placeholder="sk-or-v1-..."></div>
+      <div class="form-row">
+        <label>Модель для анализа фото (vision)</label>
+        <select id="openrouter-model">
+          <option value="openai/gpt-4o">GPT-4o (универсальный, рекомендую)</option>
+          <option value="openai/gpt-4o-mini">GPT-4o Mini (быстрый, дешёвый)</option>
+          <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (детальный)</option>
+          <option value="google/gemini-pro-1.5">Gemini Pro 1.5</option>
+          <option value="google/gemini-flash-1.5">Gemini Flash 1.5 (дешёвый)</option>
+          <option value="meta-llama/llama-3.2-90b-vision-instruct">Llama 3.2 90B Vision</option>
+          <option value="qwen/qwen-2-vl-72b-instruct">Qwen 2 VL 72B</option>
+          <option value="x-ai/grok-vision-beta">Grok Vision Beta</option>
+        </select>
+      </div>
+      <button class="btn" onclick="saveAPIKeys()">💾 Сохранить ключи</button>
+      <button class="btn secondary" onclick="testAIConnection()">🧪 Проверить подключение</button>
+    </div>
+
+    <div class="setting-group">
+      <h3>🔥 Firebase (синхронизация)</h3>
+      <p style="font-size:13px; color:#6b5a4a; margin-bottom:10px;">
+        Создайте проект на <a href="https://console.firebase.google.com" target="_blank" style="color:#8b3a5c;">console.firebase.google.com</a>,
+        включите Authentication (Email + Google) и Firestore. Скопируйте конфиг из настроек проекта.
+      </p>
+      <div class="form-row"><label>Конфиг Firebase (JSON)</label>
+        <textarea id="firebase-config" rows="9" placeholder='{
+  "apiKey": "AIza...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+      </div>
+      <button class="btn" onclick="saveFirebaseConfig()">💾 Сохранить и подключиться</button>
+      <button class="btn danger" onclick="signOut()">🚪 Выйти из аккаунта</button>
+    </div>
+
+    <div class="setting-group">
+      <h3>📱 PWA</h3>
+      <p style="font-size:13px; color:#6b5a4a; margin-bottom:10px;">Установите приложение на устройство для оффлайн-работы.</p>
+      <button class="btn" onclick="triggerInstall()" id="install-btn">📲 Установить приложение</button>
+      <p style="font-size:11px; color:#8a7a6a; margin-top:8px;">
+        💡 Если кнопка не работает — используйте меню браузера: «Добавить на главный экран».
+      </p>
+    </div>
+
+    <div class="setting-group">
+      <h3>💾 Данные</h3>
+      <button class="btn secondary" onclick="exportData()">⬇ Экспорт всех данных (JSON)</button>
+      <button class="btn secondary" onclick="document.getElementById('import-file2').click()">⬆ Импорт</button>
+      <input type="file" id="import-file2" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn danger" onclick="clearAllData()">🗑 Очистить все данные</button>
+    </div>
+
+    <div class="setting-group">
+      <h3>ℹ️ О приложении</h3>
+      <p style="font-size:13px; color:#6b5a4a;">
+        🍇 <b>Dionis vineyard v1.1</b><br>
+        Smart-PWA для управления виноградником. Работает оффлайн, синхронизируется через Firebase, анализирует фото через AI.<br>
+        Сделано на <a href="https://arena.ai" target="_blank" style="color:#8b3a5c;">Arena.ai</a>.
+      </p>
+    </div>
+  </div>
+</section>

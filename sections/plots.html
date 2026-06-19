@@ -1,0 +1,160 @@
+<section id="plots" class="section">
+  <h2>🗺 Участки и саженцы</h2>
+
+  <div class="toolbar">
+    <button class="btn primary" onclick="openPlotModal()">+ Участок</button>
+    <button class="btn secondary" onclick="exportData()">⬇ Бэкап</button>
+    <button class="btn secondary" onclick="document.getElementById('import-file').click()">⬆ Импорт JSON</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="btn secondary" onclick="exportSeedlingsCSV()">📊 Экспорт CSV</button>
+    <button class="btn secondary" onclick="document.getElementById('csv-import').click()">📥 Импорт CSV</button>
+    <input type="file" id="csv-import" accept=".csv" style="display:none" onchange="importSeedlingsCSV(event)">
+  </div>
+
+  <div id="plots-list"></div>
+</section>
+
+<!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
+<div class="modal-bg" id="plot-modal">
+  <div class="modal" style="max-width:780px;">
+    <h3 id="plot-modal-title">Новый участок</h3>
+    <input type="hidden" id="plot-id">
+
+    <div class="tabs" style="margin-bottom:16px;">
+      <button type="button" class="plot-tab active" data-ptab="basic">Основное</button>
+      <button type="button" class="plot-tab" data-ptab="geo">География</button>
+      <button type="button" class="plot-tab" data-ptab="grid">Сетка рядов</button>
+    </div>
+
+    <div class="plot-tab-content active" id="ptab-basic">
+      <div class="form-grid">
+        <div class="form-row"><label>Название</label><input type="text" id="plot-name" placeholder="Северный участок"></div>
+        <div class="form-row"><label>Площадь, га</label><input type="number" id="plot-area" step="0.01"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Расст. между рядами, м</label><input type="number" id="plot-row-spacing" step="0.1" value="2.5"></div>
+        <div class="form-row"><label>Расст. между кустами, м</label><input type="number" id="plot-vine-spacing" step="0.1" value="1.0"></div>
+      </div>
+      <div class="form-row"><label>Заметки</label><textarea id="plot-notes" rows="2"></textarea></div>
+    </div>
+
+    <div class="plot-tab-content" id="ptab-geo" style="display:none;">
+      <div class="form-grid">
+        <div class="form-row"><label>Широта центра</label><input type="number" id="plot-lat" step="0.0001"></div>
+        <div class="form-row"><label>Долгота центра</label><input type="number" id="plot-lng" step="0.0001"></div>
+      </div>
+      <div class="form-row">
+        <label>Полигон участка (GeoJSON или координаты)</label>
+        <textarea id="plot-polygon" rows="4" placeholder='[[46.4830,30.7225],[46.4830,30.7245],[46.4818,30.7245],[46.4818,30.7225]]'></textarea>
+      </div>
+      <button type="button" class="btn small secondary" onclick="useCurrentLocationForPlot()">📍 Использовать моё местоположение</button>
+      <p style="font-size:12px; color:var(--text-soft); margin-top:8px;">💡 Полигон можно нарисовать на карте на вкладке участка — после сохранения.</p>
+    </div>
+
+    <div class="plot-tab-content" id="ptab-grid" style="display:none;">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
+        Задайте количество рядов и позиций в каждом ряду. Можно указать пропуски (1,5,12) и каскады (3,7).
+      </p>
+      <div class="form-grid">
+        <div class="form-row"><label>Рядов</label><input type="number" id="plot-rows-count" min="1" value="10"></div>
+        <div class="form-row"><label>Позиций в ряду</label><input type="number" id="plot-positions-count" min="1" value="50"></div>
+      </div>
+      <div class="alert info" style="margin-top:12px;">
+        💡 Это базовая сетка. После создания участка можно индивидуально настроить каждый ряд: длина, пропуски, каскады.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('plot-modal')">Отмена</button>
+      <button class="btn primary" onclick="savePlot()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="block-modal">
+  <div class="modal" style="max-width:680px;">
+    <h3 id="block-modal-title">Новый блок-сорт</h3>
+    <input type="hidden" id="block-id">
+    <input type="hidden" id="block-plot-id">
+
+    <div class="form-grid">
+      <div class="form-row"><label>Название блока</label><input type="text" id="block-name" placeholder="Блок А · Каберне"></div>
+      <div class="form-row"><label>Цвет на схеме</label>
+        <input type="color" id="block-color" value="#6b8e5a" style="height:42px;">
+      </div>
+    </div>
+
+    <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">🌿 Привой (сорт ягод)</h4>
+    <div class="form-grid">
+      <div class="form-row"><label>Сорт</label><input type="text" id="block-scion" placeholder="Каберне Совиньон"></div>
+      <div class="form-row"><label>Клон</label><input type="text" id="block-scion-clone" placeholder="169"></div>
+    </div>
+
+    <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">🌱 Подвой (корневая система)</h4>
+    <div class="form-grid">
+      <div class="form-row"><label>Подвой</label><input type="text" id="block-rootstock" placeholder="Riparia Gloire"></div>
+      <div class="form-row"><label>Клон подвоя</label><input type="text" id="block-rootstock-clone"></div>
+    </div>
+
+    <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">📅 Посадка</h4>
+    <div class="form-grid">
+      <div class="form-row"><label>Год посадки</label><input type="number" id="block-year" placeholder="2020"></div>
+      <div class="form-row"><label>Дата посадки</label><input type="date" id="block-date"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label>Поставщик / питомник</label><input type="text" id="block-supplier"></div>
+      <div class="form-row"><label>№ партии</label><input type="text" id="block-batch"></div>
+    </div>
+    <div class="form-row"><label>Формировка</label><input type="text" id="block-training" placeholder="Гюйо двуплечий, Кордон..."></div>
+
+    <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">📐 Зона блока</h4>
+    <div class="form-row">
+      <label>Ряды и позиции (формат: "ряд:от-до", через запятую)</label>
+      <input type="text" id="block-zone" placeholder="1:1-30, 2:1-15">
+      <p style="font-size:11px; color:var(--text-soft); margin-top:4px;">Например: "1:1-30" — весь 1-й ряд (позиции 1-30). "1:1-30, 2:1-15" — весь 1-й и половина 2-го ряда.</p>
+    </div>
+
+    <div class="form-row"><label>Заметки</label><textarea id="block-notes" rows="2"></textarea></div>
+
+    <div class="modal-actions">
+      <button class="btn danger" onclick="deleteBlock()" id="block-delete-btn" style="display:none;">🗑 Удалить</button>
+      <button class="btn secondary" onclick="closeModal('block-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveBlock()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="seedling-modal">
+  <div class="modal" style="max-width:680px;">
+    <h3 id="seedling-modal-title">Куст</h3>
+    <div id="seedling-modal-content"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="bulk-modal">
+  <div class="modal">
+    <h3>⚡ Массовые действия</h3>
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
+      Выбрано кустов: <b id="bulk-count">0</b>
+    </p>
+    <div class="form-row">
+      <label>Изменить статус всех выбранных на:</label>
+      <select id="bulk-status">
+        <option value="planted">🌱 Посажен</option>
+        <option value="healthy">🟢 Здоров</option>
+        <option value="normal">🟡 Норма</option>
+        <option value="attention">🟠 Внимание</option>
+        <option value="sick">🔴 Болеет</option>
+        <option value="dead">⚫ Погиб</option>
+        <option value="empty">⚪ Пусто (пропуск)</option>
+        <option value="cascade">🟣 Каскад</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Причина / комментарий</label><textarea id="bulk-reason" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('bulk-modal'); clearBulkSelection()">Отмена</button>
+      <button class="btn primary" onclick="applyBulkAction()">Применить</button>
+    </div>
+  </div>
+</div>
+

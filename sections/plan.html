@@ -1,0 +1,35 @@
+<section id="plan" class="section">
+  <h2>📋 План работ</h2>
+  <div class="toolbar">
+    <button class="btn primary" onclick="openTaskModal()">+ Задача</button>
+    <button class="btn secondary" onclick="generateWeekPlan()">✨ Сгенерировать по фенофазе</button>
+  </div>
+  <div class="card" style="margin-bottom:14px;">
+    <h3>Прогресс</h3>
+    <p id="progress-text" style="font-size:14px; color:#6b5a4a;">0 из 0 задач выполнено</p>
+    <div class="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div id="plan-list"></div>
+</section>
+
+<!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
+<div class="modal-bg" id="task-modal">
+  <div class="modal">
+    <h3>Задача</h3>
+    <input type="hidden" id="task-id">
+    <div class="form-grid">
+      <div class="form-row"><label>Дата</label><input type="date" id="t-date"></div>
+      <div class="form-row"><label>Приоритет</label>
+        <select id="t-priority"><option value="high">🔴 Высокий</option><option value="med" selected>🟡 Средний</option><option value="low">🟢 Низкий</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Участок</label><select id="t-plot"></select></div>
+    <div class="form-row"><label>Задача</label><input type="text" id="t-title"></div>
+    <div class="form-row"><label>Детали</label><textarea id="t-desc" rows="3"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('task-modal')">Отмена</button>
+      <button class="btn" onclick="saveTask()">Сохранить</button>
+    </div>
+  </div>
+</div>
+

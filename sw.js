@@ -1,8 +1,8 @@
-// Service Worker для PWA «Виноградник»
-const CACHE_NAME = 'dionis-v1.3.0';
-const RUNTIME_CACHE = 'dionis-runtime-v2';
+// Service Worker для PWA «Dionis vineyard» v2 (модульная архитектура)
+const CACHE_NAME = 'dionis-v2.0.0';
+const RUNTIME_CACHE = 'dionis-runtime-v3';
 
-// Файлы для предзагрузки (App Shell)
+// Предзагрузка ключевых ресурсов
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -13,10 +13,51 @@ const PRECACHE_URLS = [
   './icons/favicon.ico',
   './icons/apple-touch-icon.png',
   './assets/logo-mark-header.png',
-  './assets/logo-full-transparent.png'
+  './assets/logo-full-transparent.png',
+  // CSS
+  './css/core.css',
+  './css/layout.css',
+  './css/components.css',
+  './css/plots.css',
+  './css/weather.css',
+  './css/photo.css',
+  './css/auth.css',
+  // JS
+  './js/data.js',
+  './js/utils.js',
+  './js/ui.js',
+  './js/storage.js',
+  './js/auth.js',
+  './js/team.js',
+  './js/settings.js',
+  './js/ai.js',
+  './js/weather.js',
+  './js/stations.js',
+  './js/plots.js',
+  './js/photos.js',
+  './js/journal.js',
+  './js/treatments.js',
+  './js/plan.js',
+  './js/harvest.js',
+  './js/recommendations.js',
+  './js/reports.js',
+  './js/dashboard.js',
+  './js/app.js',
+  // Секции
+  './sections/dashboard.html',
+  './sections/plots.html',
+  './sections/photos.html',
+  './sections/journal.html',
+  './sections/weather.html',
+  './sections/treatments.html',
+  './sections/plan.html',
+  './sections/recommendations.html',
+  './sections/harvest.html',
+  './sections/reports.html',
+  './sections/team.html',
+  './sections/settings.html'
 ];
 
-// Установка
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -27,7 +68,6 @@ self.addEventListener('install', event => {
   );
 });
 
-// Активация — чистим старые кэши
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -39,34 +79,24 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Стратегия:
-// - для API (firebase, openrouter, open-meteo) — network only (или network-first без кэша критичных вещей)
-// - для App Shell — cache first
-// - для остального — network falling back to cache
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-
-  // Не кэшируем POST и не-GET
   if (event.request.method !== 'GET') return;
-
-  // API — всегда сеть
   if (
     url.hostname.includes('firebaseio.com') ||
     url.hostname.includes('firebase') ||
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('openrouter.ai') ||
     url.hostname.includes('open-meteo.com') ||
-    url.hostname.includes('geocoding-api')
+    url.hostname.includes('geocoding-api') ||
+    url.hostname.includes('api.weather.yandex')
   ) {
     return;
   }
-
-  // App shell — cache first
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Кэшируем только успешные базовые ответы
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
@@ -74,7 +104,6 @@ self.addEventListener('fetch', event => {
         caches.open(RUNTIME_CACHE).then(cache => cache.put(event.request, clone));
         return response;
       }).catch(() => {
-        // Оффлайн — возвращаем index.html для навигации
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
@@ -83,9 +112,8 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Push-уведомления (на будущее)
 self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : { title: 'Виноградник', body: 'Новое уведомление' };
+  const data = event.data ? event.data.json() : { title: 'Dionis vineyard', body: 'Новое уведомление' };
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,

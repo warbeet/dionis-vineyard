@@ -1,0 +1,48 @@
+<section id="treatments" class="section">
+  <h2>💊 Болезни и обработки</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Зафиксировать проблему</h3>
+      <div class="form-row"><label>Дата</label><input type="date" id="dis-date"></div>
+      <div class="form-row"><label>Участок</label><select id="dis-plot"></select></div>
+      <div class="form-row">
+        <label>Проблема</label>
+        <select id="dis-type">
+          <option>Милдью (ложная мучнистая роса)</option>
+          <option>Оидиум (мучнистая роса)</option>
+          <option>Серая гниль (Botrytis)</option>
+          <option>Чёрная пятнистость</option><option>Антракноз</option>
+          <option>Хлороз</option><option>Филлоксера</option>
+          <option>Паутинный клещ</option><option>Виноградный зудень</option>
+          <option>Листовёртка</option><option>Осы / птицы</option>
+          <option>Дефицит питания</option><option>Солнечный ожог</option><option>Другое</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Степень</label>
+        <select id="dis-severity">
+          <option value="low">Низкая</option><option value="med">Средняя</option><option value="high">Высокая</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Комментарий</label><textarea id="dis-note" rows="2"></textarea></div>
+      <button class="btn" onclick="saveDisease()">💾 Сохранить</button>
+    </div>
+
+    <div class="card">
+      <h3>Запись обработки</h3>
+      <div class="form-row"><label>Дата</label><input type="date" id="tr-date"></div>
+      <div class="form-row"><label>Участок</label><select id="tr-plot"></select></div>
+      <div class="form-row"><label>Препарат</label><input type="text" id="tr-product" placeholder="Ридомил, Топаз..."></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Дозировка</label><input type="text" id="tr-dose" placeholder="25 г / 10 л"></div>
+        <div class="form-row"><label>Расход, л</label><input type="number" id="tr-volume" step="0.1"></div>
+      </div>
+      <div class="form-row"><label>Срок ожидания, дней</label><input type="number" id="tr-pause"></div>
+      <div class="form-row"><label>Комментарий</label><textarea id="tr-note" rows="2"></textarea></div>
+      <button class="btn" onclick="saveTreatment()">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <h3 style="margin-top:20px;">История</h3>
+  <div class="card"><div id="treatments-list" class="table-wrap"></div></div>
+</section>

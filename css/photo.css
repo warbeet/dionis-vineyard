@@ -1,0 +1,52 @@
+/* ============================================================================
+   PHOTO — Сетка фотографий, AI рекомендации
+   ============================================================================ */
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px; margin-top: 14px;
+}
+.photo-thumb {
+  position: relative; aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden; cursor: pointer;
+  background: var(--bg);
+  box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
+}
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); }
+.photo-thumb .remove {
+  position: absolute; top: 6px; right: 6px;
+  background: rgba(0,0,0,0.6); color: #fff;
+  border: none; width: 26px; height: 26px;
+  border-radius: 50%; cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.ai-recommendation {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-top: 14px;
+  box-shadow: 6px 6px 16px var(--shadow-dark), -6px -6px 16px var(--shadow-light);
+  position: relative;
+  overflow: hidden;
+}
+.ai-recommendation::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--primary), var(--primary-light));
+  border-radius: 0 4px 4px 0;
+}
+.ai-recommendation h4 {
+  color: var(--text);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; font-size: 15px;
+}
+.ai-recommendation .ai-source {
+  font-size: 11px; color: var(--text-muted);
+  margin-top: 10px; font-style: italic;
+}

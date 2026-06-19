@@ -1,0 +1,41 @@
+<section id="photos" class="section">
+  <h2>📸 Еженедельные фотоотчёты</h2>
+  <div class="alert info">💡 Загружайте фото каждую неделю. После сохранения можно запустить AI-анализ для автоматических рекомендаций.</div>
+
+  <div class="card">
+    <h3>Новый фотоотчёт</h3>
+    <div class="form-grid">
+      <div class="form-row"><label>Дата отчёта</label><input type="date" id="photo-date"></div>
+      <div class="form-row"><label>Участок</label><select id="photo-plot"></select></div>
+    </div>
+    <div class="form-row">
+      <label>Фотографии</label>
+      <input type="file" id="photo-files" multiple accept="image/*" capture="environment">
+      <div id="photo-preview" class="photo-grid"></div>
+    </div>
+    <div class="form-row">
+      <label>Наблюдения / комментарий</label>
+      <textarea id="photo-note" rows="3" placeholder="Например: листья нижнего яруса с желтизной, замечены пятна на ряду 12, цветение завершено на 80%..."></textarea>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn primary" onclick="savePhotoReport()">💾 Сохранить отчёт</button>
+      <button class="btn success" onclick="savePhotoReportWithAI()" id="ai-analyze-btn">🤖 Сохранить + AI-анализ</button>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px;">История отчётов</h3>
+  <div id="photo-reports-list"></div>
+</section>
+
+<!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
+<div class="modal-bg" id="photo-modal">
+  <div class="modal">
+    <h3 id="photo-modal-title">Фотоотчёт</h3>
+    <div id="photo-modal-content"></div>
+    <div class="modal-actions">
+      <button class="btn success" id="modal-ai-btn" onclick="analyzeReportFromModal()">🤖 AI-анализ</button>
+      <button class="btn secondary" onclick="closeModal('photo-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+

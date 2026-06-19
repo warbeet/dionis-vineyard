@@ -1,0 +1,159 @@
+<section id="weather" class="section">
+  <h2>🌦 Погода и фенофазы</h2>
+
+  <div class="tabs" style="margin-bottom:16px;">
+    <button class="plot-tab active" onclick="switchWeatherTab(event,'forecast')">📅 Прогноз</button>
+    <button class="plot-tab" onclick="switchWeatherTab(event,'stations')">📡 Метеостанции</button>
+    <button class="plot-tab" onclick="switchWeatherTab(event,'manual')">📝 Ручной ввод</button>
+    <button class="plot-tab" onclick="switchWeatherTab(event,'pheno')">🌿 Фенофазы</button>
+  </div>
+
+  <!-- ПРОГНОЗ -->
+  <div class="weather-tab" id="wtab-forecast">
+    <div class="card" style="margin-bottom:18px;">
+      <h3>📍 Координаты виноградника</h3>
+      <div class="form-grid">
+        <div class="form-row"><label>Широта</label><input type="number" id="loc-lat" step="0.0001" placeholder="46.4825"></div>
+        <div class="form-row"><label>Долгота</label><input type="number" id="loc-lon" step="0.0001" placeholder="30.7233"></div>
+      </div>
+      <div class="form-row"><label>Название места</label><input type="text" id="loc-name" placeholder="Одесская обл."></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn primary" onclick="saveLocation()">💾 Сохранить</button>
+        <button class="btn secondary" onclick="useGeoLocation()">📍 Определить автоматически</button>
+        <button class="btn accent" onclick="fetchWeather()">🔄 Загрузить Open-Meteo Pro</button>
+        <button class="btn secondary" onclick="fetchYandexWeather()" title="Требует ключ">🟡 Яндекс Погода</button>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin-top:10px;">
+        💡 Open-Meteo Pro даёт: T° воздуха, осадки и вероятность, влажность, ветер с порывами, UV, солнечная радиация, эвапотранспирация ET₀, температура и влажность почвы на разных глубинах, рассвет/закат.
+      </p>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <h3>📅 Прогноз на 7 дней (Open-Meteo Pro)</h3>
+      <div id="weather-forecast" class="forecast-grid">
+        <p style="color:var(--text-muted); font-size:13px; padding:14px;">Укажите координаты и нажмите «Загрузить погоду».</p>
+      </div>
+      <div id="weather-alerts" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- МЕТЕОСТАНЦИИ -->
+  <div class="weather-tab" id="wtab-stations" style="display:none;">
+    <div class="toolbar">
+      <button class="btn primary" onclick="openStationModal()">+ Метеостанция</button>
+      <button class="btn secondary" onclick="simulateStationData()" title="Сгенерировать тестовые показания">🎲 Тестовые данные</button>
+      <button class="btn secondary" onclick="document.getElementById('station-csv-import').click()">📥 Импорт CSV</button>
+      <input type="file" id="station-csv-import" accept=".csv" style="display:none" onchange="importStationCSV(event)">
+    </div>
+    <div class="alert info">
+      💡 Поддерживаются модели: Davis Vantage Pro2, Sencrop X1, Metos iMETOS, Pessl, Arable, Meteobot — а также любые свои. Данные принимаются по HTTP API (требует бэкенд) или импортом CSV. У каждой станции свой токен — кнопка 🔑.
+    </div>
+    <div id="stations-list"></div>
+  </div>
+
+  <!-- РУЧНОЙ ВВОД -->
+  <div class="weather-tab" id="wtab-manual" style="display:none;">
+    <div class="card">
+      <h3>📝 Ручная запись погоды (если нет станции/прогноза)</h3>
+      <div class="form-grid">
+        <div class="form-row"><label>Дата</label><input type="date" id="w-date"></div>
+        <div class="form-row"><label>T мин °C</label><input type="number" id="w-tmin" step="0.1"></div>
+        <div class="form-row"><label>T макс °C</label><input type="number" id="w-tmax" step="0.1"></div>
+        <div class="form-row"><label>Осадки, мм</label><input type="number" id="w-rain" step="0.1"></div>
+        <div class="form-row"><label>Влажность, %</label><input type="number" id="w-hum"></div>
+        <div class="form-row"><label>Заметка</label><input type="text" id="w-note"></div>
+      </div>
+      <button class="btn primary" onclick="saveWeather()">💾 Сохранить</button>
+    </div>
+
+    <h3 style="margin-top:20px;">История записей</h3>
+    <div class="card"><div id="weather-list" class="table-wrap"></div></div>
+  </div>
+
+  <!-- ФЕНОФАЗЫ -->
+  <div class="weather-tab" id="wtab-pheno" style="display:none;">
+    <div class="card">
+      <h3>🌿 Текущая фенофаза</h3>
+      <div class="pheno-stages" id="pheno-stages"></div>
+      <div class="form-row" style="margin-top:14px;"><label>Дата начала фазы</label><input type="date" id="pheno-date"></div>
+      <button class="btn primary small" onclick="savePheno()">💾 Сохранить фазу</button>
+
+      <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+        <h4 style="font-size:13px; color:var(--text-soft);">Сумма активных температур (GDD):</h4>
+        <p style="font-size:24px; font-weight:700; color:var(--text);" id="gdd-sum">0</p>
+        <p style="font-size:11px; color:var(--text-muted);">Сумма температур &gt;10°C с начала года</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- МОДАЛКИ МЕТЕОСТАНЦИЙ -->
+<div class="modal-bg" id="station-modal">
+  <div class="modal" style="max-width:680px;">
+    <h3 id="st-modal-title">Новая метеостанция</h3>
+    <input type="hidden" id="st-id">
+
+    <div class="form-grid">
+      <div class="form-row"><label>Название</label><input type="text" id="st-name" placeholder="Метеостанция Север"></div>
+      <div class="form-row"><label>Модель</label>
+        <select id="st-model">
+          <option value="davis_pro2">Davis Vantage Pro2</option>
+          <option value="sencrop_x1">Sencrop X1</option>
+          <option value="metos_imt">Metos iMETOS</option>
+          <option value="pessl_imetos">Pessl iMETOS 3.3</option>
+          <option value="arable_mark2">Arable Mark 2</option>
+          <option value="meteobot">Meteobot</option>
+          <option value="custom">Своя сборка</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row"><label>Привязка к участку</label><select id="st-plot"></select></div>
+      <div class="form-row"><label>Высота над УМ, м</label><input type="number" id="st-altitude" step="1"></div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row"><label>Широта</label><input type="number" id="st-lat" step="0.0001"></div>
+      <div class="form-row"><label>Долгота</label><input type="number" id="st-lng" step="0.0001"></div>
+    </div>
+
+    <div class="form-row"><label>Дата установки</label><input type="date" id="st-installed"></div>
+
+    <label style="margin-top:14px;">Активные сенсоры</label>
+    <div id="st-sensors-list" style="display:flex; gap:6px; flex-wrap:wrap; max-height:200px; overflow:auto; padding:6px;"></div>
+
+    <div class="form-row" style="margin-top:14px;"><label>Заметки</label><textarea id="st-notes" rows="2"></textarea></div>
+
+    <div class="modal-actions">
+      <button class="btn danger" id="st-delete-btn" onclick="deleteStation()" style="display:none;">🗑 Удалить</button>
+      <button class="btn secondary" onclick="closeModal('station-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveStation()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="station-token-modal">
+  <div class="modal" style="max-width:680px;">
+    <h3 id="station-token-modal-title">API доступ</h3>
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">
+      Используйте этот endpoint и токен для отправки данных со станции. Для реальной работы нужен бэкенд (Firebase Functions или промежуточный сервис типа n8n/Make).
+    </p>
+    <pre id="station-token-content" style="background:var(--bg); padding:14px; border-radius:12px; font-size:11px; overflow-x:auto; box-shadow: inset 2px 2px 4px var(--shadow-inset-dark);"></pre>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="closeModal('station-token-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="measure-modal">
+  <div class="modal">
+    <h3 id="measure-modal-title">Ручное измерение</h3>
+    <input type="hidden" id="m-station-id">
+    <div id="measure-inputs"></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('measure-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveMeasurement()">Сохранить</button>
+    </div>
+  </div>
+</div>

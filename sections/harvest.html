@@ -1,0 +1,37 @@
+<section id="harvest" class="section">
+  <h2>🍷 Урожай и затраты</h2>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Запись урожая</h3>
+      <div class="form-row"><label>Дата</label><input type="date" id="h-date"></div>
+      <div class="form-row"><label>Участок</label><select id="h-plot"></select></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Вес, кг</label><input type="number" id="h-weight" step="0.1"></div>
+        <div class="form-row"><label>Brix</label><input type="number" id="h-brix" step="0.1"></div>
+        <div class="form-row"><label>Кислотн., г/л</label><input type="number" id="h-acid" step="0.1"></div>
+        <div class="form-row"><label>pH</label><input type="number" id="h-ph" step="0.01"></div>
+      </div>
+      <button class="btn" onclick="saveHarvest()">💾 Сохранить</button>
+    </div>
+    <div class="card">
+      <h3>Запись затрат</h3>
+      <div class="form-row"><label>Дата</label><input type="date" id="c-date"></div>
+      <div class="form-row">
+        <label>Категория</label>
+        <select id="c-cat">
+          <option>Препараты</option><option>Удобрения</option><option>Топливо</option>
+          <option>Зарплата</option><option>Оборудование</option><option>Тара</option>
+          <option>Налоги/услуги</option><option>Другое</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Описание</label><input type="text" id="c-desc"></div>
+      <div class="form-row"><label>Сумма</label><input type="number" id="c-amount" step="0.01"></div>
+      <button class="btn" onclick="saveCost()">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:20px;">
+    <div class="card"><h3>Сводка по урожаю</h3><div id="harvest-summary" class="table-wrap"></div></div>
+    <div class="card"><h3>Сводка по затратам</h3><div id="costs-summary" class="table-wrap"></div></div>
+  </div>
+</section>

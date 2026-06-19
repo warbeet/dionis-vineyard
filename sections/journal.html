@@ -1,0 +1,41 @@
+<section id="journal" class="section">
+  <h2>📔 Журнал работ</h2>
+  <div class="toolbar">
+    <button class="btn primary" onclick="openJournalModal()">+ Запись</button>
+    <select id="journal-filter" onchange="renderJournal()" style="max-width:200px;">
+      <option value="">Все типы</option>
+      <option>Обрезка</option><option>Подвязка</option><option>Пасынкование</option>
+      <option>Чеканка</option><option>Обработка</option><option>Полив</option>
+      <option>Подкормка</option><option>Прополка</option><option>Сбор урожая</option><option>Другое</option>
+    </select>
+  </div>
+  <div id="journal-list"></div>
+</section>
+
+<!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
+<div class="modal-bg" id="journal-modal">
+  <div class="modal">
+    <h3>Запись в журнале</h3>
+    <input type="hidden" id="journal-id">
+    <div class="form-grid">
+      <div class="form-row"><label>Дата</label><input type="date" id="j-date"></div>
+      <div class="form-row"><label>Тип</label>
+        <select id="j-type">
+          <option>Обрезка</option><option>Подвязка</option><option>Пасынкование</option>
+          <option>Чеканка</option><option>Обработка</option><option>Полив</option>
+          <option>Подкормка</option><option>Прополка</option><option>Сбор урожая</option><option>Другое</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Участок</label><select id="j-plot"></select></div>
+      <div class="form-row"><label>Исполнитель</label><input type="text" id="j-worker"></div>
+      <div class="form-row"><label>Часы</label><input type="number" id="j-hours" step="0.5"></div>
+      <div class="form-row"><label>Стоимость</label><input type="number" id="j-cost" step="0.01"></div>
+    </div>
+    <div class="form-row"><label>Описание</label><textarea id="j-desc" rows="3"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('journal-modal')">Отмена</button>
+      <button class="btn" onclick="saveJournal()">Сохранить</button>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,43 @@
+<section id="team" class="section">
+  <h2>👥 Команда</h2>
+  <div class="alert info">Пригласите участников: владельца, агронома, рабочих. Каждый видит данные виноградника по своей роли.</div>
+
+  <div class="card">
+    <h3>Текущие участники</h3>
+    <div id="team-list"><p style="color:#8a7a6a; font-size:13px;">Пока только вы. Войдите в Firebase-режим для приглашения других.</p></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Пригласить участника</h3>
+    <div class="form-grid">
+      <div class="form-row"><label>Email</label><input type="email" id="invite-email"></div>
+      <div class="form-row">
+        <label>Роль</label>
+        <select id="invite-role">
+          <option value="owner">👑 Владелец (полный доступ)</option>
+          <option value="agronomist">🧑‍🌾 Агроном (просмотр + рекомендации)</option>
+          <option value="worker">👷 Рабочий (только задачи и отчёты)</option>
+          <option value="viewer">👁 Наблюдатель (только чтение)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" onclick="inviteMember()">📧 Отправить приглашение</button>
+    <p style="font-size:12px; color:#8a7a6a; margin-top:10px;">
+      💡 Приглашённый получит код. Он должен зарегистрироваться в приложении и ввести код в разделе «Настройки → Подключиться к виноградника».
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔑 Код вашего виноградника</h3>
+    <p style="font-size:13px; color:#6b5a4a;">Передайте этот код участникам для подключения:</p>
+    <div style="background:#faf8f3; padding:14px; border-radius:8px; margin-top:10px; font-family: monospace; font-size:18px; font-weight:600; color:#4a1f3a; text-align:center; letter-spacing:2px;" id="vineyard-code">—</div>
+    <button class="btn small secondary" style="margin-top:8px;" onclick="copyVineyardCode()">📋 Копировать</button>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>🔗 Подключиться к чужому виноградника</h3>
+    <p style="font-size:13px; color:#6b5a4a;">Введите код, полученный от владельца:</p>
+    <div class="form-row"><input type="text" id="join-code" placeholder="Например: VYD-XXXX-XXXX"></div>
+    <button class="btn" onclick="joinVineyard()">Подключиться</button>
+  </div>
+</section>

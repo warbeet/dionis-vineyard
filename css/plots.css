@@ -1,0 +1,121 @@
+/* ============================================================================
+   PLOTS — Участки, блоки-сорта, реестр саженцев, схема, карта
+   ============================================================================ */
+
+.plot-card { position: relative; }
+.plot-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.plot-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--text-soft); }
+.plot-meta span {
+  background: var(--bg);
+  padding: 5px 12px; border-radius: var(--radius-pill);
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+  font-weight: 500;
+}
+
+/* Sub-tabs внутри карточки участка и в модалках */
+.plot-subtab, .plot-tab {
+  background: transparent; border: none;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  cursor: pointer; font-size: 13px;
+  color: var(--text-soft); font-weight: 600;
+  font-family: inherit; white-space: nowrap;
+  transition: all 0.2s;
+}
+.plot-subtab:hover, .plot-tab:hover { color: var(--primary); }
+.plot-subtab.active, .plot-tab.active {
+  background: var(--bg); color: var(--text);
+  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+}
+
+/* Pill-tab container */
+.tabs {
+  display: flex; gap: 4px; background: var(--bg);
+  padding: 5px; border-radius: var(--radius-pill);
+  margin-bottom: 16px;
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+  width: fit-content; max-width: 100%; overflow-x: auto;
+}
+
+/* Блоки-сорта */
+.blocks-list {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.block-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  border-left: 4px solid var(--primary);
+  box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.block-card:hover { transform: translateY(-2px); }
+.block-card h4 { font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.block-card .field { font-size: 12px; color: var(--text-soft); margin-bottom: 4px; }
+.block-card .field b { color: var(--text); font-weight: 600; }
+.block-stats { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.block-stat {
+  font-size: 11px; padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  box-shadow: inset 1px 1px 2px var(--shadow-inset-dark), inset -1px -1px 2px var(--shadow-inset-light);
+  font-weight: 500;
+}
+
+/* Схема саженцев */
+.schema-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.schema-wrap {
+  overflow: auto;
+  background: var(--bg);
+  border-radius: var(--radius);
+  box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
+  padding: 16px;
+  max-height: 600px;
+}
+.schema-canvas { display: block; cursor: pointer; }
+.schema-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; }
+.schema-legend .lg-item { display: flex; align-items: center; gap: 5px; color: var(--text-soft); }
+.schema-legend .lg-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+.seedling-tooltip {
+  position: fixed; pointer-events: none;
+  background: var(--text); color: var(--bg);
+  padding: 8px 12px; border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  opacity: 0; transition: opacity 0.15s;
+  z-index: 200; max-width: 260px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.seedling-tooltip.show { opacity: 1; }
+
+/* Stats */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+.stat-pill {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+  text-align: center;
+}
+.stat-pill .num { font-size: 22px; font-weight: 700; }
+.stat-pill .lbl { font-size: 10px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-pill.healthy .num { color: var(--st-healthy); }
+.stat-pill.attention .num { color: var(--st-attention); }
+.stat-pill.dead .num { color: var(--st-dead); }
+
+/* Leaflet */
+.leaflet-container { background: var(--bg-elevated); border-radius: var(--radius); font-family: inherit; }
+
+/* Mini heatmap на дашборде */
+.mini-heatmap {
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+}
