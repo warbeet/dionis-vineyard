@@ -10,7 +10,7 @@
     name: 'Метеостанция Север',
     model: 'Davis Vantage Pro2' | 'Sencrop X1' | 'своя',
     api_token: 'XXX',                         // для приёма данных по HTTP POST
-    gps: { lat: 46.48, lng: 30.72 },
+    gps: { lat: 45.04, lng: 38.98 },
     altitude_m: 120,
     plot_id: 'p_xxx' | null,                  // привязка к участку (если есть)
     installed_date: '2026-05-15',

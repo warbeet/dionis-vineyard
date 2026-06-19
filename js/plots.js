@@ -875,6 +875,52 @@ function renderPlotMap(plotId) {
   setTimeout(() => initLeafletMap(plotId), 100);
 }
 
+
+// =========== ПРОВАЙДЕРЫ КАРТ ===========
+function buildMapLayers() {
+  const provider = (settings && settings.mapProvider) || 'osm';
+  const all = {};
+  let defaultLayer;
+
+  // 1. OpenStreetMap (стандартный, бесплатно, доступен в РФ)
+  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap', maxZoom: 19
+  });
+  all['OpenStreetMap'] = osm;
+
+  // 2. Яндекс Карты (если настроен ключ или плагин)
+  // По умолчанию используем тайлы Яндекс через прямой URL (без ключа для базовых слоёв)
+  const yandexMap = L.tileLayer('https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU', {
+    attribution: '© Яндекс', maxZoom: 19, subdomains: '0123'
+  });
+  const yandexSat = L.tileLayer('https://core-sat.maps.yandex.net/tiles?l=sat&x={x}&y={y}&z={z}&scale=1&lang=ru_RU', {
+    attribution: '© Яндекс Спутник', maxZoom: 19, subdomains: '0123'
+  });
+  all['Яндекс Карты'] = yandexMap;
+  all['Яндекс Спутник'] = yandexSat;
+
+  // 3. 2ГИС (если настроен)
+  const dgis = L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1', {
+    attribution: '© 2ГИС', maxZoom: 19, subdomains: '0123'
+  });
+  all['2ГИС'] = dgis;
+
+  // 4. Спутник Esri (международный, нейтральный)
+  const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '© Esri', maxZoom: 19
+  });
+  all['Esri Спутник'] = esriSat;
+
+  // Выбор по умолчанию
+  if (provider === 'yandex') defaultLayer = yandexMap;
+  else if (provider === 'yandex_sat') defaultLayer = yandexSat;
+  else if (provider === '2gis') defaultLayer = dgis;
+  else if (provider === 'esri_sat') defaultLayer = esriSat;
+  else defaultLayer = osm;
+
+  return { default: defaultLayer, all };
+}
+
 function initLeafletMap(plotId) {
   if (typeof L === 'undefined') {
     document.getElementById('plot-map-' + plotId).innerHTML =
@@ -884,16 +930,13 @@ function initLeafletMap(plotId) {
   // Если уже инициализирован — удаляем (для перерисовки)
   if (leafletMaps[plotId]) { leafletMaps[plotId].remove(); delete leafletMaps[plotId]; }
   const plot = data.plots.find(p => p.id === plotId);
-  const center = plot.center || { lat: 46.4825, lng: 30.7233 };
+  const center = plot.center || { lat: 45.0355, lng: 38.9753 };
   const map = L.map('plot-map-' + plotId).setView([center.lat, center.lng], 17);
 
-  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap', maxZoom: 19
-  }).addTo(map);
-  const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '© Esri', maxZoom: 19
-  });
-  L.control.layers({ 'Карта': osm, 'Спутник': sat }).addTo(map);
+  // Слои карт (поддержка нескольких провайдеров)
+  const layers = buildMapLayers();
+  layers.default.addTo(map);
+  L.control.layers(layers.all).addTo(map);
 
   // Полигон
   if (plot.polygon && plot.polygon.length) {

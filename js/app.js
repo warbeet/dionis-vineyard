@@ -185,6 +185,7 @@ function renderAll() {
   if (typeof renderRecommendations === 'function') renderRecommendations();
   if (typeof renderTeam === 'function') renderTeam();
   if (typeof renderStations === 'function') renderStations();
+  if (typeof renderLocaleSettings === 'function') renderLocaleSettings();
   if (typeof updateDashboard === 'function') updateDashboard();
 }
 
