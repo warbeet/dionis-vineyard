@@ -1,54 +1,162 @@
 /* ============================================================================
-   AUTH SCREEN
+   AUTH SCREEN — адаптивный с поддержкой скролла на маленьких экранах
    ============================================================================ */
 
 #auth-screen {
-  position: fixed; inset: 0; z-index: 200;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   background: var(--bg);
   background-image:
     radial-gradient(at 20% 20%, rgba(107, 142, 90, 0.15) 0%, transparent 50%),
     radial-gradient(at 80% 80%, rgba(212, 147, 107, 0.1) 0%, transparent 50%);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+
+  /* Скролл если контент не влазит */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  /* Центрируем горизонтально, вертикально — flex с min-height */
+  display: flex;
+  align-items: flex-start;          /* начинаем сверху, не центрируем */
+  justify-content: center;
+
+  /* Учёт safe-area на iOS */
+  padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
 }
+
 #auth-screen.hidden { display: none !important; }
+
+/* Центрируем по вертикали только если есть свободное место */
+@media (min-height: 720px) {
+  #auth-screen {
+    align-items: center;
+  }
+}
+
 .auth-card {
   background: var(--bg);
   border-radius: var(--radius-lg);
-  padding: 36px 32px;
-  max-width: 420px; width: 100%;
-  box-shadow: 12px 12px 30px var(--shadow-dark), -12px -12px 30px var(--shadow-light);
+  padding: 28px 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow:
+    12px 12px 30px var(--shadow-dark),
+    -12px -12px 30px var(--shadow-light);
+
+  /* Не прижимать к краям, дать "дышать" */
+  margin: auto 0;
 }
-.auth-card h2 { font-size: 28px; margin-bottom: 8px; color: var(--text); letter-spacing: -0.5px; }
-.auth-card .sub { color: var(--text-soft); margin-bottom: 24px; font-size: 14px; }
+
+/* Логотип компактный, адаптивный */
+.auth-logo {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.auth-logo img {
+  max-width: 200px;
+  width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* На очень маленьких экранах — ещё компактнее */
+@media (max-height: 700px) {
+  .auth-card { padding: 20px 22px 18px; }
+  .auth-logo { margin-bottom: 8px; }
+  .auth-logo img { max-width: 160px; }
+  .auth-card h2 { font-size: 22px !important; margin-bottom: 4px !important; }
+  .auth-card .sub { margin-bottom: 14px !important; font-size: 13px !important; }
+}
+@media (max-height: 560px) {
+  .auth-logo img { max-width: 130px; }
+  .auth-card { padding: 16px 20px; }
+  .auth-card h2 { font-size: 20px !important; }
+}
+
+.auth-card h2 {
+  font-size: 26px;
+  margin-bottom: 6px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+.auth-card .sub {
+  color: var(--text-soft);
+  margin-bottom: 18px;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.4;
+}
+
 .auth-tabs {
-  display: flex; gap: 4px;
+  display: flex;
+  gap: 4px;
   background: var(--bg);
   padding: 5px;
   border-radius: var(--radius-pill);
-  margin-bottom: 22px;
-  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+  margin-bottom: 16px;
+  box-shadow:
+    inset 2px 2px 4px var(--shadow-inset-dark),
+    inset -2px -2px 4px var(--shadow-inset-light);
 }
 .auth-tabs button {
-  flex: 1; padding: 9px; border: none;
-  background: transparent; border-radius: var(--radius-pill);
-  cursor: pointer; font-size: 13px;
+  flex: 1;
+  padding: 9px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-size: 13px;
   color: var(--text-soft);
-  font-family: inherit; font-weight: 600;
+  font-family: inherit;
+  font-weight: 600;
   transition: all 0.2s;
 }
 .auth-tabs button.active {
   background: var(--bg);
   color: var(--text);
-  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+  box-shadow:
+    3px 3px 6px var(--shadow-dark),
+    -3px -3px 6px var(--shadow-light);
 }
+
+.auth-form .form-row { margin-bottom: 10px; }
+
 .auth-divider {
-  text-align: center; margin: 20px 0;
-  color: var(--text-muted); font-size: 12px;
+  text-align: center;
+  margin: 14px 0;
+  color: var(--text-muted);
+  font-size: 12px;
   position: relative;
 }
-.auth-divider::before, .auth-divider::after {
-  content: ''; position: absolute; top: 50%;
-  width: 35%; height: 1px; background: var(--border);
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  background: var(--border);
 }
 .auth-divider::before { left: 0; }
 .auth-divider::after { right: 0; }
+
+/* Кнопки на auth-экране — чуть компактнее */
+#auth-screen .btn.full { padding: 11px 18px; }
+
+/* Иконка скролла-подсказка снизу (если скролл нужен) */
+#auth-screen::after {
+  content: '';
+  display: block;
+  height: 8px;
+  flex-shrink: 0;
+}
+
+/* Скроллбар стилизованный */
+#auth-screen::-webkit-scrollbar { width: 6px; }
+#auth-screen::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+#auth-screen::-webkit-scrollbar-track { background: transparent; }
