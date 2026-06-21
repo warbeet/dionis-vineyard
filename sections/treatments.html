@@ -1,8 +1,59 @@
 <section id="treatments" class="section">
-  <h2>💊 Болезни и обработки</h2>
-  <div class="grid grid-2">
+  <h2>💊 Обработки и план опрыскивания</h2>
+
+  <!-- ВКЛАДКИ РАЗДЕЛА -->
+  <div class="modal-tabs" style="max-width:560px;">
+    <button class="modal-tab tr-tab active" data-trtab="plan" onclick="switchTreatmentsTab('plan')">📅 План опрыскивания</button>
+    <button class="modal-tab tr-tab" data-trtab="log" onclick="switchTreatmentsTab('log')">📋 Журнал обработок</button>
+    <button class="modal-tab tr-tab" data-trtab="diseases" onclick="switchTreatmentsTab('diseases')">⚠️ Болезни</button>
+  </div>
+
+  <!-- === ВКЛАДКА: ПЛАН ОПРЫСКИВАНИЯ === -->
+  <div class="tr-tab-content" id="trtab-plan">
     <div class="card">
-      <h3>Зафиксировать проблему</h3>
+      <div class="toolbar">
+        <button class="btn primary" onclick="openSprayPlanModal()">+ Новый план</button>
+        <button class="btn secondary" onclick="exportSprayCSV()">⬇ CSV</button>
+        <button class="btn secondary" onclick="document.getElementById('spray-import-file').click()">⬆ Импорт CSV</button>
+        <input type="file" id="spray-import-file" accept=".csv" style="display:none" onchange="importSprayCSV(event)">
+
+        <div style="margin-left:auto; display:flex; gap:4px; background:var(--bg); padding:4px; border-radius:var(--radius-pill); box-shadow: inset 2px 2px 4px var(--shadow-inset-dark);">
+          <button class="spray-view-btn active" data-view="table" onclick="switchSprayView('table')" style="padding:6px 12px; border:none; background:transparent; border-radius:var(--radius-pill); cursor:pointer; font-size:12px; font-weight:600; font-family:inherit;">📋 Таблица</button>
+          <button class="spray-view-btn" data-view="kanban" onclick="switchSprayView('kanban')" style="padding:6px 12px; border:none; background:transparent; border-radius:var(--radius-pill); cursor:pointer; font-size:12px; font-weight:600; font-family:inherit;">📊 Канбан</button>
+          <button class="spray-view-btn" data-view="calendar" onclick="switchSprayView('calendar')" style="padding:6px 12px; border:none; background:transparent; border-radius:var(--radius-pill); cursor:pointer; font-size:12px; font-weight:600; font-family:inherit;">📅 Календарь</button>
+        </div>
+      </div>
+
+      <div id="spray-plans-content"></div>
+    </div>
+  </div>
+
+  <!-- === ВКЛАДКА: ЖУРНАЛ ОБРАБОТОК === -->
+  <div class="tr-tab-content" id="trtab-log" style="display:none;">
+    <div class="card">
+      <h3>📝 Записать выполненную обработку</h3>
+      <div class="form-grid">
+        <div class="form-row"><label>Дата</label><input type="date" id="tr-date"></div>
+        <div class="form-row"><label>Участок</label><select id="tr-plot"></select></div>
+      </div>
+      <div class="form-row"><label>Препарат</label><input type="text" id="tr-product" placeholder="Ридомил, Топаз..."></div>
+      <div class="form-grid">
+        <div class="form-row"><label>Дозировка</label><input type="text" id="tr-dose" placeholder="25 г / 10 л"></div>
+        <div class="form-row"><label>Расход, л</label><input type="number" id="tr-volume" step="0.1"></div>
+      </div>
+      <div class="form-row"><label>Срок ожидания, дней</label><input type="number" id="tr-pause"></div>
+      <div class="form-row"><label>Комментарий</label><textarea id="tr-note" rows="2"></textarea></div>
+      <button class="btn primary" onclick="saveTreatment()">💾 Сохранить</button>
+    </div>
+
+    <h3 style="margin-top:20px;">История обработок</h3>
+    <div class="card"><div id="treatments-list" class="table-wrap"></div></div>
+  </div>
+
+  <!-- === ВКЛАДКА: БОЛЕЗНИ === -->
+  <div class="tr-tab-content" id="trtab-diseases" style="display:none;">
+    <div class="card">
+      <h3>⚠️ Зафиксировать проблему</h3>
       <div class="form-row"><label>Дата</label><input type="date" id="dis-date"></div>
       <div class="form-row"><label>Участок</label><select id="dis-plot"></select></div>
       <div class="form-row">
@@ -21,28 +72,47 @@
       <div class="form-row">
         <label>Степень</label>
         <select id="dis-severity">
-          <option value="low">Низкая</option><option value="med">Средняя</option><option value="high">Высокая</option>
+          <option value="low">Низкая</option>
+          <option value="med">Средняя</option>
+          <option value="high">Высокая</option>
         </select>
       </div>
       <div class="form-row"><label>Комментарий</label><textarea id="dis-note" rows="2"></textarea></div>
-      <button class="btn" onclick="saveDisease()">💾 Сохранить</button>
-    </div>
-
-    <div class="card">
-      <h3>Запись обработки</h3>
-      <div class="form-row"><label>Дата</label><input type="date" id="tr-date"></div>
-      <div class="form-row"><label>Участок</label><select id="tr-plot"></select></div>
-      <div class="form-row"><label>Препарат</label><input type="text" id="tr-product" placeholder="Ридомил, Топаз..."></div>
-      <div class="form-grid">
-        <div class="form-row"><label>Дозировка</label><input type="text" id="tr-dose" placeholder="25 г / 10 л"></div>
-        <div class="form-row"><label>Расход, л</label><input type="number" id="tr-volume" step="0.1"></div>
-      </div>
-      <div class="form-row"><label>Срок ожидания, дней</label><input type="number" id="tr-pause"></div>
-      <div class="form-row"><label>Комментарий</label><textarea id="tr-note" rows="2"></textarea></div>
-      <button class="btn" onclick="saveTreatment()">💾 Сохранить</button>
+      <button class="btn primary" onclick="saveDisease()">💾 Сохранить</button>
     </div>
   </div>
-
-  <h3 style="margin-top:20px;">История</h3>
-  <div class="card"><div id="treatments-list" class="table-wrap"></div></div>
 </section>
+
+
+<!-- ============ МОДАЛКА: ПЛАН ОПРЫСКИВАНИЯ ============ -->
+<div class="modal-bg" id="spray-plan-modal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <h3>🧪 План опрыскивания</h3>
+      <button class="modal-close" onclick="closeModal('spray-plan-modal')" title="Закрыть">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="spray-plan-form"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('spray-plan-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveSprayPlan()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: ВЫБОР ПРЕПАРАТА ============ -->
+<div class="modal-bg" id="product-picker-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🧪 Выбрать препарат</h3>
+      <button class="modal-close" onclick="closeModal('product-picker-modal')" title="Закрыть">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="product-picker-content"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('product-picker-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>

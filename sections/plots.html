@@ -16,58 +16,95 @@
 
 <!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
 <div class="modal-bg" id="plot-modal">
-  <div class="modal" style="max-width:780px;">
-    <h3 id="plot-modal-title">Новый участок</h3>
-    <input type="hidden" id="plot-id">
+  <div class="modal wide">
 
-    <div class="tabs" style="margin-bottom:16px;">
-      <button type="button" class="plot-tab active" data-ptab="basic">Основное</button>
-      <button type="button" class="plot-tab" data-ptab="geo">География</button>
-      <button type="button" class="plot-tab" data-ptab="grid">Сетка рядов</button>
+    <div class="modal-header">
+      <h3 id="plot-modal-title">Новый участок</h3>
+      <button class="modal-close" onclick="closeModal('plot-modal')" title="Закрыть">×</button>
     </div>
 
-    <div class="plot-tab-content active" id="ptab-basic">
-      <div class="form-grid">
-        <div class="form-row"><label>Название</label><input type="text" id="plot-name" placeholder="Северный участок"></div>
-        <div class="form-row"><label>Площадь, га</label><input type="number" id="plot-area" step="0.01"></div>
-      </div>
-      <div class="form-grid">
-        <div class="form-row"><label>Расст. между рядами, м</label><input type="number" id="plot-row-spacing" step="0.1" value="2.5"></div>
-        <div class="form-row"><label>Расст. между кустами, м</label><input type="number" id="plot-vine-spacing" step="0.1" value="1.0"></div>
-      </div>
-      <div class="form-row"><label>Заметки</label><textarea id="plot-notes" rows="2"></textarea></div>
-    </div>
+    <div class="modal-body">
+      <input type="hidden" id="plot-id">
 
-    <div class="plot-tab-content" id="ptab-geo" style="display:none;">
-      <div class="form-grid">
-        <div class="form-row"><label>Широта центра</label><input type="number" id="plot-lat" step="0.0001"></div>
-        <div class="form-row"><label>Долгота центра</label><input type="number" id="plot-lng" step="0.0001"></div>
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab plot-tab active" data-ptab="basic">🧭 Основное</button>
+        <button type="button" class="modal-tab plot-tab" data-ptab="geo">🗺 География</button>
+        <button type="button" class="modal-tab plot-tab" data-ptab="grid">📐 Сетка рядов</button>
       </div>
-      <div class="form-row">
-        <label>Полигон участка (GeoJSON или координаты)</label>
-        <textarea id="plot-polygon" rows="4" placeholder='[[45.0360,38.9745],[45.0360,38.9765],[45.0348,38.9765],[45.0348,38.9745]]'></textarea>
-      </div>
-      <button type="button" class="btn small secondary" onclick="useCurrentLocationForPlot()">📍 Использовать моё местоположение</button>
-      <p style="font-size:12px; color:var(--text-soft); margin-top:8px;">💡 Полигон можно нарисовать на карте на вкладке участка — после сохранения.</p>
-    </div>
 
-    <div class="plot-tab-content" id="ptab-grid" style="display:none;">
-      <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
-        Задайте количество рядов и позиций в каждом ряду. Можно указать пропуски (1,5,12) и каскады (3,7).
-      </p>
-      <div class="form-grid">
-        <div class="form-row"><label>Рядов</label><input type="number" id="plot-rows-count" min="1" value="10"></div>
-        <div class="form-row"><label>Позиций в ряду</label><input type="number" id="plot-positions-count" min="1" value="50"></div>
+      <!-- ОСНОВНОЕ -->
+      <div class="plot-tab-content active" id="ptab-basic">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Название</label>
+            <input type="text" id="plot-name" placeholder="Северный участок">
+          </div>
+          <div class="form-row">
+            <label>Площадь, га</label>
+            <input type="number" id="plot-area" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Расст. между рядами, м</label>
+            <input type="number" id="plot-row-spacing" step="0.1" value="2.5">
+          </div>
+          <div class="form-row">
+            <label>Расст. между кустами, м</label>
+            <input type="number" id="plot-vine-spacing" step="0.1" value="1.0">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Заметки / описание</label>
+          <textarea id="plot-notes" rows="3" placeholder="Особенности участка, история, агроном..."></textarea>
+        </div>
       </div>
-      <div class="alert info" style="margin-top:12px;">
-        💡 Это базовая сетка. После создания участка можно индивидуально настроить каждый ряд: длина, пропуски, каскады.
+
+      <!-- ГЕОГРАФИЯ -->
+      <div class="plot-tab-content" id="ptab-geo" style="display:none;">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Широта центра</label>
+            <input type="number" id="plot-lat" step="0.0001" placeholder="45.0355">
+          </div>
+          <div class="form-row">
+            <label>Долгота центра</label>
+            <input type="number" id="plot-lng" step="0.0001" placeholder="38.9753">
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Полигон участка (координаты)</label>
+          <textarea id="plot-polygon" rows="3" placeholder='[[45.0360,38.9745],[45.0360,38.9765],[45.0348,38.9765],[45.0348,38.9745]]' style="font-family:monospace; font-size:12px;"></textarea>
+        </div>
+        <button type="button" class="btn secondary" onclick="useCurrentLocationForPlot()">📍 Моё местоположение</button>
+        <div class="alert info" style="margin-top:12px; font-size:12px;">
+          💡 Полигон можно нарисовать на карте после сохранения участка (Управление → Рисовать ряды).
+        </div>
+      </div>
+
+      <!-- СЕТКА РЯДОВ -->
+      <div class="plot-tab-content" id="ptab-grid" style="display:none;">
+        <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
+          Базовая сетка для нового участка. Детально настроить можно после создания (⚙️ Управление → 📐 Геометрия).
+        </p>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Количество рядов</label>
+            <input type="number" id="plot-rows-count" min="1" value="10">
+          </div>
+          <div class="form-row">
+            <label>Позиций в ряду</label>
+            <input type="number" id="plot-positions-count" min="1" value="50">
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('plot-modal')">Отмена</button>
-      <button class="btn primary" onclick="savePlot()">Сохранить</button>
+      <button class="btn primary" onclick="savePlot()">💾 Сохранить</button>
     </div>
+
   </div>
 </div>
 
@@ -399,32 +436,6 @@
     </div>
 
   </div>
-</div>
-
-    
-      <button class="btn primary" onclick="applyWizard()">🪄 Создать сетку</button>
-      <p style="font-size:12px; color:var(--text-muted); margin-top:10px;">
-        💡 После создания перейдите на вкладку <b>«📋 Ряды»</b> для индивидуальной настройки длины, пропусков и каскадов каждого ряда.
-      </p>
-    </div>
-
-    <!-- ROWS: упрощённый редактор -->
-    <div class="geo-tab-content" id="gtab-rows" style="display:none;">
-      <div id="rows-editor-v2"></div>
-    </div>
-
-    
-      <div class="form-row">
-        <label>Ряды (номера через запятую, например: 1,2,3 или А,Б,В)</label>
-        <input type="text" id="group-rows" placeholder="1,2,3,4,5">
-      </div>
-      <button class="btn primary small" onclick="addRowGroup()">+ Добавить группу</button>
-
-      <h4 style="margin-top:16px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие группы</h4>
-      <div id="row-groups-list"></div>
-    </div>
-
-    
 </div>
 
 <!-- ============ МОДАЛКА: ПРОПУСКИ РЯДА ============ -->

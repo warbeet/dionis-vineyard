@@ -363,3 +363,19 @@ if (document.readyState === 'loading') {
 } else {
   startApp();
 }
+
+// === ВКЛАДКИ В РАЗДЕЛЕ ОБРАБОТОК ===
+function switchTreatmentsTab(tab) {
+  document.querySelectorAll('.tr-tab').forEach(b => b.classList.toggle('active', b.dataset.trtab === tab));
+  document.querySelectorAll('.tr-tab-content').forEach(c => c.style.display = 'none');
+  const el = document.getElementById('trtab-' + tab);
+  if (el) el.style.display = 'block';
+  if (tab === 'plan' && typeof renderSprayPlans === 'function') renderSprayPlans();
+}
+
+// Активный таб опрыскивания при первой загрузке
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (typeof renderSprayPlans === 'function') renderSprayPlans();
+  }, 500);
+});

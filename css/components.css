@@ -465,3 +465,160 @@ tr:hover td { background: var(--bg-elevated); }
 .decor-leaf.tr { top: -40px; right: -40px; transform: rotate(35deg); }
 .decor-leaf.bl { bottom: -40px; left: -40px; transform: rotate(-145deg); }
 [data-theme="dark"] .decor-leaf { opacity: 0.04; }
+
+/* ============================================================================
+   SPRAY PLAN — план опрыскивания
+   ============================================================================ */
+.spray-view-btn.active {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+}
+
+.spray-table th, .spray-table td {
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+/* Канбан */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.kanban-column {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-height: 160px;
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+}
+.kanban-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.kanban-count {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--text-soft);
+  font-size: 13px;
+}
+.kanban-cards { display: flex; flex-direction: column; gap: 8px; }
+.kanban-card {
+  background: var(--bg);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+  transition: transform 0.15s;
+}
+.kanban-card:hover { transform: translateY(-2px); }
+.kanban-card-date { font-weight: 700; font-size: 12px; color: var(--primary); }
+.kanban-card-zones { font-size: 11px; color: var(--text-soft); margin: 4px 0; }
+.kanban-card-products { font-size: 11px; color: var(--text); }
+.kanban-empty { color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px; }
+
+/* Календарь */
+.spray-calendar { padding: 8px 0; }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day-name {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 6px 2px;
+}
+.cal-day {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 6px 4px;
+  min-height: 70px;
+  box-shadow: inset 1px 1px 2px var(--shadow-inset-dark);
+  position: relative;
+}
+.cal-day.empty { background: transparent; box-shadow: none; }
+.cal-day.today {
+  background: var(--primary-light);
+  color: #fff;
+}
+.cal-day.today .cal-day-num { color: #fff; font-weight: 700; }
+.cal-day-num { font-size: 12px; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; }
+.cal-plan {
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  margin: 2px 0;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-more { font-size: 10px; color: var(--text-soft); text-align: center; }
+
+/* Дерево зон */
+.zone-tree {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.zone-tree-plot { margin-bottom: 10px; }
+.zone-tree-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  font-size: 13px;
+}
+.zone-tree-label input[type="checkbox"] {
+  width: auto;
+  box-shadow: none;
+  margin: 0;
+}
+.zone-tree-blocks {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Карточка препарата */
+.spray-product-card {
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark);
+}
+
+/* Picker препаратов */
+.product-picker-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-bottom: 6px;
+  background: var(--bg);
+  box-shadow: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light);
+  transition: transform 0.15s;
+}
+.product-picker-item:hover { transform: translateY(-1px); }
+
+/* Мобильный режим */
+@media (max-width: 640px) {
+  .kanban-board { grid-template-columns: 1fr; }
+  .cal-day { min-height: 50px; padding: 4px 2px; }
+  .cal-day-num { font-size: 11px; }
+  .cal-plan { font-size: 9px; }
+  .cal-day-name { font-size: 10px; }
+}
