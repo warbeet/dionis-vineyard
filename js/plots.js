@@ -497,12 +497,7 @@ function renderPlotCard(p) {
           </div>
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn small secondary" onclick="openPlotModal('${p.id}')">✏️</button>
-          <button class="btn small danger" onclick="deletePlot('${p.id}')">🗑</button>
-          <button class="btn small secondary" onclick="openGeometryEditor('${p.id}')" title="Геометрия и агротехника">📐</button>
-          <button class="btn small secondary" onclick="openIrrigationModal('${p.id}')" title="План полива">💧</button>
-          <button class="btn small secondary" onclick="openTemplatesModal('${p.id}')" title="Шаблоны">📋</button>
-          <button class="btn small primary" onclick="openBlockModal('${p.id}')">+ Блок</button>
+          <button class="btn small secondary" onclick="openPlotMenu(event, '${p.id}')" title="Управление">⚙️ Управление</button>
         </div>
       </div>
 
@@ -578,17 +573,20 @@ function renderPlotSchema(plotId) {
   const pane = document.getElementById(`pane-schema-${plotId}`);
   if (!plot || !pane) return;
   const mode = schemaColorMode[plotId] || 'status';
+  const orient = (typeof schemaOrientation !== 'undefined' && schemaOrientation[plotId]) || 'h';
 
   pane.innerHTML = `
     <div class="schema-controls" style="margin-top:14px;">
       <select onchange="schemaColorMode['${plotId}']=this.value; renderPlotSchema('${plotId}')" style="max-width:220px;">
         <option value="status" ${mode==='status'?'selected':''}>🎨 Цвет: статус</option>
-        <option value="block" ${mode==='block'?'selected':''}>🎨 Цвет: блок-сорт</option>
+        <option value="block" ${mode==='block'?'selected':''}>🎨 Цвет: сорт</option>
         <option value="age" ${mode==='age'?'selected':''}>🎨 Цвет: возраст</option>
         <option value="ai" ${mode==='ai'?'selected':''}>🎨 Цвет: AI-здоровье</option>
       </select>
-      <button class="btn small" onclick="openBulkModal('${plotId}')" id="bulk-btn-${plotId}" style="display:none;">⚡ Действие с выбранными (<span id="sel-count-${plotId}">0</span>)</button>
-      <button class="btn small secondary" onclick="clearBulkSelection()">Очистить выбор</button>
+      <button class="btn small secondary" id="schema-orient-btn-${plotId}" onclick="toggleSchemaOrientation('${plotId}')" title="Изменить ориентацию схемы">
+        ${orient === 'v' ? '↻ Ряды горизонтально' : '↻ Ряды вертикально'}
+      </button>
+      <button class="btn small" onclick="openBulkModal('${plotId}')" id="bulk-btn-${plotId}" style="display:none;">⚡ Действие (<span id="sel-count-${plotId}">0</span>)</button>
       <span style="font-size:11px; color:var(--text-soft);">💡 Клик — карточка · Shift+клик — выбрать</span>
     </div>
     <div class="schema-wrap" style="margin-top:10px;">
@@ -607,14 +605,31 @@ function drawSchemaCanvas(plotId, mode) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  const rows = plot.rows || [];
-  const maxPos = Math.max(...rows.map(r => r.positions_count), 1);
-  const cell = Math.max(14, Math.min(32, Math.floor(1100 / maxPos)));
-  const padding = 36;
-  canvas.width = padding + maxPos * cell + padding;
-  canvas.height = padding + rows.length * cell + padding;
+  const rows = (plot.rows || []).filter(r => (r.positions_count || 0) > 0);
+  if (!rows.length) {
+    canvas.width = 400; canvas.height = 80;
+    ctx.fillStyle = '#8a9180'; ctx.font = '14px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Нет рядов с саженцами. Откройте ⚙️ Управление → 📐 Геометрия', 200, 40);
+    return;
+  }
 
-  // Dpr scaling для retina
+  // Ориентация: 'h' = ряды горизонтально, 'v' = ряды вертикально
+  const orient = (typeof schemaOrientation !== 'undefined' && schemaOrientation[plotId]) || 'h';
+  const maxPos = Math.max(...rows.map(r => r.positions_count), 1);
+  const cell = Math.max(14, Math.min(32, Math.floor(1100 / Math.max(maxPos, rows.length))));
+  const padding = 36;
+
+  // В зависимости от ориентации меняем ширину/высоту
+  let cols, rowsN;
+  if (orient === 'h') {
+    cols = maxPos; rowsN = rows.length;  // X = позиция, Y = ряд
+  } else {
+    cols = rows.length; rowsN = maxPos;  // X = ряд, Y = позиция
+  }
+  canvas.width = padding + cols * cell + padding;
+  canvas.height = padding + rowsN * cell + padding;
+
+  // Dpr scaling
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = canvas.width + 'px';
   canvas.style.height = canvas.height + 'px';
@@ -625,18 +640,37 @@ function drawSchemaCanvas(plotId, mode) {
 
   ctx.clearRect(0, 0, w, h);
 
-  // Подписи колонок
+  // Подписи осей
   ctx.fillStyle = '#8a9180';
   ctx.font = `${Math.max(9, cell * 0.34)}px Inter, sans-serif`;
-  ctx.textAlign = 'center';
-  const step = Math.max(1, Math.floor(maxPos / 20));
-  for (let c = 1; c <= maxPos; c++) {
-    if (c % step === 0 || c === 1 || c === maxPos) ctx.fillText(c, padding + (c - 0.5) * cell, padding - 8);
+
+  if (orient === 'h') {
+    // Колонки = позиции (1, 2, 3...), строки = ряды (А, Б, В...)
+    ctx.textAlign = 'center';
+    const step = Math.max(1, Math.floor(maxPos / 20));
+    for (let c1 = 1; c1 <= maxPos; c1++) {
+      if (c1 % step === 0 || c1 === 1 || c1 === maxPos) {
+        ctx.fillText(c1, padding + (c1 - 0.5) * cell, padding - 8);
+      }
+    }
+    ctx.textAlign = 'right';
+    rows.forEach((row, ri) => {
+      ctx.fillText('Р' + row.number, padding - 6, padding + (ri + 0.5) * cell + 4);
+    });
+  } else {
+    // Колонки = ряды (А, Б, В), строки = позиции (1, 2, 3...)
+    ctx.textAlign = 'center';
+    rows.forEach((row, ri) => {
+      ctx.fillText('Р' + row.number, padding + (ri + 0.5) * cell, padding - 8);
+    });
+    ctx.textAlign = 'right';
+    const step = Math.max(1, Math.floor(maxPos / 20));
+    for (let p1 = 1; p1 <= maxPos; p1++) {
+      if (p1 % step === 0 || p1 === 1 || p1 === maxPos) {
+        ctx.fillText(p1, padding - 6, padding + (p1 - 0.5) * cell + 4);
+      }
+    }
   }
-  ctx.textAlign = 'right';
-  rows.forEach((row, ri) => {
-    ctx.fillText('Р' + row.number, padding - 6, padding + (ri + 0.5) * cell + 4);
-  });
 
   // Кусты
   const seedlings = getPlotSeedlings(plotId);
@@ -644,10 +678,16 @@ function drawSchemaCanvas(plotId, mode) {
   seedlings.forEach(s => seedMap.set(`${s.row}_${s.position}`, s));
 
   rows.forEach((row, ri) => {
-    for (let pos = 1; pos <= row.positions_count; pos++) {
+    for (let pos = (row.start_position || 1); pos < (row.start_position || 1) + row.positions_count; pos++) {
       const s = seedMap.get(`${row.number}_${pos}`);
-      const x = padding + (pos - 1) * cell;
-      const y = padding + ri * cell;
+      let x, y;
+      if (orient === 'h') {
+        x = padding + (pos - 1) * cell;
+        y = padding + ri * cell;
+      } else {
+        x = padding + ri * cell;
+        y = padding + (pos - 1) * cell;
+      }
       const cx = x + cell / 2, cy = y + cell / 2;
       const r = Math.max(4, cell * 0.36);
 
@@ -655,10 +695,10 @@ function drawSchemaCanvas(plotId, mode) {
       if (s) {
         if (mode === 'status') color = (VINE_STATUS[s.status] || VINE_STATUS.normal).color;
         else if (mode === 'block') {
-          const block = plot.blocks.find(b => b.id === s.block_id);
+          const block = plot.blocks?.find(b => b.id === s.block_id);
           color = block ? block.color : '#bbb';
         } else if (mode === 'age') {
-          const block = plot.blocks.find(b => b.id === s.block_id);
+          const block = plot.blocks?.find(b => b.id === s.block_id);
           const age = block && block.planting_year ? (new Date().getFullYear() - block.planting_year) : 0;
           if (age < 3) color = '#7CB9E8';
           else if (age < 6) color = '#F39C12';
@@ -686,7 +726,7 @@ function drawSchemaCanvas(plotId, mode) {
       if (s && s.is_replanted) {
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
       }
-      // Каскад — цифра
+      // Каскад
       if (s && s.status === 'cascade') {
         ctx.fillStyle = '#fff';
         ctx.font = `bold ${Math.max(8, cell * 0.36)}px Inter`;
@@ -701,19 +741,31 @@ function drawSchemaCanvas(plotId, mode) {
     }
   });
 
-  // Кликабельность
+  // Универсальная функция: координаты клика → ряд + позиция
+  function pickRowPos(mx, my) {
+    let col, rowIdx;
+    if (orient === 'h') {
+      col = Math.floor((mx - padding) / cell) + 1;     // позиция
+      rowIdx = Math.floor((my - padding) / cell);       // индекс ряда
+    } else {
+      rowIdx = Math.floor((mx - padding) / cell);       // индекс ряда (по X)
+      col = Math.floor((my - padding) / cell) + 1;      // позиция (по Y)
+    }
+    if (col < 1 || rowIdx < 0 || rowIdx >= rows.length) return null;
+    const r = rows[rowIdx];
+    if (col > (r.start_position || 1) + r.positions_count - 1) return null;
+    return { rowNum: r.number, pos: col };
+  }
+
   canvas.onclick = (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = (e.clientX - rect.left) * (canvas.width / dpr / rect.width);
     const my = (e.clientY - rect.top) * (canvas.height / dpr / rect.height);
-    const col = Math.floor((mx - padding) / cell) + 1;
-    const rowIdx = Math.floor((my - padding) / cell);
-    if (col < 1 || col > maxPos || rowIdx < 0 || rowIdx >= rows.length) return;
-    const rowNum = rows[rowIdx].number;
-    const s = seedMap.get(`${rowNum}_${col}`);
+    const hit = pickRowPos(mx, my);
+    if (!hit) return;
+    const s = seedMap.get(`${hit.rowNum}_${hit.pos}`);
     if (!s) return;
     if (e.shiftKey) {
-      // Множественный выбор
       bulkPlotId = plotId;
       if (bulkSelection.has(s.id)) bulkSelection.delete(s.id);
       else bulkSelection.add(s.id);
@@ -724,22 +776,17 @@ function drawSchemaCanvas(plotId, mode) {
     }
   };
 
-  // Тултип
   let lastTooltipFor = null;
   canvas.onmousemove = (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = (e.clientX - rect.left) * (canvas.width / dpr / rect.width);
     const my = (e.clientY - rect.top) * (canvas.height / dpr / rect.height);
-    const col = Math.floor((mx - padding) / cell) + 1;
-    const rowIdx = Math.floor((my - padding) / cell);
-    if (col < 1 || col > maxPos || rowIdx < 0 || rowIdx >= rows.length) {
-      hideTooltip(); return;
-    }
-    const rowNum = rows[rowIdx].number;
-    const s = seedMap.get(`${rowNum}_${col}`);
+    const hit = pickRowPos(mx, my);
+    if (!hit) { hideTooltip(); return; }
+    const s = seedMap.get(`${hit.rowNum}_${hit.pos}`);
     if (s && lastTooltipFor !== s.id) {
       lastTooltipFor = s.id;
-      const block = plot.blocks.find(b => b.id === s.block_id);
+      const block = plot.blocks?.find(b => b.id === s.block_id);
       const info = VINE_STATUS[s.status] || VINE_STATUS.normal;
       showTooltip(e.clientX, e.clientY, `
         <b>Р${s.row}, поз. ${s.position}</b><br>
@@ -755,6 +802,7 @@ function drawSchemaCanvas(plotId, mode) {
   };
   canvas.onmouseleave = hideTooltip;
 }
+
 
 function renderSchemaLegend(plotId, mode) {
   const div = document.getElementById('schema-legend-' + plotId);

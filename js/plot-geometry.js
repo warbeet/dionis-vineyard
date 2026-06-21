@@ -407,24 +407,44 @@ function renderRowsTable(plot) {
   if (!cont) return;
   const rows = plot.rows || [];
   if (!rows.length) {
-    cont.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px;">Рядов нет. Используйте «🪄 Мастер» для создания.</td></tr>';
+    cont.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">Рядов нет. Используйте «🪄 Мастер» для создания.</td></tr>';
     return;
   }
-  cont.innerHTML = rows.map((row, idx) => `
-    <tr data-row-id="${row.id}">
-      <td><b>${escapeHtml(String(row.number))}</b></td>
-      <td><input type="number" min="1" value="${row.positions_count}" onchange="updateRowField('${row.id}', 'positions_count', parseInt(this.value)||1)" style="width:70px;"></td>
-      <td><input type="number" min="1" value="${row.start_position || 1}" onchange="updateRowField('${row.id}', 'start_position', parseInt(this.value)||1)" style="width:60px;"></td>
-      <td><span class="badge ${row.gaps?.length ? 'red' : 'gray'}">${row.gaps?.length || 0}</span></td>
-      <td><span class="badge ${row.cascades?.length ? 'purple' : 'gray'}">${row.cascades?.length || 0}</span></td>
-      <td><input type="text" value="${escapeHtml(row.name || '')}" onchange="updateRowField('${row.id}', 'name', this.value)" placeholder="опц." style="width:120px;"></td>
-      <td>
-        <button class="btn small secondary" onclick="openGapsEditor('${row.id}')" title="Пропуски">🚫</button>
-        <button class="btn small secondary" onclick="openCascadesEditor('${row.id}')" title="Каскады">🔀</button>
-        <button class="btn small danger" onclick="deleteRow('${row.id}')" title="Удалить">🗑</button>
-      </td>
-    </tr>
-  `).join('');
+  cont.innerHTML = rows.map((row, idx) => {
+    const isSkipped = (row.positions_count || 0) === 0;
+    return `
+      <tr data-row-id="${row.id}" style="${isSkipped ? 'opacity:0.5; background:rgba(0,0,0,0.03);' : ''}">
+        <td><b>${escapeHtml(String(row.number))}</b></td>
+        <td>
+          <input type="number" min="0" value="${row.positions_count || 0}"
+            onchange="updateRowField('${row.id}', 'positions_count', parseInt(this.value)||0); renderRowsTable(data.plots.find(p=>p.id==='${plot.id}'))"
+            style="width:75px;" title="0 = ряд пропускается полностью">
+          ${isSkipped ? '<small style="color:var(--text-muted); margin-left:4px;">(пропуск)</small>' : ''}
+        </td>
+        <td>
+          <input type="number" min="1" value="${row.start_position || 1}"
+            onchange="updateRowField('${row.id}', 'start_position', parseInt(this.value)||1)"
+            style="width:65px;" ${isSkipped ? 'disabled' : ''}>
+        </td>
+        <td>
+          <input type="text" value="${escapeHtml(row.name || '')}"
+            onchange="updateRowField('${row.id}', 'name', this.value)"
+            placeholder="опц." style="width:110px;" ${isSkipped ? 'disabled' : ''}>
+        </td>
+        <td>
+          <button class="btn small secondary" onclick="openGapsEditor('${row.id}')" title="Пропуски (в середине ряда)" ${isSkipped ? 'disabled' : ''}>
+            🚫 ${row.gaps?.length || 0}
+          </button>
+          <button class="btn small secondary" onclick="openCascadesEditor('${row.id}')" title="Каскады (2-3 куста на позиции)" ${isSkipped ? 'disabled' : ''}>
+            🔀 ${row.cascades?.length || 0}
+          </button>
+        </td>
+        <td>
+          <button class="btn small danger" onclick="deleteRow('${row.id}')" title="Удалить ряд полностью">🗑</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function updateRowField(rowId, field, value) {

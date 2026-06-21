@@ -330,13 +330,12 @@
         <table style="min-width:600px;">
           <thead>
             <tr>
-              <th>№</th>
-              <th>Позиций</th>
-              <th>Начало</th>
-              <th>Пропусков</th>
-              <th>Каскадов</th>
+              <th>№ ряда</th>
+              <th title="0 = пропуск ряда">Саженцев<br><small style="font-weight:normal;color:var(--text-muted);">0 = пропуск</small></th>
+              <th title="С какой позиции начать">Начало с</th>
               <th>Имя (опц.)</th>
-              <th>Действия</th>
+              <th>Дополнительно</th>
+              <th>Удалить</th>
             </tr>
           </thead>
           <tbody id="rows-table-body"></tbody>
@@ -499,6 +498,23 @@
     <div id="templates-list"></div>
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('templates-modal')">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: МЕНЕДЖЕР СОРТОВ (упрощённый блоки) ============ -->
+<div class="modal-bg" id="varieties-modal">
+  <div class="modal" style="max-width:720px;">
+    <h3 id="varieties-modal-title">🍇 Сорта участка</h3>
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
+      Управляйте сортами винограда (привой + подвой). Каждый сорт привязывается к выбранным рядам участка.
+    </p>
+    <div id="varieties-list" style="margin-bottom:16px;"></div>
+    <button class="btn primary full" onclick="addVariety(currentEditingPlotId)">
+      + Добавить сорт
+    </button>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('varieties-modal')">Закрыть</button>
     </div>
   </div>
 </div>
