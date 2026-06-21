@@ -500,6 +500,8 @@ function renderPlotCard(p) {
           <button class="btn small secondary" onclick="openPlotModal('${p.id}')">✏️</button>
           <button class="btn small danger" onclick="deletePlot('${p.id}')">🗑</button>
           <button class="btn small secondary" onclick="openGeometryEditor('${p.id}')" title="Геометрия и агротехника">📐</button>
+          <button class="btn small secondary" onclick="openIrrigationModal('${p.id}')" title="План полива">💧</button>
+          <button class="btn small secondary" onclick="openTemplatesModal('${p.id}')" title="Шаблоны">📋</button>
           <button class="btn small primary" onclick="openBlockModal('${p.id}')">+ Блок</button>
         </div>
       </div>
@@ -868,8 +870,11 @@ function renderPlotMap(plotId) {
   pane.innerHTML = `
     <div style="margin-top:14px; margin-bottom:10px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
       <button class="btn small secondary" onclick="centerMapOnPlot('${plotId}')">📍 Центрировать</button>
-      <button class="btn small secondary" onclick="distributeSeedlingsByGrid('${plotId}')">🎯 Расставить кусты по сетке</button>
-      <span style="font-size:11px; color:var(--text-soft);">💡 Кусты с GPS показаны цветом по статусу</span>
+      <button class="btn small secondary" onclick="applyAutoGPSToPlot('${plotId}')" title="Расставить кусты по азимуту и spacing">🎯 Авто GPS кустов</button>
+      <button class="btn small secondary" id="draw-rows-btn-${plotId}" onclick="toggleRowDrawingMode('${plotId}')">✏️ Рисовать ряды</button>
+      <button class="btn small secondary" onclick="showRobotRoute('${plotId}')" title="Маршрут робота">🤖 Маршрут</button>
+      <button class="btn small secondary" onclick="exportRouteGPX('${plotId}')" title="Экспорт GPX">⬇ GPX</button>
+      <span style="font-size:11px; color:var(--text-soft);">💡 Авто-GPS использует азимут и spacing</span>
     </div>
     <div id="plot-map-${plotId}" style="height:500px; border-radius: var(--radius); box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);"></div>
   `;

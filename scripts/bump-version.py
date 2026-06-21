@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-🚀 Скрипт обновления версии Dionis vineyard
+🚀 Скрипт обновления версии Dionis vineyard (SemVer)
+
+Схема MAJOR.MINOR.PATCH:
+  major (X.0.0)  → +1 в major (например, 0.5.3 → 1.0.0). Стабильный production.
+  minor (0.X.0)  → +1 в minor, patch=0 (0.5.3 → 0.6.0). Новые функции.
+  patch (0.0.X)  → +1 в patch (0.5.3 → 0.5.4). Багфиксы, мелочи.
 
 Использование:
-    python3 scripts/bump-version.py minor "Название релиза" "Изменение 1" "Изменение 2" ...
-    python3 scripts/bump-version.py patch "Багфикс UI" "Поправил отступы в шапке"
-    python3 scripts/bump-version.py major "Полная переработка" "v1.0 — стабильный релиз"
-
-Типы:
-    major  → +1.00  (например, 0.50 → 1.50)
-    minor  → +0.10  (например, 0.50 → 0.60)
-    patch  → +0.01  (например, 0.50 → 0.51)
+    python3 scripts/bump-version.py minor "Канбан в плане" "Drag&drop" "Назначение"
+    python3 scripts/bump-version.py patch "Багфикс UI" "Поправил отступы"
+    python3 scripts/bump-version.py major "Стабильный релиз" "v1.0 production"
 """
 
 import json
@@ -34,7 +34,7 @@ if bump_type not in ('major', 'minor', 'patch'):
     print(f'❌ Неизвестный тип: {bump_type}')
     usage()
 
-# Найдём корень проекта (где version.json)
+# Корень проекта
 script_dir = os.path.dirname(os.path.abspath(__file__))
 root = os.path.dirname(script_dir)
 os.chdir(root)
@@ -44,21 +44,29 @@ with open('version.json') as f:
     data = json.load(f)
 
 current = data['version']
+# SemVer: MAJOR.MINOR.PATCH
 parts = current.split('.')
-major = int(parts[0])
-minor = int(parts[1])
+if len(parts) != 3:
+    print(f'⚠️  Версия "{current}" не SemVer. Конвертирую в 0.{current.replace(".","")}.0')
+    if len(parts) == 2:
+        major, minor_old = int(parts[0]), int(parts[1])
+        major, minor, patch = 0, minor_old // 10 if minor_old >= 10 else minor_old, 0
+    else:
+        major, minor, patch = 0, 1, 0
+else:
+    major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
 
 if bump_type == 'major':
     major += 1
-    minor = 10  # сбрасываем минор на 10 (X.10)
+    minor = 0
+    patch = 0
 elif bump_type == 'minor':
-    # 0.50 → 0.60. Шаг +10 в minor (поскольку минор — двузначный)
-    minor_tens = (minor // 10) + 1
-    minor = minor_tens * 10
-elif bump_type == 'patch':
     minor += 1
+    patch = 0
+elif bump_type == 'patch':
+    patch += 1
 
-new_version = f'{major}.{minor:02d}'
+new_version = f'{major}.{minor}.{patch}'
 today = date.today().isoformat()
 
 print(f'📦 Bumping {bump_type}: v{current} → v{new_version}')
@@ -100,7 +108,7 @@ sw = re.sub(r"const CACHE_NAME = '[^']+';", f"const CACHE_NAME = 'dionis-v{new_v
 sw = re.sub(r"const RUNTIME_CACHE = '[^']+';", f"const RUNTIME_CACHE = 'dionis-runtime-v{new_version}';", sw)
 with open('sw.js', 'w') as f:
     f.write(sw)
-print(f'✓ sw.js обновлён до dionis-v{new_version}')
+print(f'✓ sw.js → dionis-v{new_version}')
 
 # Обновляем manifest.json
 with open('manifest.json') as f:
@@ -125,6 +133,4 @@ print(f'✓ index.html обновлён')
 
 print(f'\n🎉 Готово! Версия теперь v{new_version}')
 print(f'\n📋 Следующие шаги:')
-print(f'   git add -A')
-print(f'   git commit -m "🔖 v{new_version}: {title}"')
-print(f'   git push')
+print(f'   git add -A && git commit -m "🔖 v{new_version}: {title}" && git push')

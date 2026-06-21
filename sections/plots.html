@@ -477,3 +477,28 @@
     </div>
   </div>
 </div>
+
+<!-- ============ МОДАЛКА: ПЛАН ПОЛИВА ============ -->
+<div class="modal-bg" id="irrigation-modal">
+  <div class="modal" style="max-width:780px;">
+    <h3 id="irrigation-modal-title">💧 План полива</h3>
+    <div id="irrigation-content"></div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="closeModal('irrigation-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: ШАБЛОНЫ УЧАСТКОВ ============ -->
+<div class="modal-bg" id="templates-modal">
+  <div class="modal" style="max-width:620px;">
+    <h3>📋 Шаблоны участков</h3>
+    <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
+      Готовые конфигурации для разных типов виноградников. Применяются к расстояниям, шпалере и поливу.
+    </p>
+    <div id="templates-list"></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('templates-modal')">Отмена</button>
+    </div>
+  </div>
+</div>
