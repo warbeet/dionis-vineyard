@@ -96,38 +96,7 @@ function renderRowsEditorV2() {
         </table>
       </div>
     `}
-
-    <!-- Сворачиваемая секция групп рядов (террасы, сектора) -->
-    <details style="margin-top:18px; background:var(--bg); border-radius:14px; padding:14px; box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);">
-      <summary style="cursor:pointer; font-weight:600; color:var(--text-soft); font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">
-        📂 Группы рядов (террасы, сектора)
-      </summary>
-      <div style="margin-top:12px;">
-        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
-          💡 Объединяйте ряды в логические группы: «Верхняя терраса», «Северный сектор» и т.п.
-        </p>
-        <div class="form-grid">
-          <div class="form-row" style="margin-bottom:8px;">
-            <label>Название группы</label>
-            <input type="text" id="group-name-v2" placeholder="Верхняя терраса">
-          </div>
-          <div class="form-row" style="margin-bottom:8px;">
-            <label>Цвет</label>
-            <input type="color" id="group-color-v2" value="#6b8e5a" style="height:42px;">
-          </div>
-        </div>
-        <div class="form-row" style="margin-bottom:8px;">
-          <label>Номера рядов через запятую</label>
-          <input type="text" id="group-rows-v2" placeholder="1,2,3 или А,Б,В">
-        </div>
-        <button class="btn small primary" onclick="addRowGroupV2()">+ Добавить группу</button>
-        <div id="row-groups-list-v2" style="margin-top:12px;"></div>
-      </div>
-    </details>
   `;
-
-  // Перерисуем группы
-  if (typeof renderRowGroupsListV2 === 'function') renderRowGroupsListV2(plot);
 }
 
 // =========== ГРУППЫ РЯДОВ V2 ===========

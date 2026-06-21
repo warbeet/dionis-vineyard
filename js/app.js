@@ -83,12 +83,50 @@ function openModal(id) {
     if (el.id !== id) el.classList.remove('show');
   });
   const m = document.getElementById(id);
-  if (m) m.classList.add('show');
+  if (m) {
+    m.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
 }
+
 function closeModal(id) {
   const m = document.getElementById(id);
   if (m) m.classList.remove('show');
+  // Если все закрыты — вернём скролл body
+  if (!document.querySelector('.modal-bg.show')) {
+    document.body.style.overflow = '';
+  }
 }
+
+function closeAllModals() {
+  document.querySelectorAll('.modal-bg.show').forEach(el => el.classList.remove('show'));
+  document.body.style.overflow = '';
+}
+
+// === Закрытие по Esc ===
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const openModals = document.querySelectorAll('.modal-bg.show');
+    if (openModals.length) {
+      // Закрываем последнюю открытую (верхнюю)
+      const last = openModals[openModals.length - 1];
+      last.classList.remove('show');
+      if (!document.querySelector('.modal-bg.show')) {
+        document.body.style.overflow = '';
+      }
+    }
+  }
+});
+
+// === Закрытие по клику на затемнённый фон ===
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.classList && e.target.classList.contains('modal-bg')) {
+    e.target.classList.remove('show');
+    if (!document.querySelector('.modal-bg.show')) {
+      document.body.style.overflow = '';
+    }
+  }
+});
 
 // =========== ТЕМА ===========
 function getTheme() {

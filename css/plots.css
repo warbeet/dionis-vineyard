@@ -228,3 +228,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* === Фиксированная высота вкладок в модалке геометрии === */
+#geometry-modal .modal-body .geo-tab-content {
+  min-height: 380px;
+}
+@media (max-width: 640px) {
+  #geometry-modal .modal-body .geo-tab-content {
+    min-height: 300px;
+  }
+}
+
+/* === Кнопка modal-close в неоморфном стиле — переопределение от backward compat === */
+#geometry-modal .modal-tabs {
+  width: 100%;
+}

@@ -315,6 +315,10 @@ function openGeometryEditor(plotId) {
   if (typeof renderRowsEditorV2 === 'function') {
     setTimeout(renderRowsEditorV2, 100);
   }
+  // Группы — отдельная вкладка
+  if (typeof renderRowGroupsListV2 === 'function') {
+    setTimeout(() => renderRowGroupsListV2(plot), 150);
+  }
 
   // Открыть модалку
   openModal('geometry-modal');

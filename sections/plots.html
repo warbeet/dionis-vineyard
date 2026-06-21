@@ -202,141 +202,192 @@
 
 
 <!-- ============ МОДАЛКА: ГЕОМЕТРИЯ УЧАСТКА ============ -->
-<div class="modal-bg" id="geometry-modal">
+<div class="modal-bg" id="geometry-modal" onclick="if(event.target===this)closeModal('geometry-modal')">
   <div class="modal wide">
-    <h3>📐 Геометрия и агротехника участка</h3>
 
-    <div class="tabs" style="margin-bottom:14px; flex-wrap:wrap;">
-      <button class="geo-tab active" data-gtab="basic" onclick="switchGeoTab('basic')">🧭 Основное</button>
-      <button class="geo-tab" data-gtab="agronomy" onclick="switchGeoTab('agronomy')">🌱 Агротехника</button>
-      <button class="geo-tab" data-gtab="rows" onclick="switchGeoTab('rows')">📋 Ряды</button>
+    <!-- ЗАГОЛОВОК -->
+    <div class="modal-header">
+      <h3>📐 Геометрия и агротехника участка</h3>
+      <button class="modal-close" onclick="closeModal('geometry-modal')" title="Закрыть">×</button>
     </div>
 
-    <!-- BASIC: ориентация, азимут, уклон, экспозиция -->
-    <div class="geo-tab-content" id="gtab-basic">
-      <div class="form-grid">
+    <!-- ТЕЛО -->
+    <div class="modal-body">
+
+      <!-- ВКЛАДКИ -->
+      <div class="modal-tabs">
+        <button class="modal-tab geo-tab active" data-gtab="basic" onclick="switchGeoTab('basic')">🧭 Основное</button>
+        <button class="modal-tab geo-tab" data-gtab="agronomy" onclick="switchGeoTab('agronomy')">🌱 Агротехника</button>
+        <button class="modal-tab geo-tab" data-gtab="rows" onclick="switchGeoTab('rows')">📋 Ряды</button>
+        <button class="modal-tab geo-tab" data-gtab="groups" onclick="switchGeoTab('groups')">📂 Группы</button>
+      </div>
+
+      <!-- BASIC -->
+      <div class="geo-tab-content" id="gtab-basic">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>🧭 Ориентация рядов</label>
+            <select id="geo-orientation" onchange="onOrientationChange()">
+              <option value="NS">⬆️ Север — Юг (С-Ю)</option>
+              <option value="EW">➡️ Восток — Запад (В-З)</option>
+              <option value="NE_SW">↗️ СВ — ЮЗ (45°)</option>
+              <option value="NW_SE">↘️ СЗ — ЮВ (135°)</option>
+              <option value="custom">🎛 Произвольный угол</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>🧭 Азимут, ° (0=С, 90=В, 180=Ю, 270=З)</label>
+            <input type="number" id="geo-azimuth" min="0" max="359" step="1" value="0">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>⛰ Уклон, °</label>
+            <input type="number" id="geo-slope" min="0" max="45" step="0.5" value="0">
+          </div>
+          <div class="form-row">
+            <label>☀ Экспозиция</label>
+            <select id="geo-exposure">
+              <option value="flat">🟢 Ровный</option>
+              <option value="S">☀ Южный</option>
+              <option value="SE">🌅 Юго-восточный</option>
+              <option value="SW">🌇 Юго-западный</option>
+              <option value="E">🌄 Восточный</option>
+              <option value="W">🌆 Западный</option>
+              <option value="N">❄️ Северный</option>
+              <option value="NE">СВ</option>
+              <option value="NW">СЗ</option>
+            </select>
+          </div>
+        </div>
         <div class="form-row">
-          <label>🧭 Ориентация рядов</label>
-          <select id="geo-orientation" onchange="onOrientationChange()">
-            <option value="NS">⬆️ Север — Юг (С-Ю)</option>
-            <option value="EW">➡️ Восток — Запад (В-З)</option>
-            <option value="NE_SW">↗️ СВ — ЮЗ (45°)</option>
-            <option value="NW_SE">↘️ СЗ — ЮВ (135°)</option>
-            <option value="custom">🎛 Произвольный угол</option>
+          <label>🔢 Нумерация рядов</label>
+          <select id="geo-row-naming">
+            <option value="numbers">1, 2, 3...</option>
+            <option value="cyrillic">А, Б, В...</option>
+            <option value="latin">A, B, C...</option>
           </select>
         </div>
-        <div class="form-row">
-          <label>🧭 Азимут, ° (0=С, 90=В, 180=Ю, 270=З)</label>
-          <input type="number" id="geo-azimuth" min="0" max="359" step="1" value="0">
+        <div class="alert info" style="font-size:12px;">
+          💡 На <b>южном склоне</b> грозди созревают быстрее и слаще. <b>Север-Юг</b> ряды получают равномерное солнце.
         </div>
       </div>
-      <div class="form-grid">
-        <div class="form-row">
-          <label>⛰ Уклон, ° (0 = ровный)</label>
-          <input type="number" id="geo-slope" min="0" max="45" step="0.5" value="0">
+
+      <!-- AGRONOMY -->
+      <div class="geo-tab-content" id="gtab-agronomy" style="display:none;">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Расст. между рядами, м</label>
+            <input type="number" id="geo-row-spacing" step="0.1" value="2.5">
+          </div>
+          <div class="form-row">
+            <label>Расст. между кустами, м</label>
+            <input type="number" id="geo-vine-spacing" step="0.1" value="1.0">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Тип шпалеры</label>
+            <select id="geo-trellis-type">
+              <option value="vertical">│ Вертикальная (VSP)</option>
+              <option value="v_shape">V-образная</option>
+              <option value="t_shape">T-образная</option>
+              <option value="lyre">Лира</option>
+              <option value="pergola">Пергола</option>
+              <option value="none">Без шпалеры</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Высота шпалеры, м</label>
+            <input type="number" id="geo-trellis-height" step="0.1" value="1.8">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Опоры</label>
+            <select id="geo-support-type">
+              <option value="concrete">🏛 Бетонные</option>
+              <option value="metal">⚙️ Металлические</option>
+              <option value="wood">🪵 Деревянные</option>
+              <option value="mixed">Смешанные</option>
+              <option value="none">Без опор</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Тип почвы</label>
+            <select id="geo-soil-type">
+              <option value="chernozem">⚫ Чернозём</option>
+              <option value="sand">🟡 Песок</option>
+              <option value="clay">🟤 Глина</option>
+              <option value="loam">🟫 Суглинок</option>
+              <option value="stony">🪨 Каменистая</option>
+              <option value="calcareous">⚪ Известковая</option>
+              <option value="peat">🟢 Торфяная</option>
+              <option value="mixed">Смешанная</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Дренаж</label>
+            <select id="geo-drainage">
+              <option value="natural">🌊 Естественный</option>
+              <option value="artificial">🔧 Искусственный</option>
+              <option value="none">❌ Отсутствует</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Полив</label>
+            <select id="geo-irrigation">
+              <option value="drip">💧 Капельный</option>
+              <option value="sprinkler">🚿 Дождевание</option>
+              <option value="flood">🌊 По бороздам</option>
+              <option value="none">☀ Без полива</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROWS -->
+      <div class="geo-tab-content" id="gtab-rows" style="display:none;">
+        <div id="rows-editor-v2"></div>
+      </div>
+
+      <!-- GROUPS -->
+      <div class="geo-tab-content" id="gtab-groups" style="display:none;">
+        <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
+          💡 Объединяйте ряды в логические группы: «Верхняя терраса», «Северный сектор» и т.д.
+        </p>
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Название группы</label>
+            <input type="text" id="group-name-v2" placeholder="Верхняя терраса">
+          </div>
+          <div class="form-row">
+            <label>Цвет</label>
+            <input type="color" id="group-color-v2" value="#6b8e5a" style="height:42px;">
+          </div>
         </div>
         <div class="form-row">
-          <label>☀ Экспозиция склона</label>
-          <select id="geo-exposure">
-            <option value="flat">🟢 Ровный</option>
-            <option value="S">☀ Южный</option>
-            <option value="SE">🌅 Юго-восточный</option>
-            <option value="SW">🌇 Юго-западный</option>
-            <option value="E">🌄 Восточный</option>
-            <option value="W">🌆 Западный</option>
-            <option value="N">❄️ Северный</option>
-            <option value="NE">СВ</option>
-            <option value="NW">СЗ</option>
-          </select>
+          <label>Номера рядов через запятую</label>
+          <input type="text" id="group-rows-v2" placeholder="1,2,3 или А,Б,В">
         </div>
+        <button class="btn small primary" onclick="addRowGroupV2()">+ Добавить группу</button>
+
+        <h4 style="margin-top:18px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие группы</h4>
+        <div id="row-groups-list-v2" style="margin-top:8px;"></div>
       </div>
-      <div class="form-row">
-        <label>🔢 Схема нумерации рядов</label>
-        <select id="geo-row-naming">
-          <option value="numbers">1, 2, 3...</option>
-          <option value="cyrillic">А, Б, В... (русские буквы)</option>
-          <option value="latin">A, B, C... (латинские)</option>
-        </select>
-      </div>
-      <div class="alert info" style="font-size:12px;">
-        💡 На <b>южном склоне</b> грозди созревают быстрее и слаще. <b>Север-Юг</b> ряды получают равномерное солнце. <b>В-З</b> — больше солнца на южной стороне куста.
-      </div>
+
+    </div><!-- /.modal-body -->
+
+    <!-- ФУТЕР -->
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('geometry-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveGeometry()">💾 Сохранить</button>
     </div>
 
-    <!-- AGRONOMY: шпалера, почва, полив -->
-    <div class="geo-tab-content" id="gtab-agronomy" style="display:none;">
-      <div class="form-grid">
-        <div class="form-row">
-          <label>Расстояние между рядами, м</label>
-          <input type="number" id="geo-row-spacing" step="0.1" value="2.5">
-        </div>
-        <div class="form-row">
-          <label>Расстояние между кустами в ряду, м</label>
-          <input type="number" id="geo-vine-spacing" step="0.1" value="1.0">
-        </div>
-      </div>
-      <div class="form-grid">
-        <div class="form-row">
-          <label>Тип шпалеры</label>
-          <select id="geo-trellis-type">
-            <option value="vertical">│ Вертикальная (VSP)</option>
-            <option value="v_shape">V-образная</option>
-            <option value="t_shape">T-образная</option>
-            <option value="lyre">Лира</option>
-            <option value="pergola">Пергола</option>
-            <option value="none">Без шпалеры</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Высота шпалеры, м</label>
-          <input type="number" id="geo-trellis-height" step="0.1" value="1.8">
-        </div>
-      </div>
-      <div class="form-grid">
-        <div class="form-row">
-          <label>Опоры</label>
-          <select id="geo-support-type">
-            <option value="concrete">🏛 Бетонные столбы</option>
-            <option value="metal">⚙️ Металлические</option>
-            <option value="wood">🪵 Деревянные</option>
-            <option value="mixed">Смешанные</option>
-            <option value="none">Без опор</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Тип почвы</label>
-          <select id="geo-soil-type">
-            <option value="chernozem">⚫ Чернозём</option>
-            <option value="sand">🟡 Песок</option>
-            <option value="clay">🟤 Глина</option>
-            <option value="loam">🟫 Суглинок</option>
-            <option value="stony">🪨 Каменистая</option>
-            <option value="calcareous">⚪ Известковая</option>
-            <option value="peat">🟢 Торфяная</option>
-            <option value="mixed">Смешанная</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-grid">
-        <div class="form-row">
-          <label>Дренаж</label>
-          <select id="geo-drainage">
-            <option value="natural">🌊 Естественный</option>
-            <option value="artificial">🔧 Искусственный</option>
-            <option value="none">❌ Отсутствует</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Полив</label>
-          <select id="geo-irrigation">
-            <option value="drip">💧 Капельный</option>
-            <option value="sprinkler">🚿 Дождевание</option>
-            <option value="flood">🌊 По бороздам</option>
-            <option value="none">☀ Без полива</option>
-          </select>
-        </div>
-      </div>
-    </div>
+  </div>
+</div>
 
     
       <button class="btn primary" onclick="applyWizard()">🪄 Создать сетку</button>
