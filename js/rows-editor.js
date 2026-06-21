@@ -79,7 +79,7 @@ function renderRowsEditorV2() {
       </div>
     ` : `
       <div class="table-wrap" style="max-height:400px; overflow:auto;">
-        <table style="min-width:560px;">
+        <table>
           <thead>
             <tr>
               <th style="width:60px;">№</th>
@@ -184,31 +184,30 @@ function renderRowV2(row, idx, plot) {
   const isSkipped = (row.positions_count || 0) === 0;
   return `
     <tr data-row-id="${row.id}" style="${isSkipped ? 'opacity:0.45;' : ''}">
-      <td><b>${escapeHtml(String(row.number))}</b></td>
+      <td style="white-space:nowrap;"><b>${escapeHtml(String(row.number))}</b></td>
       <td>
         <input type="number" min="0" value="${row.positions_count || 0}"
           onchange="updateRowV2('${row.id}', 'positions_count', parseInt(this.value)||0)"
-          style="width:75px;" title="0 = ряд полностью пропущен">
-        ${isSkipped ? '<small style="color:var(--text-muted); margin-left:4px;">(пропуск)</small>' : ''}
+          style="width:60px;" title="0 = ряд полностью пропущен">
       </td>
       <td>
-        <select onchange="updateRowV2('${row.id}', 'direction', this.value)" ${isSkipped ? 'disabled' : ''}>
-          <option value="forward" ${(row.direction || 'forward') === 'forward' ? 'selected' : ''}>→ С начала</option>
+        <select onchange="updateRowV2('${row.id}', 'direction', this.value)" ${isSkipped ? 'disabled' : ''} style="min-width:80px;">
+          <option value="forward" ${(row.direction || 'forward') === 'forward' ? 'selected' : ''}>→ С нач.</option>
           <option value="reverse" ${row.direction === 'reverse' ? 'selected' : ''}>← С конца</option>
         </select>
       </td>
       <td>
         <input type="number" min="0" value="${row.offset || 0}"
           onchange="updateRowV2('${row.id}', 'offset', parseInt(this.value)||0)"
-          style="width:60px;" ${isSkipped ? 'disabled' : ''}
+          style="width:50px;" ${isSkipped ? 'disabled' : ''}
           title="Сколько позиций пропустить с начала">
       </td>
       <td>
         <input type="text" value="${escapeHtml(row.name || '')}"
           onchange="updateRowV2('${row.id}', 'name', this.value)"
-          placeholder="опц." style="width:100px;" ${isSkipped ? 'disabled' : ''}>
+          placeholder="—" style="width:80px; min-width:60px;" ${isSkipped ? 'disabled' : ''}>
       </td>
-      <td>
+      <td style="text-align:center;">
         <button class="btn small danger" onclick="deleteRowV2('${row.id}')" title="Удалить ряд">🗑</button>
       </td>
     </tr>

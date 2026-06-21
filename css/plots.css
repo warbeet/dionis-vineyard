@@ -185,3 +185,46 @@
 .plot-menu-dropdown .menu-label {
   flex: 1;
 }
+
+/* Адаптив таблицы рядов в модалке */
+@media (max-width: 600px) {
+  .modal #rows-editor-v2 .table-wrap {
+    margin: 0 -12px;  /* выходим за padding модалки */
+    width: calc(100% + 24px);
+  }
+  .modal #rows-editor-v2 table {
+    font-size: 12px;
+  }
+  .modal #rows-editor-v2 input,
+  .modal #rows-editor-v2 select {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  /* Карточка "массового создания" внутри редактора компактнее */
+  .modal #rows-editor-v2 .card {
+    padding: 14px 12px;
+  }
+}
+
+/* Редактор рядов V2 — адаптив */
+#rows-editor-v2 {
+  width: 100%;
+  max-width: 100%;
+}
+#rows-editor-v2 .table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  max-height: 50vh;
+}
+#rows-editor-v2 table {
+  width: 100%;
+}
+#rows-editor-v2 .card .form-grid {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 480px) {
+  #rows-editor-v2 .card .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
