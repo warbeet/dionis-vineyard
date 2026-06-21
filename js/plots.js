@@ -499,6 +499,7 @@ function renderPlotCard(p) {
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn small secondary" onclick="openPlotModal('${p.id}')">✏️</button>
           <button class="btn small danger" onclick="deletePlot('${p.id}')">🗑</button>
+          <button class="btn small secondary" onclick="openGeometryEditor('${p.id}')" title="Геометрия и агротехника">📐</button>
           <button class="btn small primary" onclick="openBlockModal('${p.id}')">+ Блок</button>
         </div>
       </div>

@@ -158,3 +158,322 @@
   </div>
 </div>
 
+
+<!-- ============ МОДАЛКА: ГЕОМЕТРИЯ УЧАСТКА ============ -->
+<div class="modal-bg" id="geometry-modal">
+  <div class="modal" style="max-width:820px;">
+    <h3>📐 Геометрия и агротехника участка</h3>
+
+    <div class="tabs" style="margin-bottom:14px; flex-wrap:wrap;">
+      <button class="geo-tab active" data-gtab="basic" onclick="switchGeoTab('basic')">🧭 Основное</button>
+      <button class="geo-tab" data-gtab="agronomy" onclick="switchGeoTab('agronomy')">🌱 Агротехника</button>
+      <button class="geo-tab" data-gtab="wizard" onclick="switchGeoTab('wizard')">🪄 Мастер</button>
+      <button class="geo-tab" data-gtab="rows" onclick="switchGeoTab('rows')">📋 Ряды</button>
+      <button class="geo-tab" data-gtab="groups" onclick="switchGeoTab('groups')">📂 Группы</button>
+      <button class="geo-tab" data-gtab="json" onclick="switchGeoTab('json')">{ } JSON</button>
+    </div>
+
+    <!-- BASIC: ориентация, азимут, уклон, экспозиция -->
+    <div class="geo-tab-content" id="gtab-basic">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>🧭 Ориентация рядов</label>
+          <select id="geo-orientation" onchange="onOrientationChange()">
+            <option value="NS">⬆️ Север — Юг (С-Ю)</option>
+            <option value="EW">➡️ Восток — Запад (В-З)</option>
+            <option value="NE_SW">↗️ СВ — ЮЗ (45°)</option>
+            <option value="NW_SE">↘️ СЗ — ЮВ (135°)</option>
+            <option value="custom">🎛 Произвольный угол</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>🧭 Азимут, ° (0=С, 90=В, 180=Ю, 270=З)</label>
+          <input type="number" id="geo-azimuth" min="0" max="359" step="1" value="0">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>⛰ Уклон, ° (0 = ровный)</label>
+          <input type="number" id="geo-slope" min="0" max="45" step="0.5" value="0">
+        </div>
+        <div class="form-row">
+          <label>☀ Экспозиция склона</label>
+          <select id="geo-exposure">
+            <option value="flat">🟢 Ровный</option>
+            <option value="S">☀ Южный</option>
+            <option value="SE">🌅 Юго-восточный</option>
+            <option value="SW">🌇 Юго-западный</option>
+            <option value="E">🌄 Восточный</option>
+            <option value="W">🌆 Западный</option>
+            <option value="N">❄️ Северный</option>
+            <option value="NE">СВ</option>
+            <option value="NW">СЗ</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>🔢 Схема нумерации рядов</label>
+        <select id="geo-row-naming">
+          <option value="numbers">1, 2, 3...</option>
+          <option value="cyrillic">А, Б, В... (русские буквы)</option>
+          <option value="latin">A, B, C... (латинские)</option>
+        </select>
+      </div>
+      <div class="alert info" style="font-size:12px;">
+        💡 На <b>южном склоне</b> грозди созревают быстрее и слаще. <b>Север-Юг</b> ряды получают равномерное солнце. <b>В-З</b> — больше солнца на южной стороне куста.
+      </div>
+    </div>
+
+    <!-- AGRONOMY: шпалера, почва, полив -->
+    <div class="geo-tab-content" id="gtab-agronomy" style="display:none;">
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Расстояние между рядами, м</label>
+          <input type="number" id="geo-row-spacing" step="0.1" value="2.5">
+        </div>
+        <div class="form-row">
+          <label>Расстояние между кустами в ряду, м</label>
+          <input type="number" id="geo-vine-spacing" step="0.1" value="1.0">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Тип шпалеры</label>
+          <select id="geo-trellis-type">
+            <option value="vertical">│ Вертикальная (VSP)</option>
+            <option value="v_shape">V-образная</option>
+            <option value="t_shape">T-образная</option>
+            <option value="lyre">Лира</option>
+            <option value="pergola">Пергола</option>
+            <option value="none">Без шпалеры</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Высота шпалеры, м</label>
+          <input type="number" id="geo-trellis-height" step="0.1" value="1.8">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Опоры</label>
+          <select id="geo-support-type">
+            <option value="concrete">🏛 Бетонные столбы</option>
+            <option value="metal">⚙️ Металлические</option>
+            <option value="wood">🪵 Деревянные</option>
+            <option value="mixed">Смешанные</option>
+            <option value="none">Без опор</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Тип почвы</label>
+          <select id="geo-soil-type">
+            <option value="chernozem">⚫ Чернозём</option>
+            <option value="sand">🟡 Песок</option>
+            <option value="clay">🟤 Глина</option>
+            <option value="loam">🟫 Суглинок</option>
+            <option value="stony">🪨 Каменистая</option>
+            <option value="calcareous">⚪ Известковая</option>
+            <option value="peat">🟢 Торфяная</option>
+            <option value="mixed">Смешанная</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Дренаж</label>
+          <select id="geo-drainage">
+            <option value="natural">🌊 Естественный</option>
+            <option value="artificial">🔧 Искусственный</option>
+            <option value="none">❌ Отсутствует</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Полив</label>
+          <select id="geo-irrigation">
+            <option value="drip">💧 Капельный</option>
+            <option value="sprinkler">🚿 Дождевание</option>
+            <option value="flood">🌊 По бороздам</option>
+            <option value="none">☀ Без полива</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIZARD: быстрое создание сетки -->
+    <div class="geo-tab-content" id="gtab-wizard" style="display:none;">
+      <div class="alert warning" style="font-size:13px;">
+        ⚠️ Мастер <b>удалит все текущие ряды</b> и создаст новую регулярную сетку. Используйте для первоначальной настройки.
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Количество рядов</label>
+          <input type="number" id="wiz-rows" min="1" max="500" value="10">
+        </div>
+        <div class="form-row">
+          <label>Позиций в каждом ряду</label>
+          <input type="number" id="wiz-positions" min="1" max="500" value="50">
+        </div>
+      </div>
+      <button class="btn primary" onclick="applyWizard()">🪄 Создать сетку</button>
+      <p style="font-size:12px; color:var(--text-muted); margin-top:10px;">
+        💡 После создания перейдите на вкладку <b>«📋 Ряды»</b> для индивидуальной настройки длины, пропусков и каскадов каждого ряда.
+      </p>
+    </div>
+
+    <!-- ROWS: таблица рядов -->
+    <div class="geo-tab-content" id="gtab-rows" style="display:none;">
+      <div style="margin-bottom:10px;">
+        <button class="btn small primary" onclick="addRow()">+ Добавить ряд</button>
+        <span style="font-size:11px; color:var(--text-muted); margin-left:8px;">💡 Кликните 🚫 для пропусков, 🔀 для каскадов</span>
+      </div>
+      <div style="max-height:400px; overflow:auto;">
+        <table style="min-width:600px;">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Позиций</th>
+              <th>Начало</th>
+              <th>Пропусков</th>
+              <th>Каскадов</th>
+              <th>Имя (опц.)</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="rows-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GROUPS: группы рядов -->
+    <div class="geo-tab-content" id="gtab-groups" style="display:none;">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
+        💡 Группы позволяют объединять ряды в секции: «Верхняя терраса», «Северный сектор» и т.д.
+      </p>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Название группы</label>
+          <input type="text" id="group-name" placeholder="Верхняя терраса">
+        </div>
+        <div class="form-row">
+          <label>Цвет</label>
+          <input type="color" id="group-color" value="#6b8e5a" style="height:42px;">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Ряды (номера через запятую, например: 1,2,3 или А,Б,В)</label>
+        <input type="text" id="group-rows" placeholder="1,2,3,4,5">
+      </div>
+      <button class="btn primary small" onclick="addRowGroup()">+ Добавить группу</button>
+
+      <h4 style="margin-top:16px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие группы</h4>
+      <div id="row-groups-list"></div>
+    </div>
+
+    <!-- JSON редактор -->
+    <div class="geo-tab-content" id="gtab-json" style="display:none;">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">
+        💡 Прямой доступ к структуре рядов. Используйте для бэкапа, импорта с другого устройства или массовых правок.
+      </p>
+      <textarea id="rows-json" rows="14" style="font-family:monospace; font-size:11px; resize:vertical;"></textarea>
+      <button class="btn primary small" onclick="importRowsJSON()" style="margin-top:8px;">📥 Применить JSON</button>
+      <button class="btn small secondary" onclick="navigator.clipboard.writeText(document.getElementById('rows-json').value).then(() => toast('📋 Скопировано', 'success'))" style="margin-top:8px;">📋 Копировать</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('geometry-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveGeometry()">💾 Сохранить геометрию</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: ПРОПУСКИ РЯДА ============ -->
+<div class="modal-bg" id="gaps-modal">
+  <div class="modal" style="max-width:520px;">
+    <h3 id="gaps-modal-title">Пропуски в ряду</h3>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Позиция</label>
+        <input type="number" id="gap-position" min="1" placeholder="15">
+      </div>
+      <div class="form-row">
+        <label>Длина (мест)</label>
+        <input type="number" id="gap-length" min="1" value="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Причина</label>
+      <select id="gap-reason">
+        <option value="road">🛣 Дорога</option>
+        <option value="pole">⚡ Столб ЛЭП</option>
+        <option value="tree">🌳 Дерево</option>
+        <option value="rock">🪨 Скала/камень</option>
+        <option value="drainage">💧 Дренаж</option>
+        <option value="water">🌊 Водоём</option>
+        <option value="building">🏠 Здание</option>
+        <option value="planned">📋 Плановый</option>
+        <option value="unknown">❓ Не указано</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Заметка (опц.)</label>
+      <textarea id="gap-notes" rows="2"></textarea>
+    </div>
+    <button class="btn primary small" onclick="addGap()">+ Добавить пропуск</button>
+
+    <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие пропуски</h4>
+    <div id="gaps-list"></div>
+
+    <div class="modal-actions">
+      <button class="btn primary" onclick="closeModal('gaps-modal')">Готово</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ МОДАЛКА: КАСКАДЫ РЯДА ============ -->
+<div class="modal-bg" id="cascades-modal">
+  <div class="modal" style="max-width:520px;">
+    <h3 id="cascades-modal-title">Каскады в ряду</h3>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Позиция</label>
+        <input type="number" id="cascade-position" min="1" placeholder="20">
+      </div>
+      <div class="form-row">
+        <label>Тип каскада</label>
+        <select id="cascade-type" onchange="document.getElementById('cascade-vines').value = ({pair:2,triple:3,quad:4,custom:2}[this.value])">
+          <option value="pair">2️⃣ Пара (Geneva)</option>
+          <option value="triple">3️⃣ Тройка</option>
+          <option value="quad">4️⃣ Квадро</option>
+          <option value="custom">🎛 Произвольный</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Кустов на позиции</label>
+        <input type="number" id="cascade-vines" min="2" max="10" value="2">
+      </div>
+      <div class="form-row">
+        <label>Раскладка</label>
+        <select id="cascade-layout">
+          <option value="geneva">Geneva (горизонтальный)</option>
+          <option value="lyre">Lyre (V-образный)</option>
+          <option value="parallel">Параллельный</option>
+          <option value="fan">Веером</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Заметка (опц.)</label>
+      <textarea id="cascade-notes" rows="2"></textarea>
+    </div>
+    <button class="btn primary small" onclick="addCascade()">+ Добавить каскад</button>
+
+    <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие каскады</h4>
+    <div id="cascades-list"></div>
+
+    <div class="modal-actions">
+      <button class="btn primary" onclick="closeModal('cascades-modal')">Готово</button>
+    </div>
+  </div>
+</div>
