@@ -186,6 +186,7 @@ function renderAll() {
   if (typeof renderTeam === 'function') renderTeam();
   if (typeof renderStations === 'function') renderStations();
   if (typeof renderLocaleSettings === 'function') renderLocaleSettings();
+  if (typeof renderYandexAuthSettings === 'function') renderYandexAuthSettings();
   if (typeof updateDashboard === 'function') updateDashboard();
 }
 

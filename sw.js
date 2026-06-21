@@ -1,6 +1,6 @@
 // Service Worker для PWA «Dionis vineyard» v2 (модульная архитектура)
-const CACHE_NAME = 'dionis-v0.3.0';
-const RUNTIME_CACHE = 'dionis-runtime-v0.3.0';
+const CACHE_NAME = 'dionis-v0.4.0';
+const RUNTIME_CACHE = 'dionis-runtime-v0.4.0';
 
 // Предзагрузка ключевых ресурсов
 const PRECACHE_URLS = [
@@ -30,6 +30,7 @@ const PRECACHE_URLS = [
   './js/ui.js',
   './js/storage.js',
   './js/auth.js',
+  './js/yandex-auth.js',
   './js/team.js',
   './js/settings.js',
   './js/locale.js',
@@ -40,6 +41,7 @@ const PRECACHE_URLS = [
   './js/rows-editor.js',
   './js/irrigation.js',
   './js/plot-tools.js',
+  './js/map-drawing.js',
   './js/plot-menu.js',
   './js/maps-yandex.js',
   './js/plots.js',
@@ -100,6 +102,9 @@ self.addEventListener('fetch', event => {
     url.hostname.includes('geocoding-api') ||
     url.hostname.includes('api.weather.yandex') ||
     url.hostname.includes('api-maps.yandex.ru') ||
+    url.hostname.includes('oauth.yandex.ru') ||
+    url.hostname.includes('login.yandex.ru') ||
+    url.hostname.includes('avatars.yandex.net') ||
     url.hostname.includes('yandex.net') ||
     url.hostname.includes('maps.yandex')
   ) {
