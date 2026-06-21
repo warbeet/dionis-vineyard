@@ -1,10 +1,20 @@
 {
-  "version": "0.5.0",
+  "version": "0.5.1",
   "release_date": "2026-06-21",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.5.1",
+      "date": "2026-06-21",
+      "type": "patch",
+      "title": "Чистка публичного репо",
+      "changes": [
+        "Удалены dev-файлы из публичной части (docs/, scripts/, README.md, .gitignore)",
+        "Workflow деплоя теперь не копирует разработческие артефакты"
+      ]
+    },
     {
       "version": "0.5.0",
       "date": "2026-06-21",
