@@ -108,3 +108,61 @@ if (typeof window.loadAllSections === 'function') {
     applyVersionToUI();
   };
 }
+
+
+// =========== АВТОМАТИЧЕСКАЯ ПРОВЕРКА ОБНОВЛЕНИЙ ===========
+// Каждый раз при открытии приложения сравниваем APP_VERSION с серверной.
+// Если на сервере новее — тихо очищаем кэш и перезагружаем.
+
+async function silentAutoUpdate() {
+  try {
+    // Не делаем это слишком часто — раз в 5 минут максимум
+    const lastCheck = parseInt(localStorage.getItem('vineyard_last_update_check') || '0');
+    const now = Date.now();
+    if (now - lastCheck < 5 * 60 * 1000) return;
+    localStorage.setItem('vineyard_last_update_check', String(now));
+
+    // Запрос с обходом кэша
+    const r = await fetch('version.json?nocache=' + now, { cache: 'no-store' });
+    if (!r.ok) return;
+    const remote = await r.json();
+    if (!remote || !remote.version) return;
+
+    if (remote.version === APP_VERSION) return; // версии совпадают
+
+    console.log(`[Dionis] Обнаружена новая версия: ${APP_VERSION} → ${remote.version}. Обновляю...`);
+
+    // Покажем тихий toast
+    if (typeof toast === 'function') {
+      toast(`🔄 Обновление до v${remote.version}...`, 'info');
+    }
+
+    // Очистим Service Worker и весь кэш
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch(e) {
+      console.warn('[Dionis] Cache cleanup error:', e);
+    }
+
+    // Перезагрузка через 1 сек чтобы пользователь успел увидеть toast
+    setTimeout(() => location.reload(true), 1000);
+  } catch(e) {
+    console.warn('[Dionis] Silent update check failed:', e);
+  }
+}
+
+// Запускаем при загрузке (через 2 сек после старта чтобы не блокировать)
+if (typeof window !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(silentAutoUpdate, 2000));
+  } else {
+    setTimeout(silentAutoUpdate, 2000);
+  }
+}
