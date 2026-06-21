@@ -30,8 +30,11 @@
 <!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
 <div class="modal-bg" id="photo-modal">
   <div class="modal">
-    <h3 id="photo-modal-title">Фотоотчёт</h3>
-    <div id="photo-modal-content"></div>
+    <div class="modal-header"><h3 id="photo-modal-title">Фотоотчёт</h3><button class="modal-close" onclick="closeModal('photo-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <div id="photo-modal-content"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn success" id="modal-ai-btn" onclick="analyzeReportFromModal()">🤖 AI-анализ</button>
       <button class="btn secondary" onclick="closeModal('photo-modal')">Закрыть</button>

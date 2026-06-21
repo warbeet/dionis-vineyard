@@ -15,8 +15,9 @@
 <!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
 <div class="modal-bg" id="task-modal">
   <div class="modal">
-    <h3>Задача</h3>
-    <input type="hidden" id="task-id">
+    <div class="modal-header"><h3>Задача</h3><button class="modal-close" onclick="closeModal('task-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="task-id">
     <div class="form-grid">
       <div class="form-row"><label>Дата</label><input type="date" id="t-date"></div>
       <div class="form-row"><label>Приоритет</label>
@@ -26,6 +27,8 @@
     <div class="form-row"><label>Участок</label><select id="t-plot"></select></div>
     <div class="form-row"><label>Задача</label><input type="text" id="t-title"></div>
     <div class="form-row"><label>Детали</label><textarea id="t-desc" rows="3"></textarea></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('task-modal')">Отмена</button>
       <button class="btn" onclick="saveTask()">Сохранить</button>

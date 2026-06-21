@@ -186,48 +186,7 @@
   flex: 1;
 }
 
-/* Адаптив таблицы рядов в модалке */
-@media (max-width: 600px) {
-  .modal #rows-editor-v2 .table-wrap {
-    margin: 0 -12px;  /* выходим за padding модалки */
-    width: calc(100% + 24px);
-  }
-  .modal #rows-editor-v2 table {
-    font-size: 12px;
-  }
-  .modal #rows-editor-v2 input,
-  .modal #rows-editor-v2 select {
-    padding: 6px 8px;
-    font-size: 12px;
-  }
-  /* Карточка "массового создания" внутри редактора компактнее */
-  .modal #rows-editor-v2 .card {
-    padding: 14px 12px;
-  }
-}
 
-/* Редактор рядов V2 — адаптив */
-#rows-editor-v2 {
-  width: 100%;
-  max-width: 100%;
-}
-#rows-editor-v2 .table-wrap {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  max-height: 50vh;
-}
-#rows-editor-v2 table {
-  width: 100%;
-}
-#rows-editor-v2 .card .form-grid {
-  grid-template-columns: 1fr 1fr;
-}
-@media (max-width: 480px) {
-  #rows-editor-v2 .card .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* === Фиксированная высота вкладок в модалке геометрии === */
 #geometry-modal .modal-body .geo-tab-content {
@@ -242,4 +201,96 @@
 /* === Кнопка modal-close в неоморфном стиле — переопределение от backward compat === */
 #geometry-modal .modal-tabs {
   width: 100%;
+}
+
+
+/* ============================================================================
+   RowsEditor V2 — таблица рядов в модалке геометрии
+   ============================================================================ */
+#rows-editor-v2 {
+  width: 100%;
+}
+
+.rows-table-wrap {
+  width: 100%;
+  max-height: 50vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+  padding: 6px;
+  margin-top: 12px;
+}
+
+.rows-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 0;
+}
+
+/* Колонки: №, Саженцев, Направление, Смещение, Удалить */
+.rows-table th.cell-num,
+.rows-table td.cell-num {
+  width: 48px;
+  text-align: center;
+  white-space: nowrap;
+}
+.rows-table th.cell-action,
+.rows-table td.cell-action {
+  width: 56px;
+  text-align: center;
+  padding: 6px 4px;
+}
+
+.rows-table th, .rows-table td {
+  padding: 8px 6px;
+  vertical-align: middle;
+}
+
+/* Поля внутри ячеек — растягиваются по ширине ячейки */
+.rows-table .num-input,
+.rows-table .dir-select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  font-size: 13px;
+}
+
+/* Иконка удаления — компактно */
+.rows-table .cell-action .btn {
+  padding: 6px 10px;
+  min-width: 0;
+  width: auto;
+}
+
+/* Мобильный режим */
+@media (max-width: 600px) {
+  .rows-table th, .rows-table td {
+    padding: 6px 3px;
+  }
+  .rows-table .num-input,
+  .rows-table .dir-select {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  .rows-table th {
+    font-size: 10px;
+  }
+  .rows-table th.cell-num,
+  .rows-table td.cell-num {
+    width: 36px;
+    font-size: 12px;
+  }
+  .rows-table th.cell-action,
+  .rows-table td.cell-action {
+    width: 44px;
+  }
+  .rows-table .cell-action .btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
 }

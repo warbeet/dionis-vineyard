@@ -73,8 +73,14 @@
 
 <div class="modal-bg" id="block-modal">
   <div class="modal wide">
-    <h3 id="block-modal-title">Новый блок-сорт</h3>
-    <input type="hidden" id="block-id">
+
+    <div class="modal-header">
+      <h3 id="block-modal-title">Новый блок-сорт</h3>
+      <button class="modal-close" onclick="closeModal('block-modal')" title="Закрыть">×</button>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" id="block-id">
     <input type="hidden" id="block-plot-id">
 
     <div class="form-grid">
@@ -157,26 +163,30 @@
     <input type="hidden" id="block-zone">
 
     <div class="form-row"><label>Заметки</label><textarea id="block-notes" rows="2"></textarea></div>
+    </div>
 
     <div class="modal-actions">
       <button class="btn danger" onclick="deleteBlock()" id="block-delete-btn" style="display:none;">🗑 Удалить</button>
       <button class="btn secondary" onclick="closeModal('block-modal')">Отмена</button>
       <button class="btn primary" onclick="saveBlock()">Сохранить</button>
     </div>
+
   </div>
 </div>
 
 <div class="modal-bg" id="seedling-modal">
   <div class="modal wide">
-    <h3 id="seedling-modal-title">Куст</h3>
+    <div class="modal-header"><h3 id="seedling-modal-title">Куст</h3><button class="modal-close" onclick="closeModal('seedling-modal')" title="Закрыть">×</button></div><div class="modal-body">
     <div id="seedling-modal-content"></div>
+  </div>
   </div>
 </div>
 
 <div class="modal-bg" id="bulk-modal">
   <div class="modal">
-    <h3>⚡ Массовые действия</h3>
-    <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
+    <div class="modal-header"><h3>⚡ Массовые действия</h3><button class="modal-close" onclick="closeModal('bulk-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
       Выбрано кустов: <b id="bulk-count">0</b>
     </p>
     <div class="form-row">
@@ -193,6 +203,8 @@
       </select>
     </div>
     <div class="form-row"><label>Причина / комментарий</label><textarea id="bulk-reason" rows="2"></textarea></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('bulk-modal'); clearBulkSelection()">Отмена</button>
       <button class="btn primary" onclick="applyBulkAction()">Применить</button>
@@ -418,8 +430,9 @@
 <!-- ============ МОДАЛКА: ПРОПУСКИ РЯДА ============ -->
 <div class="modal-bg" id="gaps-modal">
   <div class="modal" style="max-width:520px;">
-    <h3 id="gaps-modal-title">Пропуски в ряду</h3>
-    <div class="form-grid">
+    <div class="modal-header"><h3 id="gaps-modal-title">Пропуски в ряду</h3><button class="modal-close" onclick="closeModal('gaps-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
       <div class="form-row">
         <label>Позиция</label>
         <input type="number" id="gap-position" min="1" placeholder="15">
@@ -451,6 +464,7 @@
 
     <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие пропуски</h4>
     <div id="gaps-list"></div>
+    </div>
 
     <div class="modal-actions">
       <button class="btn primary" onclick="closeModal('gaps-modal')">Готово</button>
@@ -461,8 +475,9 @@
 <!-- ============ МОДАЛКА: КАСКАДЫ РЯДА ============ -->
 <div class="modal-bg" id="cascades-modal">
   <div class="modal" style="max-width:520px;">
-    <h3 id="cascades-modal-title">Каскады в ряду</h3>
-    <div class="form-grid">
+    <div class="modal-header"><h3 id="cascades-modal-title">Каскады в ряду</h3><button class="modal-close" onclick="closeModal('cascades-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
       <div class="form-row">
         <label>Позиция</label>
         <input type="number" id="cascade-position" min="1" placeholder="20">
@@ -500,6 +515,7 @@
 
     <h4 style="margin-top:14px; font-size:13px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px;">Текущие каскады</h4>
     <div id="cascades-list"></div>
+    </div>
 
     <div class="modal-actions">
       <button class="btn primary" onclick="closeModal('cascades-modal')">Готово</button>
@@ -510,8 +526,11 @@
 <!-- ============ МОДАЛКА: ПЛАН ПОЛИВА ============ -->
 <div class="modal-bg" id="irrigation-modal">
   <div class="modal wide">
-    <h3 id="irrigation-modal-title">💧 План полива</h3>
-    <div id="irrigation-content"></div>
+    <div class="modal-header"><h3 id="irrigation-modal-title">💧 План полива</h3><button class="modal-close" onclick="closeModal('irrigation-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <div id="irrigation-content"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn primary" onclick="closeModal('irrigation-modal')">Закрыть</button>
     </div>
@@ -521,11 +540,14 @@
 <!-- ============ МОДАЛКА: ШАБЛОНЫ УЧАСТКОВ ============ -->
 <div class="modal-bg" id="templates-modal">
   <div class="modal wide">
-    <h3>📋 Шаблоны участков</h3>
-    <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
+    <div class="modal-header"><h3>📋 Шаблоны участков</h3><button class="modal-close" onclick="closeModal('templates-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
       Готовые конфигурации для разных типов виноградников. Применяются к расстояниям, шпалере и поливу.
     </p>
     <div id="templates-list"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('templates-modal')">Отмена</button>
     </div>
@@ -535,14 +557,17 @@
 <!-- ============ МОДАЛКА: МЕНЕДЖЕР СОРТОВ (упрощённый блоки) ============ -->
 <div class="modal-bg" id="varieties-modal">
   <div class="modal wide">
-    <h3 id="varieties-modal-title">🍇 Сорта участка</h3>
-    <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
+    <div class="modal-header"><h3 id="varieties-modal-title">🍇 Сорта участка</h3><button class="modal-close" onclick="closeModal('varieties-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
       Управляйте сортами винограда (привой + подвой). Каждый сорт привязывается к выбранным рядам участка.
     </p>
     <div id="varieties-list" style="margin-bottom:16px;"></div>
     <button class="btn primary full" onclick="addVariety(currentEditingPlotId)">
       + Добавить сорт
     </button>
+    </div>
+
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('varieties-modal')">Закрыть</button>
     </div>

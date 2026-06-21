@@ -15,8 +15,9 @@
 <!-- ============ МОДАЛКИ СЕКЦИИ ============ -->
 <div class="modal-bg" id="journal-modal">
   <div class="modal">
-    <h3>Запись в журнале</h3>
-    <input type="hidden" id="journal-id">
+    <div class="modal-header"><h3>Запись в журнале</h3><button class="modal-close" onclick="closeModal('journal-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="journal-id">
     <div class="form-grid">
       <div class="form-row"><label>Дата</label><input type="date" id="j-date"></div>
       <div class="form-row"><label>Тип</label>
@@ -32,6 +33,8 @@
       <div class="form-row"><label>Стоимость</label><input type="number" id="j-cost" step="0.01"></div>
     </div>
     <div class="form-row"><label>Описание</label><textarea id="j-desc" rows="3"></textarea></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('journal-modal')">Отмена</button>
       <button class="btn" onclick="saveJournal()">Сохранить</button>

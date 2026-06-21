@@ -104,8 +104,11 @@
 <!-- Модалка changelog -->
 <div class="modal-bg" id="changelog-modal">
   <div class="modal" style="max-width:680px;">
-    <h3>📜 История изменений</h3>
-    <div id="changelog-content" style="max-height:60vh; overflow-y:auto;"></div>
+    <div class="modal-header"><h3>📜 История изменений</h3><button class="modal-close" onclick="closeModal('changelog-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <div id="changelog-content" style="max-height:60vh; overflow-y:auto;"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn primary" onclick="closeModal('changelog-modal')">Закрыть</button>
     </div>

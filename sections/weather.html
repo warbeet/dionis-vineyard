@@ -90,8 +90,9 @@
 <!-- МОДАЛКИ МЕТЕОСТАНЦИЙ -->
 <div class="modal-bg" id="station-modal">
   <div class="modal" style="max-width:680px;">
-    <h3 id="st-modal-title">Новая метеостанция</h3>
-    <input type="hidden" id="st-id">
+    <div class="modal-header"><h3 id="st-modal-title">Новая метеостанция</h3><button class="modal-close" onclick="closeModal('station-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="st-id">
 
     <div class="form-grid">
       <div class="form-row"><label>Название</label><input type="text" id="st-name" placeholder="Метеостанция Север"></div>
@@ -124,6 +125,7 @@
     <div id="st-sensors-list" style="display:flex; gap:6px; flex-wrap:wrap; max-height:200px; overflow:auto; padding:6px;"></div>
 
     <div class="form-row" style="margin-top:14px;"><label>Заметки</label><textarea id="st-notes" rows="2"></textarea></div>
+    </div>
 
     <div class="modal-actions">
       <button class="btn danger" id="st-delete-btn" onclick="deleteStation()" style="display:none;">🗑 Удалить</button>
@@ -135,11 +137,14 @@
 
 <div class="modal-bg" id="station-token-modal">
   <div class="modal" style="max-width:680px;">
-    <h3 id="station-token-modal-title">API доступ</h3>
-    <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">
+    <div class="modal-header"><h3 id="station-token-modal-title">API доступ</h3><button class="modal-close" onclick="closeModal('station-token-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">
       Используйте этот endpoint и токен для отправки данных со станции. Для реальной работы нужен бэкенд (Firebase Functions или промежуточный сервис типа n8n/Make).
     </p>
     <pre id="station-token-content" style="background:var(--bg); padding:14px; border-radius:12px; font-size:11px; overflow-x:auto; box-shadow: inset 2px 2px 4px var(--shadow-inset-dark);"></pre>
+    </div>
+
     <div class="modal-actions">
       <button class="btn primary" onclick="closeModal('station-token-modal')">Закрыть</button>
     </div>
@@ -148,9 +153,12 @@
 
 <div class="modal-bg" id="measure-modal">
   <div class="modal">
-    <h3 id="measure-modal-title">Ручное измерение</h3>
-    <input type="hidden" id="m-station-id">
+    <div class="modal-header"><h3 id="measure-modal-title">Ручное измерение</h3><button class="modal-close" onclick="closeModal('measure-modal')" title="Закрыть">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="m-station-id">
     <div id="measure-inputs"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn secondary" onclick="closeModal('measure-modal')">Отмена</button>
       <button class="btn primary" onclick="saveMeasurement()">Сохранить</button>

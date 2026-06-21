@@ -78,16 +78,15 @@ function renderRowsEditorV2() {
         <small>Заполните параметры выше и нажмите «✨ Применить ко всем рядам»</small>
       </div>
     ` : `
-      <div class="table-wrap" style="max-height:400px; overflow:auto;">
-        <table>
+      <div class="table-wrap rows-table-wrap">
+        <table class="rows-table">
           <thead>
             <tr>
-              <th style="width:60px;">№</th>
-              <th title="Количество саженцев в ряду. 0 = ряд пропущен">Саженцев</th>
-              <th title="С какой стороны начинается посадка">Направление</th>
-              <th title="Пропустить позиций с начала">Смещение</th>
-              <th title="Опциональное имя ряда">Имя</th>
-              <th style="width:60px;">⋯</th>
+              <th class="cell-num">№</th>
+              <th title="0 = ряд пропущен">Саженцев</th>
+              <th>Направление</th>
+              <th title="Пропуск с начала">Смещение</th>
+              <th class="cell-action"></th>
             </tr>
           </thead>
           <tbody>
@@ -153,30 +152,26 @@ function renderRowV2(row, idx, plot) {
   const isSkipped = (row.positions_count || 0) === 0;
   return `
     <tr data-row-id="${row.id}" style="${isSkipped ? 'opacity:0.45;' : ''}">
-      <td style="white-space:nowrap;"><b>${escapeHtml(String(row.number))}</b></td>
-      <td>
+      <td class="cell-num"><b>${escapeHtml(String(row.number))}</b></td>
+      <td class="cell-input">
         <input type="number" min="0" value="${row.positions_count || 0}"
           onchange="updateRowV2('${row.id}', 'positions_count', parseInt(this.value)||0)"
-          style="width:60px;" title="0 = ряд полностью пропущен">
+          class="num-input"
+          title="0 = ряд полностью пропущен">
       </td>
-      <td>
-        <select onchange="updateRowV2('${row.id}', 'direction', this.value)" ${isSkipped ? 'disabled' : ''} style="min-width:80px;">
+      <td class="cell-select">
+        <select onchange="updateRowV2('${row.id}', 'direction', this.value)" ${isSkipped ? 'disabled' : ''} class="dir-select">
           <option value="forward" ${(row.direction || 'forward') === 'forward' ? 'selected' : ''}>→ С нач.</option>
           <option value="reverse" ${row.direction === 'reverse' ? 'selected' : ''}>← С конца</option>
         </select>
       </td>
-      <td>
+      <td class="cell-input">
         <input type="number" min="0" value="${row.offset || 0}"
           onchange="updateRowV2('${row.id}', 'offset', parseInt(this.value)||0)"
-          style="width:50px;" ${isSkipped ? 'disabled' : ''}
+          class="num-input" ${isSkipped ? 'disabled' : ''}
           title="Сколько позиций пропустить с начала">
       </td>
-      <td>
-        <input type="text" value="${escapeHtml(row.name || '')}"
-          onchange="updateRowV2('${row.id}', 'name', this.value)"
-          placeholder="—" style="width:80px; min-width:60px;" ${isSkipped ? 'disabled' : ''}>
-      </td>
-      <td style="text-align:center;">
+      <td class="cell-action">
         <button class="btn small danger" onclick="deleteRowV2('${row.id}')" title="Удалить ряд">🗑</button>
       </td>
     </tr>
