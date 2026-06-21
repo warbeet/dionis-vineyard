@@ -78,6 +78,10 @@ function showTab(tabId) {
 
 // =========== МОДАЛКИ ===========
 function openModal(id) {
+  // Сначала закрываем все остальные открытые модалки
+  document.querySelectorAll('.modal-bg.show').forEach(el => {
+    if (el.id !== id) el.classList.remove('show');
+  });
   const m = document.getElementById(id);
   if (m) m.classList.add('show');
 }

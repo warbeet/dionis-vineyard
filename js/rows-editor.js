@@ -96,7 +96,88 @@ function renderRowsEditorV2() {
         </table>
       </div>
     `}
+
+    <!-- Сворачиваемая секция групп рядов (террасы, сектора) -->
+    <details style="margin-top:18px; background:var(--bg); border-radius:14px; padding:14px; box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);">
+      <summary style="cursor:pointer; font-weight:600; color:var(--text-soft); font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">
+        📂 Группы рядов (террасы, сектора)
+      </summary>
+      <div style="margin-top:12px;">
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+          💡 Объединяйте ряды в логические группы: «Верхняя терраса», «Северный сектор» и т.п.
+        </p>
+        <div class="form-grid">
+          <div class="form-row" style="margin-bottom:8px;">
+            <label>Название группы</label>
+            <input type="text" id="group-name-v2" placeholder="Верхняя терраса">
+          </div>
+          <div class="form-row" style="margin-bottom:8px;">
+            <label>Цвет</label>
+            <input type="color" id="group-color-v2" value="#6b8e5a" style="height:42px;">
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <label>Номера рядов через запятую</label>
+          <input type="text" id="group-rows-v2" placeholder="1,2,3 или А,Б,В">
+        </div>
+        <button class="btn small primary" onclick="addRowGroupV2()">+ Добавить группу</button>
+        <div id="row-groups-list-v2" style="margin-top:12px;"></div>
+      </div>
+    </details>
   `;
+
+  // Перерисуем группы
+  if (typeof renderRowGroupsListV2 === 'function') renderRowGroupsListV2(plot);
+}
+
+// =========== ГРУППЫ РЯДОВ V2 ===========
+function renderRowGroupsListV2(plot) {
+  const cont = document.getElementById('row-groups-list-v2');
+  if (!cont) return;
+  const groups = plot.row_groups || [];
+  if (!groups.length) {
+    cont.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">Групп нет</p>';
+    return;
+  }
+  cont.innerHTML = groups.map((g, idx) => `
+    <div style="display:flex; gap:8px; align-items:center; padding:6px 10px; background:var(--bg-elevated); border-radius:10px; margin-bottom:6px; font-size:13px;">
+      <span style="width:14px; height:14px; background:${g.color || '#888'}; border-radius:50%;"></span>
+      <div style="flex:1;"><b>${escapeHtml(g.name)}</b> · ${(g.row_ids || []).length} рядов</div>
+      <button class="btn small danger" onclick="deleteRowGroupV2(${idx})">×</button>
+    </div>
+  `).join('');
+}
+
+function addRowGroupV2() {
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot) return;
+  if (!plot.row_groups) plot.row_groups = [];
+  const name = document.getElementById('group-name-v2')?.value.trim();
+  const color = document.getElementById('group-color-v2')?.value;
+  const rowsStr = document.getElementById('group-rows-v2')?.value.trim();
+  if (!name) { toast('Укажите название группы', 'error'); return; }
+  const tokens = rowsStr.split(',').map(t => t.trim()).filter(Boolean);
+  const rowIds = [];
+  tokens.forEach(t => {
+    const r = plot.rows.find(row => String(row.number) === t);
+    if (r) rowIds.push(r.id);
+  });
+  plot.row_groups.push({
+    id: 'grp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    name, color, row_ids: rowIds
+  });
+  document.getElementById('group-name-v2').value = '';
+  document.getElementById('group-rows-v2').value = '';
+  renderRowGroupsListV2(plot);
+  toast(`✅ Группа "${name}" добавлена`, 'success');
+}
+
+function deleteRowGroupV2(idx) {
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot || !plot.row_groups) return;
+  if (!confirm('Удалить группу?')) return;
+  plot.row_groups.splice(idx, 1);
+  renderRowGroupsListV2(plot);
 }
 
 function renderRowV2(row, idx, plot) {

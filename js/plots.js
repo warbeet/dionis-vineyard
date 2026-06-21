@@ -273,11 +273,16 @@ function openBlockModal(plotId, blockId) {
       document.getElementById('block-supplier').value = block.supplier || '';
       document.getElementById('block-batch').value = block.batch_number || '';
       document.getElementById('block-training').value = block.training_system || '';
-      document.getElementById('block-zone').value = zoneToString(block.zone);
+      // block-zone берётся через новый редактор
       document.getElementById('block-notes').value = block.notes || '';
       document.getElementById('block-delete-btn').style.display = '';
     }
   }
+  // Инициализируем новый редактор зоны блока
+  const plotForZone = data.plots.find(p => p.id === plotId);
+  const blockForZone = blockId ? plotForZone?.blocks?.find(b => b.id === blockId) : null;
+  if (typeof initBlockZoneUI === 'function') initBlockZoneUI(plotForZone, blockForZone);
+
   openModal('block-modal');
 }
 
@@ -291,7 +296,10 @@ function saveBlock() {
   const name = document.getElementById('block-name').value.trim();
   if (!name) { toast('Укажите название блока', 'error'); return; }
 
-  const zone = parseZone(document.getElementById('block-zone').value);
+  // Собираем zone из нового UI редактора
+  const plotForBuild = data.plots.find(p => p.id === plotId);
+  const zone = (typeof buildZoneFromUI === 'function') ? buildZoneFromUI(plotForBuild) :
+                parseZone(document.getElementById('block-zone').value);
 
   const block = {
     id, name,
