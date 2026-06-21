@@ -95,20 +95,39 @@ function handleMenuClick(actionName, plotId) {
 // инициализирует её и подождёт
 
 async function ensureMapOpened(plotId) {
-  // Переключаемся на вкладку карты внутри участка
+  // 1. Переключаемся на вкладку карты
   if (typeof showPlotTab === 'function') {
     showPlotTab(plotId, 'map');
   }
-  // Ждём пока карта загрузится
+
+  // 2. Прокрутим к карте для удобства
+  await new Promise(r => setTimeout(r, 300));
+  const containerId = 'plot-map-' + plotId;
+  let mapEl = document.getElementById(containerId);
+  if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // 3. Если карта еще не инициализирована - запустим
+  if (typeof yandexMaps !== 'undefined' && !yandexMaps[plotId]) {
+    if (typeof initPlotMap === 'function') {
+      initPlotMap(plotId);
+    }
+  }
+
+  // 4. Ждём пока карта реально готова (до 15 секунд для медленных соединений)
   return new Promise((resolve) => {
     let tries = 0;
+    const maxTries = 75;  // 15 секунд при шаге 200мс
     const check = setInterval(() => {
       tries++;
-      if (yandexMaps && yandexMaps[plotId]) {
+      const hasMap = (typeof yandexMaps !== 'undefined' && yandexMaps[plotId]) ||
+                     (typeof leafletMaps !== 'undefined' && leafletMaps[plotId]);
+      if (hasMap) {
         clearInterval(check);
-        resolve(true);
-      } else if (tries > 30) {  // 6 секунд максимум
+        // Ещё чуть подождём чтобы тайлы догрузились
+        setTimeout(() => resolve(true), 300);
+      } else if (tries > maxTries) {
         clearInterval(check);
+        console.warn('[Dionis] Map init timeout for plot', plotId);
         resolve(false);
       }
     }, 200);
@@ -117,18 +136,18 @@ async function ensureMapOpened(plotId) {
 
 // Обёртки для функций которым нужна открытая карта
 async function startDrawingRowsMode(plotId) {
-  toast('🗺 Открываю карту...', 'info');
+  toast('🗺 Открываю карту (это займёт несколько секунд)...', 'info');
   const ok = await ensureMapOpened(plotId);
   if (!ok) {
-    toast('Не удалось открыть карту. Проверьте интернет.', 'error');
+    toast('❌ Карта не загрузилась. Перейдите на вкладку 🗺 Карта вручную и попробуйте ещё раз.', 'error');
     return;
   }
-  // Прокручиваем к карте
-  const mapEl = document.getElementById('plot-map-' + plotId);
-  if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   // Запускаем режим рисования
   if (typeof toggleRowDrawingMode === 'function') {
     toggleRowDrawingMode(plotId);
+    toast('✏️ Кликните на карте 2 точки — начало и конец ряда', 'success');
+  } else {
+    toast('Функция рисования недоступна', 'error');
   }
 }
 
@@ -136,13 +155,13 @@ async function showRobotRouteSmart(plotId) {
   toast('🤖 Открываю карту и рассчитываю маршрут...', 'info');
   const ok = await ensureMapOpened(plotId);
   if (!ok) {
-    toast('Не удалось открыть карту', 'error');
+    toast('❌ Карта не загрузилась. Перейдите на вкладку 🗺 Карта вручную.', 'error');
     return;
   }
-  const mapEl = document.getElementById('plot-map-' + plotId);
-  if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   if (typeof showRobotRoute === 'function') {
     showRobotRoute(plotId);
+  } else {
+    toast('Функция маршрута недоступна', 'error');
   }
 }
 

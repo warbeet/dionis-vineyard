@@ -965,11 +965,32 @@ function buildMapLayers() {
   });
   all['Esri Спутник'] = esriSat;
 
+  // 5. Google Satellite (отличное качество, бесплатно для просмотра)
+  const googleSat = L.tileLayer('https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    attribution: '© Google', maxZoom: 21, subdomains: ['0','1','2','3']
+  });
+  all['Google Спутник'] = googleSat;
+
+  // 6. Google Hybrid (спутник + надписи)
+  const googleHybrid = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+    attribution: '© Google', maxZoom: 21, subdomains: ['0','1','2','3']
+  });
+  all['Google Гибрид'] = googleHybrid;
+
+  // 7. Google Карта
+  const googleMap = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+    attribution: '© Google', maxZoom: 21, subdomains: ['0','1','2','3']
+  });
+  all['Google Карта'] = googleMap;
+
   // Выбор по умолчанию
   if (provider === 'yandex') defaultLayer = yandexMap;
   else if (provider === 'yandex_sat') defaultLayer = yandexSat;
   else if (provider === '2gis') defaultLayer = dgis;
   else if (provider === 'esri_sat') defaultLayer = esriSat;
+  else if (provider === 'google_sat') defaultLayer = googleSat;
+  else if (provider === 'google_hybrid') defaultLayer = googleHybrid;
+  else if (provider === 'google_map') defaultLayer = googleMap;
   else defaultLayer = osm;
 
   return { default: defaultLayer, all };

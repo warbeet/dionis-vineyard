@@ -179,16 +179,29 @@ function migratePlotGeometry(plot) {
 
 function regenerateSeedlingsFromRows(plot) {
   if (!plot || !plot.rows) return 0;
-  // Удалим старые саженцы участка
   if (!data.seedlings) data.seedlings = [];
   data.seedlings = data.seedlings.filter(s => s.plot_id !== plot.id);
 
   let created = 0;
   plot.rows.forEach(row => {
-    const startPos = row.start_position || 1;
-    const endPos = startPos + row.positions_count - 1;
-    for (let pos = startPos; pos <= endPos; pos++) {
-      // Проверяем gap
+    const count = row.positions_count || 0;
+    if (count === 0) return;  // ряд пропущен
+
+    const offset = row.offset || 0;
+    const direction = row.direction || 'forward';
+    const startPos = (row.start_position != null) ? row.start_position : (offset + 1);
+
+    // Generate positions array
+    const positions = [];
+    for (let i = 0; i < count; i++) {
+      positions.push(startPos + i);
+    }
+    // Если direction = reverse, переворачиваем порядок (но позиции те же)
+    // Реверс влияет только на порядок установки в массиве (для робота важно)
+    // Но для семантики просто оставляем порядок 1,2,3 — а direction хранится в ряду для понимания
+
+    positions.forEach(pos => {
+      // Проверяем gap (если есть в середине ряда)
       const gap = (row.gaps || []).find(g => pos >= g.position && pos < g.position + g.length);
       if (gap) {
         data.seedlings.push({
@@ -206,32 +219,7 @@ function regenerateSeedlingsFromRows(plot) {
           updated_at: new Date().toISOString()
         });
         created++;
-        continue;
-      }
-      // Проверяем каскад
-      const cascade = (row.cascades || []).find(c => c.position === pos);
-      if (cascade) {
-        const vinesCount = cascade.vines_count || (CASCADE_TYPES.find(t => t.id === cascade.type)?.vines) || 2;
-        for (let i = 0; i < vinesCount; i++) {
-          data.seedlings.push({
-            id: makeSeedlingId(plot.id, row, pos, i),
-            plot_id: plot.id,
-            block_id: null,
-            row: row.number,
-            position: pos,
-            cascade_index: i,
-            status: 'cascade',
-            cascade_type: cascade.type,
-            cascade_layout: cascade.layout,
-            is_replanted: false,
-            ai_data: null,
-            inspections: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-          created++;
-        }
-        continue;
+        return;
       }
       // Обычный куст
       data.seedlings.push({
@@ -248,7 +236,7 @@ function regenerateSeedlingsFromRows(plot) {
         updated_at: new Date().toISOString()
       });
       created++;
-    }
+    });
   });
 
   // Привязываем к блокам по зонам
@@ -323,10 +311,10 @@ function openGeometryEditor(plotId) {
   setVal('geo-irrigation', plot.agronomy.irrigation);
   setVal('geo-row-naming', plot.row_naming || 'numbers');
 
-  // Заполняем редактор рядов
-  renderRowsTable(plot);
-  renderRowGroupsList(plot);
-  renderRowsJSON(plot);
+  // Упрощённый редактор рядов V2
+  if (typeof renderRowsEditorV2 === 'function') {
+    setTimeout(renderRowsEditorV2, 100);
+  }
 
   // Открыть модалку
   openModal('geometry-modal');

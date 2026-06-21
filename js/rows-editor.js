@@ -1,0 +1,216 @@
+// ============================================================================
+// ROWS-EDITOR module — Упрощённый редактор рядов (минимальный набор полей)
+// ============================================================================
+//
+// Минимальные поля для каждого ряда:
+//  - № ряда (авто)
+//  - Кол-во саженцев
+//  - Откуда начало (с начала / с конца ряда)
+//  - Смещение (пропустить N позиций от начала)
+//
+// Убрано: каскады, группы рядов, индивидуальные пропуски
+
+// =========== ГЛАВНЫЙ РЕНДЕР ===========
+
+function renderRowsEditorV2() {
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot) return;
+  if (typeof migratePlotGeometry === 'function') migratePlotGeometry(plot);
+  if (!plot.rows) plot.rows = [];
+
+  const cont = document.getElementById('rows-editor-v2');
+  if (!cont) return;
+
+  // Считаем общую статистику
+  const totalRows = plot.rows.length;
+  const totalSeedlings = plot.rows.reduce((s, r) => s + (r.positions_count || 0), 0);
+  const skippedRows = plot.rows.filter(r => (r.positions_count || 0) === 0).length;
+
+  cont.innerHTML = `
+    <!-- БЛОК БЫСТРОГО СОЗДАНИЯ -->
+    <div class="card" style="margin-bottom:14px; background:linear-gradient(135deg, rgba(107,142,90,0.05), transparent);">
+      <h4 style="margin-bottom:10px; font-size:14px;">🪄 Массовое создание/изменение</h4>
+      <p style="font-size:12px; color:var(--text-soft); margin-bottom:12px;">
+        Сразу задайте параметры для всех рядов. Подходит для регулярной посадки.
+      </p>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Количество рядов</label>
+          <input type="number" id="bulk-rows-count" min="1" max="500" value="${totalRows || 10}">
+        </div>
+        <div class="form-row">
+          <label>Саженцев в каждом ряду</label>
+          <input type="number" id="bulk-positions" min="0" max="500" value="50">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Направление посадки</label>
+          <select id="bulk-direction">
+            <option value="forward">→ От начала к концу (обычно)</option>
+            <option value="reverse">← От конца к началу</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Смещение (пропуск с начала)</label>
+          <input type="number" id="bulk-offset" min="0" value="0" title="Сколько позиций пропустить с начала ряда">
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn primary small" onclick="applyBulkRowsV2()" title="Создать или пересоздать ряды">
+          ✨ Применить ко всем рядам
+        </button>
+        <button class="btn small secondary" onclick="addOneRowV2()">+ Добавить один ряд</button>
+      </div>
+    </div>
+
+    <!-- СТАТИСТИКА -->
+    <div style="display:flex; gap:14px; flex-wrap:wrap; padding:10px 0; font-size:13px; color:var(--text-soft);">
+      <span>📊 Всего рядов: <b>${totalRows}</b></span>
+      <span>🌱 Саженцев: <b>${totalSeedlings}</b></span>
+      ${skippedRows > 0 ? `<span style="color:var(--text-muted);">⚪ Пропущено рядов: <b>${skippedRows}</b></span>` : ''}
+    </div>
+
+    <!-- ТАБЛИЦА -->
+    ${totalRows === 0 ? `
+      <div class="empty" style="margin:20px 0;">
+        Рядов пока нет.<br>
+        <small>Заполните параметры выше и нажмите «✨ Применить ко всем рядам»</small>
+      </div>
+    ` : `
+      <div class="table-wrap" style="max-height:400px; overflow:auto;">
+        <table style="min-width:560px;">
+          <thead>
+            <tr>
+              <th style="width:60px;">№</th>
+              <th title="Количество саженцев в ряду. 0 = ряд пропущен">Саженцев</th>
+              <th title="С какой стороны начинается посадка">Направление</th>
+              <th title="Пропустить позиций с начала">Смещение</th>
+              <th title="Опциональное имя ряда">Имя</th>
+              <th style="width:60px;">⋯</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${plot.rows.map((row, idx) => renderRowV2(row, idx, plot)).join('')}
+          </tbody>
+        </table>
+      </div>
+    `}
+  `;
+}
+
+function renderRowV2(row, idx, plot) {
+  const isSkipped = (row.positions_count || 0) === 0;
+  return `
+    <tr data-row-id="${row.id}" style="${isSkipped ? 'opacity:0.45;' : ''}">
+      <td><b>${escapeHtml(String(row.number))}</b></td>
+      <td>
+        <input type="number" min="0" value="${row.positions_count || 0}"
+          onchange="updateRowV2('${row.id}', 'positions_count', parseInt(this.value)||0)"
+          style="width:75px;" title="0 = ряд полностью пропущен">
+        ${isSkipped ? '<small style="color:var(--text-muted); margin-left:4px;">(пропуск)</small>' : ''}
+      </td>
+      <td>
+        <select onchange="updateRowV2('${row.id}', 'direction', this.value)" ${isSkipped ? 'disabled' : ''}>
+          <option value="forward" ${(row.direction || 'forward') === 'forward' ? 'selected' : ''}>→ С начала</option>
+          <option value="reverse" ${row.direction === 'reverse' ? 'selected' : ''}>← С конца</option>
+        </select>
+      </td>
+      <td>
+        <input type="number" min="0" value="${row.offset || 0}"
+          onchange="updateRowV2('${row.id}', 'offset', parseInt(this.value)||0)"
+          style="width:60px;" ${isSkipped ? 'disabled' : ''}
+          title="Сколько позиций пропустить с начала">
+      </td>
+      <td>
+        <input type="text" value="${escapeHtml(row.name || '')}"
+          onchange="updateRowV2('${row.id}', 'name', this.value)"
+          placeholder="опц." style="width:100px;" ${isSkipped ? 'disabled' : ''}>
+      </td>
+      <td>
+        <button class="btn small danger" onclick="deleteRowV2('${row.id}')" title="Удалить ряд">🗑</button>
+      </td>
+    </tr>
+  `;
+}
+
+// =========== ОПЕРАЦИИ С РЯДАМИ ===========
+
+function updateRowV2(rowId, field, value) {
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot) return;
+  const row = plot.rows.find(r => r.id === rowId);
+  if (!row) return;
+  row[field] = value;
+  // Особая логика для смещения: обновим start_position
+  if (field === 'offset') {
+    row.start_position = (value || 0) + 1;
+  }
+  // Пересоберём ряд (для зависимых полей)
+  if (field === 'positions_count') {
+    renderRowsEditorV2();
+  }
+}
+
+function addOneRowV2() {
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot) return;
+  if (!plot.rows) plot.rows = [];
+  const newIdx = plot.rows.length + 1;
+  const naming = plot.row_naming || 'numbers';
+  plot.rows.push({
+    id: 'row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+    number: (typeof formatRowNumber === 'function') ? formatRowNumber(newIdx, naming) : newIdx,
+    positions_count: 50,
+    start_position: 1,
+    offset: 0,
+    direction: 'forward',
+    gaps: [],
+    cascades: []
+  });
+  renderRowsEditorV2();
+}
+
+function deleteRowV2(rowId) {
+  if (!confirm('Удалить этот ряд?')) return;
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot) return;
+  plot.rows = plot.rows.filter(r => r.id !== rowId);
+  // Перенумерация
+  const naming = plot.row_naming || 'numbers';
+  plot.rows.forEach((r, idx) => {
+    r.number = (typeof formatRowNumber === 'function') ? formatRowNumber(idx + 1, naming) : (idx + 1);
+  });
+  renderRowsEditorV2();
+}
+
+function applyBulkRowsV2() {
+  const plot = data.plots.find(p => p.id === currentEditingPlotId);
+  if (!plot) return;
+
+  const rowsCount = parseInt(document.getElementById('bulk-rows-count').value) || 10;
+  const positions = parseInt(document.getElementById('bulk-positions').value) || 50;
+  const direction = document.getElementById('bulk-direction').value || 'forward';
+  const offset = parseInt(document.getElementById('bulk-offset').value) || 0;
+  const naming = plot.row_naming || 'numbers';
+
+  if (plot.rows && plot.rows.length > 0) {
+    if (!confirm(`Заменить ${plot.rows.length} существующих рядов на ${rowsCount} новых?`)) return;
+  }
+
+  plot.rows = [];
+  for (let i = 1; i <= rowsCount; i++) {
+    plot.rows.push({
+      id: 'row_' + Date.now() + '_' + i + '_' + Math.random().toString(36).slice(2, 5),
+      number: (typeof formatRowNumber === 'function') ? formatRowNumber(i, naming) : i,
+      positions_count: positions,
+      start_position: offset + 1,
+      offset: offset,
+      direction: direction,
+      gaps: [],
+      cascades: []
+    });
+  }
+  renderRowsEditorV2();
+  toast(`✅ Создано ${rowsCount} рядов по ${positions} саженцев`, 'success');
+}

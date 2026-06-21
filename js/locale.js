@@ -184,12 +184,21 @@ function renderLocaleSettings() {
     <div class="form-row">
       <label>🗺 Карты</label>
       <select id="loc-map-provider">
-        <option value="yandex" ${cur.mapProvider === 'yandex' ? 'selected' : ''}>🟡 Яндекс.Карты (рекомендуется для РФ)</option>
-        <option value="yandex_sat" ${cur.mapProvider === 'yandex_sat' ? 'selected' : ''}>🛰 Яндекс Спутник</option>
-        <option value="yandex_hybrid" ${cur.mapProvider === 'yandex_hybrid' ? 'selected' : ''}>🗺 Яндекс Гибрид (спутник + надписи)</option>
-        <option value="osm" ${cur.mapProvider === 'osm' ? 'selected' : ''}>OpenStreetMap (резервный, без ключа)</option>
-        <option value="2gis" ${cur.mapProvider === '2gis' ? 'selected' : ''}>2ГИС</option>
-        <option value="esri_sat" ${cur.mapProvider === 'esri_sat' ? 'selected' : ''}>Esri Спутник (международный)</option>
+        <optgroup label="🌍 Google (рекомендую)">
+          <option value="google_sat" ${cur.mapProvider === 'google_sat' ? 'selected' : ''}>🛰 Google Спутник (высокое качество)</option>
+          <option value="google_hybrid" ${cur.mapProvider === 'google_hybrid' ? 'selected' : ''}>🗺 Google Гибрид (спутник + надписи)</option>
+          <option value="google_map" ${cur.mapProvider === 'google_map' ? 'selected' : ''}>📍 Google Карта</option>
+        </optgroup>
+        <optgroup label="🇷🇺 Российские">
+          <option value="yandex" ${cur.mapProvider === 'yandex' ? 'selected' : ''}>🟡 Яндекс.Карты</option>
+          <option value="yandex_sat" ${cur.mapProvider === 'yandex_sat' ? 'selected' : ''}>🛰 Яндекс Спутник</option>
+          <option value="yandex_hybrid" ${cur.mapProvider === 'yandex_hybrid' ? 'selected' : ''}>🗺 Яндекс Гибрид</option>
+          <option value="2gis" ${cur.mapProvider === '2gis' ? 'selected' : ''}>2ГИС</option>
+        </optgroup>
+        <optgroup label="🌐 Открытые">
+          <option value="osm" ${cur.mapProvider === 'osm' ? 'selected' : ''}>OpenStreetMap</option>
+          <option value="esri_sat" ${cur.mapProvider === 'esri_sat' ? 'selected' : ''}>Esri Спутник</option>
+        </optgroup>
       </select>
       <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">💡 На карте справа вверху можно переключаться между Картой / Спутником / Гибридом</p>
     </div>
@@ -213,7 +222,7 @@ function renderLocaleSettings() {
     settings.locale = {
       lang: 'ru', country: 'RU', timezone: 'Europe/Moscow',
       currency: 'RUB', region: 'krasnodar', units: 'metric',
-      dateFormat: 'DD.MM.YYYY', mapProvider: 'yandex'
+      dateFormat: 'DD.MM.YYYY', mapProvider: 'google_sat'
     };
     saveSettingsLocal();
     // Применим регион (поставит координаты Краснодара если их нет)

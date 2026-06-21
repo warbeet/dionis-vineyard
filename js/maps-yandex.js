@@ -192,12 +192,17 @@ function centerYandexMapOnPlot(plotId) {
 // =========== ЕДИНАЯ ТОЧКА ВХОДА ===========
 // Эта функция выбирает провайдера и инициализирует карту
 function initPlotMap(plotId) {
-  const provider = settings?.locale?.mapProvider || 'yandex';
+  const provider = settings?.locale?.mapProvider || 'google_sat';
+  // Яндекс провайдеры используют родной API
   if (provider === 'yandex' || provider === 'yandex_sat' || provider === 'yandex_hybrid') {
     initYandexMap(plotId);
   } else {
-    // fallback на Leaflet (для OSM, 2GIS, Esri)
-    if (typeof initLeafletMap === 'function') initLeafletMap(plotId);
+    // Все остальные (Google, OSM, 2GIS, Esri) → Leaflet
+    if (typeof initLeafletMap === 'function') {
+      initLeafletMap(plotId);
+    } else {
+      console.error('[Dionis] initLeafletMap not available');
+    }
   }
 }
 
