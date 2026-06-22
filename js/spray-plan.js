@@ -711,6 +711,11 @@ function renderProductEditForm() {
     </div>
     <div class="form-row">
       <label>📄 Текст инструкции / этикетки</label>
+      <div class="toolbar" style="margin-bottom:8px;">
+        <button type="button" class="btn small secondary" onclick="document.getElementById('pe-instruction-file').click()">📎 Загрузить PDF/TXT</button>
+        <span id="pe-file-status" style="font-size:12px; color:var(--text-muted);">PDF.js извлечёт текст из инструкции; TXT/CSV читаются напрямую.</span>
+      </div>
+      <input type="file" id="pe-instruction-file" accept=".pdf,.txt,.csv,.md,text/plain,application/pdf" style="display:none" onchange="importProductInstructionFile(event)">
       <textarea id="pe-instruction-text" rows="4" placeholder="Вставьте сюда текст инструкции, регламент применения или фрагмент PDF/этикетки. Тогда AI заполнит карточку именно из инструкции.">${escapeHtml(p.instruction_text || '')}</textarea>
     </div>
     <div class="${rowCls('notes')}">
@@ -1289,4 +1294,84 @@ ${JSON.stringify({ date: plan.date, tank_volume_l: plan.tank_volume_l, mix_lifet
   }
   renderTankOrder();
   toast('✅ AI-проверка баковой смеси готова', 'success');
+}
+
+// =========== ИМПОРТ ТЕКСТА ИНСТРУКЦИИ ИЗ PDF/TXT ===========
+async function importProductInstructionFile(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('pe-file-status');
+  const textArea = document.getElementById('pe-instruction-text');
+  try {
+    if (status) status.innerHTML = '<span class="spinner"></span> Читаю файл...';
+    let text = '';
+    const name = (file.name || '').toLowerCase();
+
+    if (name.endsWith('.pdf') || file.type === 'application/pdf') {
+      text = await extractTextFromPDFFile(file);
+    } else {
+      text = await readTextFile(file);
+    }
+
+    text = normalizeInstructionText(text);
+    if (!text.trim()) throw new Error('Не удалось извлечь текст из файла');
+
+    if (textArea) {
+      const existing = textArea.value.trim();
+      textArea.value = existing ? (existing + '\n\n--- импорт из файла: ' + file.name + ' ---\n' + text) : text;
+    }
+    if (currentProductEdit) {
+      currentProductEdit.instruction_file_name = file.name;
+      currentProductEdit.instruction_text = textArea ? textArea.value : text;
+    }
+    if (status) status.textContent = `✅ Импортировано: ${file.name} · ${text.length.toLocaleString('ru-RU')} знаков`;
+    toast('✅ Текст инструкции загружен. Теперь нажмите «Заполнить из инструкции».', 'success');
+  } catch(e) {
+    console.error('[Product instruction import]', e);
+    if (status) status.textContent = 'Ошибка импорта: ' + e.message;
+    toast('Ошибка импорта инструкции: ' + e.message, 'error');
+  } finally {
+    event.target.value = '';
+  }
+}
+
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Ошибка чтения файла'));
+    reader.readAsText(file, 'utf-8');
+  });
+}
+
+async function extractTextFromPDFFile(file) {
+  if (!window.pdfjsLib) {
+    throw new Error('PDF.js не загрузился. Проверьте интернет или вставьте текст инструкции вручную.');
+  }
+  // Worker с CDN; если не задавать, pdf.js часто ругается в браузере.
+  if (!window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+  const buffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: buffer }).promise;
+  const maxPages = Math.min(pdf.numPages, 40); // защита от огромных PDF
+  const pages = [];
+  for (let pageNo = 1; pageNo <= maxPages; pageNo++) {
+    const page = await pdf.getPage(pageNo);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str || '').join(' ');
+    pages.push(`\n--- страница ${pageNo} ---\n${pageText}`);
+  }
+  if (pdf.numPages > maxPages) {
+    pages.push(`\n--- импорт остановлен: прочитано ${maxPages} из ${pdf.numPages} страниц ---`);
+  }
+  return pages.join('\n');
+}
+
+function normalizeInstructionText(text) {
+  return String(text || '')
+    .replace(/\u0000/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
