@@ -139,6 +139,7 @@ function renderStationSensorsChecks(stationId) {
 }
 
 function saveStation() {
+  if (!requirePermission('weather.edit', 'Нет прав на метеостанции')) return;
   if (!data.stations) data.stations = [];
   const id = document.getElementById('st-id').value || ('st_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
   const isNew = !document.getElementById('st-id').value;
@@ -315,6 +316,7 @@ function openStationMeasureModal(stationId) {
 }
 
 function saveMeasurement() {
+  if (!requirePermission('weather.edit', 'Нет прав на измерения')) return;
   const stationId = document.getElementById('m-station-id').value;
   const s = data.stations.find(x => x.id === stationId);
   if (!s) return;

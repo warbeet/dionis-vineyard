@@ -22,6 +22,7 @@ function openJournalModal(id) {
 }
 
 function saveJournal() {
+  if (!requirePermission('journal.edit', 'Нет прав на ведение журнала')) return;
   const id = document.getElementById('journal-id').value || ('j_' + Date.now());
   const entry = {
     id,
@@ -43,6 +44,7 @@ function saveJournal() {
 }
 
 function deleteJournal(id) {
+  if (!requirePermission('journal.edit', 'Нет прав на удаление записей журнала')) return;
   if (!confirm('Удалить?')) return;
   data.journal = data.journal.filter(j => j.id !== id);
   saveData();

@@ -4,6 +4,7 @@
 
 // ===========================================================================
 function exportData() {
+  if (!requirePermission('data.export', 'Нет прав на экспорт данных')) return;
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -13,6 +14,7 @@ function exportData() {
 }
 
 function importData(e) {
+  if (!requirePermission('settings.edit', 'Нет прав на импорт данных')) return;
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -31,6 +33,7 @@ function importData(e) {
 }
 
 function clearAllData() {
+  if (!requirePermission('settings.edit', 'Нет прав на очистку данных')) return;
   if (!confirm('УДАЛИТЬ ВСЕ данные? Это нельзя отменить!')) return;
   if (!confirm('Точно?')) return;
   data = defaultData();

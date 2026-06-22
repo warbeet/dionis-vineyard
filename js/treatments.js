@@ -5,6 +5,7 @@
 // DISEASES & TREATMENTS
 // ===========================================================================
 function saveDisease() {
+  if (!requirePermission('treatments.edit', 'Нет прав на болезни и обработки')) return;
   const e = {
     id: 'd_' + Date.now(), kind: 'disease',
     date: document.getElementById('dis-date').value,
@@ -20,6 +21,7 @@ function saveDisease() {
 }
 
 function saveTreatment() {
+  if (!requirePermission('treatments.edit', 'Нет прав на обработки')) return;
   const e = {
     id: 't_' + Date.now(), kind: 'treatment',
     date: document.getElementById('tr-date').value,
@@ -37,6 +39,7 @@ function saveTreatment() {
 }
 
 function deleteItem(arr, id) {
+  if (!requirePermission('treatments.edit', 'Нет прав на удаление обработок')) return;
   if (!confirm('Удалить?')) return;
   data[arr] = data[arr].filter(x => x.id !== id);
   saveData(); renderAll();

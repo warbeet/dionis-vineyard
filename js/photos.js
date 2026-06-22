@@ -49,6 +49,7 @@ function renderPhotoPreview() {
 function removePending(i) { pendingPhotos.splice(i, 1); renderPhotoPreview(); }
 
 function savePhotoReport() {
+  if (!requirePermission('photos.create', 'Нет прав на добавление фотоотчётов')) return;
   const date = document.getElementById('photo-date').value;
   const plotId = document.getElementById('photo-plot').value;
   const note = document.getElementById('photo-note').value.trim();
@@ -71,6 +72,7 @@ function savePhotoReport() {
 }
 
 function deletePhotoReport(id) {
+  if (!requirePermission('photos.create', 'Нет прав на удаление фотоотчётов')) return;
   if (!confirm('Удалить отчёт?')) return;
   data.photoReports = data.photoReports.filter(r => r.id !== id);
   saveData();

@@ -1,6 +1,6 @@
 // Service Worker для PWA «Dionis vineyard» v2 (модульная архитектура)
-const CACHE_NAME = 'dionis-v0.6.8';
-const RUNTIME_CACHE = 'dionis-runtime-v0.6.8';
+const CACHE_NAME = 'dionis-v0.6.9';
+const RUNTIME_CACHE = 'dionis-runtime-v0.6.9';
 
 // Предзагрузка ключевых ресурсов
 const PRECACHE_URLS = [

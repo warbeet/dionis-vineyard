@@ -162,7 +162,7 @@ function useCurrentLocationForPlot() {
 }
 
 function savePlot() {
-  if (currentRole === 'viewer' || currentRole === 'worker') { toast('Нет прав', 'error'); return; }
+  if (!requirePermission('plots.edit', 'Нет прав на редактирование участков')) return;
   const id = document.getElementById('plot-id').value || ('p_' + Date.now());
   const isNew = !document.getElementById('plot-id').value;
   const name = document.getElementById('plot-name').value.trim();
@@ -235,7 +235,7 @@ function savePlot() {
 }
 
 function deletePlot(id) {
-  if (currentRole !== 'owner') { toast('Только владелец', 'error'); return; }
+  if (!requirePermission('plots.edit', 'Нет прав на удаление участков')) return;
   const p = data.plots.find(x => x.id === id);
   const seedlingsCount = getPlotSeedlings(id).length;
   if (!confirm(`Удалить участок "${p ? p.name : '?'}" вместе с ${seedlingsCount} кустами и всеми блоками?`)) return;
@@ -287,6 +287,7 @@ function openBlockModal(plotId, blockId) {
 }
 
 function saveBlock() {
+  if (!requirePermission('plots.edit', 'Нет прав на редактирование сортов')) return;
   const plotId = document.getElementById('block-plot-id').value;
   const plot = data.plots.find(p => p.id === plotId);
   if (!plot) { toast('Участок не найден', 'error'); return; }
@@ -443,6 +444,7 @@ function openSeedlingModal(seedlingId) {
 }
 
 function saveSeedlingStatus(seedlingId) {
+  if (!requirePermission('seedlings.edit', 'Нет прав на редактирование саженцев')) return;
   const s = data.seedlings.find(x => x.id === seedlingId);
   if (!s) return;
   const newStatus = document.getElementById('seedling-new-status').value;
@@ -1104,6 +1106,7 @@ function renderPlotStats(plotId) {
 
 // =========== CSV IMPORT/EXPORT ===========
 function exportSeedlingsCSV() {
+  if (!requirePermission('data.export', 'Нет прав на экспорт данных')) return;
   if (!data.seedlings || !data.seedlings.length) { toast('Нет саженцев для экспорта', 'error'); return; }
   const headers = ['id','plot_id','plot_name','block_id','block_name','row','position','status','is_replanted','gps_lat','gps_lng','height_cm','shoots_count','clusters_count','health_score','updated_at'];
   const rows = data.seedlings.map(s => {

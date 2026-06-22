@@ -5,6 +5,7 @@
 // HARVEST & COSTS
 // ===========================================================================
 function saveHarvest() {
+  if (!requirePermission('harvest.edit', 'Нет прав на урожай')) return;
   const e = {
     id: 'h_' + Date.now(),
     date: document.getElementById('h-date').value,
@@ -21,6 +22,7 @@ function saveHarvest() {
 }
 
 function saveCost() {
+  if (!requirePermission('harvest.edit', 'Нет прав на затраты')) return;
   const e = {
     id: 'c_' + Date.now(),
     date: document.getElementById('c-date').value,

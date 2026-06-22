@@ -38,6 +38,7 @@ async function loadCyrillicFont(doc) {
 }
 
 async function generateWeeklyPDF() {
+  if (!requirePermission('reports.export', 'Нет прав на экспорт отчётов')) return;
   const from = document.getElementById('rep-week-from').value || new Date(Date.now()-7*86400000).toISOString().slice(0,10);
   const to = document.getElementById('rep-week-to').value || todayStr();
   const { jsPDF } = window.jspdf;
@@ -130,6 +131,7 @@ async function generateWeeklyPDF() {
 }
 
 async function generatePlotPDF() {
+  if (!requirePermission('reports.export', 'Нет прав на экспорт отчётов')) return;
   const plotId = document.getElementById('rep-plot').value;
   if (!plotId) { toast('Выберите участок', 'error'); return; }
   const plot = data.plots.find(p => p.id === plotId);
@@ -193,6 +195,7 @@ async function generatePlotPDF() {
 }
 
 async function generateSeasonPDF() {
+  if (!requirePermission('reports.export', 'Нет прав на экспорт отчётов')) return;
   const year = document.getElementById('rep-season-year').value || new Date().getFullYear();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -254,6 +257,7 @@ async function generateSeasonPDF() {
 }
 
 async function generateTreatmentsPDF() {
+  if (!requirePermission('reports.export', 'Нет прав на экспорт отчётов')) return;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   await loadCyrillicFont(doc);

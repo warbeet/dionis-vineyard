@@ -75,6 +75,7 @@ async function analyzePhotos(photos, note, plot, phaseId) {
 }
 
 async function savePhotoReportWithAI() {
+  if (!requirePermission('photos.create', 'Нет прав на добавление фотоотчётов')) return;
   if (!settings.openrouterKey) {
     toast('Сначала настройте OpenRouter API в «Настройках»', 'error');
     showTab('settings');

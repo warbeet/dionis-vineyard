@@ -706,6 +706,7 @@ function searchProductInstruction() {
 }
 
 function saveProductCatalog() {
+  if (!requirePermission('spray.edit', 'Нет прав на редактирование каталога препаратов')) return;
   if (!currentProductEdit) return;
   const name = document.getElementById('pe-name')?.value?.trim();
   if (!name) {
@@ -903,6 +904,7 @@ document.addEventListener('change', e => {
 // =========== СОХРАНЕНИЕ ===========
 
 function saveSprayPlan() {
+  if (!requirePermission('spray.edit', 'Нет прав на план опрыскивания')) return;
   ensureSprayData();
   const plan = currentSprayPlan;
   if (!plan) return;
@@ -927,6 +929,7 @@ function saveSprayPlan() {
 }
 
 function deleteSprayPlan(id) {
+  if (!requirePermission('spray.edit', 'Нет прав на удаление планов опрыскивания')) return;
   if (!confirm('Удалить план опрыскивания?')) return;
   data.spray_plans = (data.spray_plans || []).filter(p => p.id !== id);
   saveData();
@@ -936,6 +939,7 @@ function deleteSprayPlan(id) {
 // =========== ИМПОРТ/ЭКСПОРТ CSV ===========
 
 function exportSprayCSV() {
+  if (!requirePermission('data.export', 'Нет прав на экспорт данных')) return;
   ensureSprayData();
   const rows = [['Дата', 'Статус', 'Зоны', 'Препараты', 'Объём бака (л)', 'Срок жизни (ч)', 'Заметки']];
   (data.spray_plans || []).forEach(p => {

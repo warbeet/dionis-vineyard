@@ -24,6 +24,7 @@ function openTaskModal(id) {
 }
 
 function saveTask() {
+  if (!requirePermission('plan.edit', 'Нет прав на задачи и план')) return;
   const id = document.getElementById('task-id').value || ('tk_' + Date.now());
   const t = {
     id,
@@ -41,11 +42,13 @@ function saveTask() {
 }
 
 function toggleTask(id) {
+  if (!requirePermission('plan.edit', 'Нет прав на выполнение задач')) return;
   const t = data.tasks.find(x => x.id === id);
   if (t) { t.done = !t.done; saveData(); renderPlan(); updateDashboard(); }
 }
 
 function deleteTask(id) {
+  if (!requirePermission('plan.edit', 'Нет прав на удаление задач')) return;
   data.tasks = data.tasks.filter(t => t.id !== id);
   saveData(); renderAll();
 }
@@ -83,6 +86,7 @@ function renderPlan() {
 }
 
 function generateWeekPlan() {
+  if (!requirePermission('plan.edit', 'Нет прав на генерацию плана')) return;
   if (!data.currentPheno) { toast('Сначала укажите фенофазу', 'error'); return; }
   const today = todayStr();
   const tasksByPhase = {

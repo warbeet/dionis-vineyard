@@ -119,6 +119,7 @@ function applyRegion(regionId) {
 
 // =========== СОХРАНЕНИЕ ===========
 function saveLocale() {
+  if (!requirePermission('settings.edit', 'Нет прав на изменение локализации')) return;
   settings.locale = settings.locale || {};
   settings.locale.region = document.getElementById('loc-region')?.value || 'krasnodar';
   settings.locale.currency = document.getElementById('loc-currency')?.value || 'RUB';

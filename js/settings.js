@@ -3,6 +3,7 @@
 // ============================================================================
 
 function saveAPIKeys() {
+  if (!requirePermission('settings.edit', 'Нет прав на изменение настроек')) return;
   settings.openrouterKey = document.getElementById('openrouter-key').value.trim();
   settings.openrouterModel = document.getElementById('openrouter-model').value;
   saveSettingsLocal();

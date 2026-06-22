@@ -343,6 +343,7 @@ function switchGeoTab(tabId) {
 // =========== СОХРАНЕНИЕ ===========
 
 function saveGeometry() {
+  if (!requirePermission('plots.edit', 'Нет прав на геометрию участка')) return;
   const plot = data.plots.find(p => p.id === currentEditingPlotId);
   if (!plot) return;
   migratePlotGeometry(plot);

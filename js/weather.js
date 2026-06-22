@@ -10,6 +10,7 @@ const WEATHER_SOURCES = {
 };
 
 function saveLocation() {
+  if (!requirePermission('weather.edit', 'Нет прав на настройки погоды')) return;
   data.location = {
     lat: parseFloat(document.getElementById('loc-lat').value),
     lon: parseFloat(document.getElementById('loc-lon').value),
@@ -217,6 +218,7 @@ function renderTodayWeather() {
 
 // =========== РУЧНОЙ ВВОД ПОГОДЫ ===========
 function saveWeather() {
+  if (!requirePermission('weather.edit', 'Нет прав на метеожурнал')) return;
   const entry = {
     id: 'w_' + Date.now(),
     date: document.getElementById('w-date').value,
@@ -263,6 +265,7 @@ function renderPhenoStages() {
 
 function selectPheno(id) { data.currentPheno = id; renderPhenoStages(); }
 function savePheno() {
+  if (!requirePermission('weather.edit', 'Нет прав на фенофазы')) return;
   data.phenoDate = document.getElementById('pheno-date').value || todayStr();
   saveData();
   renderAll();
