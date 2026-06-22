@@ -39,8 +39,8 @@
     <div class="setting-group">
       <h3>🔥 Firebase (облачная база и синхронизация)</h3>
       <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">
-        Создайте проект на <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>,
-        включите Authentication (Email + Google) и Firestore. Новая схема Sync V2 хранит данные чанками и не упирается в лимит 1 МБ одного документа.
+        Firebase-проект Dionis vineyard уже встроен в приложение. Здесь можно посмотреть правила Firestore или при необходимости переопределить Firebase config для другого проекта.
+        Sync V2 хранит данные чанками и не упирается в лимит 1 МБ одного документа.
       </p>
       <div class="alert info" style="font-size:12px;">
         🔐 <b>Правила Firestore для Sync V2:</b><br>
@@ -65,7 +65,7 @@ service cloud.firestore {
   }
 }</pre>
       </div>
-      <div class="form-row"><label>Конфиг Firebase (JSON)</label>
+      <div class="form-row"><label>Конфиг Firebase (JSON, опционально — для переопределения)</label>
         <textarea id="firebase-config" rows="9" placeholder='{
   "apiKey": "AIza...",
   "authDomain": "your-app.firebaseapp.com",

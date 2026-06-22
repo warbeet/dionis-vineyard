@@ -22,9 +22,9 @@ function useLocalMode() {
 
 async function initFirebase() {
   const configRaw = localStorage.getItem(FIREBASE_CONFIG_KEY);
-  if (!configRaw) return false;
   try {
-    const config = JSON.parse(configRaw);
+    const config = configRaw ? JSON.parse(configRaw) : DEFAULT_FIREBASE_CONFIG;
+    if (!config || !config.projectId) return false;
     if (firebase.apps.length === 0) {
       firebaseApp = firebase.initializeApp(config);
     } else {

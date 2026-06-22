@@ -5,7 +5,7 @@
 // ============================================================================
 // VERSION — Текущая версия приложения (обновляется при каждом релизе)
 // ============================================================================
-const APP_VERSION = '0.6.6';
+const APP_VERSION = '0.6.7';
 const APP_VERSION_DATE = '2026-06-22';
 const APP_CODENAME = 'Geometry+';
 
@@ -15,6 +15,19 @@ const APP_CODENAME = 'Geometry+';
 const STORAGE_KEY = 'vineyard_data_v2';
 const SETTINGS_KEY = 'vineyard_settings_v2';
 const FIREBASE_CONFIG_KEY = 'vineyard_fb_config';
+
+// Firebase Web config не является секретом: безопасность обеспечивают Firestore Rules.
+// Пользователь может переопределить config через Настройки, но по умолчанию приложение
+// сразу подключается к проекту Dionis vineyard.
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyCkEvUaZATPe7VZxlqn2T7_tVciZK0cnR4',
+  authDomain: 'dionis-vineyard.firebaseapp.com',
+  projectId: 'dionis-vineyard',
+  storageBucket: 'dionis-vineyard.firebasestorage.app',
+  messagingSenderId: '982206279853',
+  appId: '1:982206279853:web:2618a2fba6031aa8d61624',
+  measurementId: 'G-ZYX6ZSKQ4S'
+};
 
 const PHENO_STAGES = [
   { id: 'dormancy', name: 'Покой', desc: 'Зимний период, лозы спят. Время для обрезки.' },
