@@ -5,6 +5,10 @@
   <div class="card">
     <h3>🕓 Заявки на доступ</h3>
     <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">Пользователь может зарегистрироваться, но начнёт работу только после вашего одобрения.</p>
+    <div class="toolbar" style="margin-bottom:12px;">
+      <button class="btn small secondary" onclick="createTestAccessRequest()">🧪 Создать тестовую заявку</button>
+      <button class="btn small secondary" onclick="renderPendingApprovals()">🔄 Обновить список</button>
+    </div>
     <div id="pending-approvals"><p style="color:var(--text-muted); font-size:13px;">Заявки доступны только владельцу в Firebase-режиме.</p></div>
   </div>
 

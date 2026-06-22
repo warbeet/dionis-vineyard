@@ -1,10 +1,20 @@
 {
-  "version": "0.6.1",
+  "version": "0.6.2",
   "release_date": "2026-06-22",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.6.2",
+      "date": "2026-06-22",
+      "type": "patch",
+      "title": "🧪 Тестовые заявки пользователей",
+      "changes": [
+        "В разделе Команда добавлена кнопка создания тестовой заявки на доступ",
+        "Владелец может проверить сценарий pending → approve → роль без регистрации второго аккаунта"
+      ]
+    },
     {
       "version": "0.6.1",
       "date": "2026-06-22",

@@ -174,6 +174,42 @@ async function removeMember(uid) {
   } catch(e) { toast('Ошибка: ' + e.message, 'error'); }
 }
 
+async function createTestAccessRequest() {
+  if (!db || !currentUser || currentRole !== 'owner') {
+    toast('Тестовую заявку может создать только владелец в Firebase-режиме', 'error');
+    return;
+  }
+  try {
+    const id = 'test_user_' + Date.now();
+    const n = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }).replace(':', '');
+    await db.collection('accessRequests').doc(id).set({
+      uid: id,
+      email: `test.user.${n}@example.com`,
+      name: `Тестовый пользователь ${n}`,
+      status: 'pending',
+      isTest: true,
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser.uid,
+      appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '?'
+    });
+    await db.collection('users').doc(id).set({
+      uid: id,
+      email: `test.user.${n}@example.com`,
+      name: `Тестовый пользователь ${n}`,
+      status: 'pending',
+      role: null,
+      vineyardId: null,
+      isTest: true,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    toast('🧪 Тестовая заявка создана', 'success');
+    renderPendingApprovals();
+  } catch(e) {
+    toast('Ошибка создания тестовой заявки: ' + e.message, 'error');
+  }
+}
+
 async function renderPendingApprovals() {
   const cont = document.getElementById('pending-approvals');
   if (!cont) return;
