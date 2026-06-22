@@ -711,3 +711,43 @@ tr:hover td { background: var(--bg-elevated); }
   .modal-tabs.treatments-tabs .modal-tab { white-space: nowrap; flex: 0 0 auto; }
   .product-dir-grid { grid-template-columns: 1fr; }
 }
+
+/* AI staged product card */
+.ai-product-flow {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
+}
+.product-candidate-card {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border-radius: 14px;
+  background: var(--bg-elevated);
+}
+.ai-filled-field {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(107, 158, 107, .10);
+  outline: 1px solid rgba(107, 158, 107, .25);
+}
+.ai-field-check {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--success);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+@media (max-width: 520px) {
+  .product-candidate-card { flex-direction: column; align-items: stretch; }
+  .ai-product-flow .toolbar .btn { width: 100%; justify-content: center; }
+}

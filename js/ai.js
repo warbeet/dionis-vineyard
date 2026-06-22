@@ -405,3 +405,25 @@ ${JSON.stringify(context, null, 2)}
   renderRecommendations();
   toast('✅ AI-прогноз добавлен в рекомендации', 'success');
 }
+
+async function findProductCandidatesAI(query) {
+  const name = (query || '').trim();
+  if (!name) return { error: 'Введите название препарата' };
+  const system = `Ты агрономический справочник по препаратам и удобрениям. Помогаешь идентифицировать препарат по названию. Не заполняй дозировки, только варианты идентификации. Ответ строго JSON.`;
+  const prompt = `Пользователь ввёл: "${name}".
+Найди наиболее вероятные варианты препарата/удобрения для виноградарства РФ/СНГ. Укажи производителя/тип, если известно. Если точность низкая — предложи несколько вариантов.
+
+Верни JSON:
+{
+  "query":"",
+  "candidates":[
+    {"name":"", "category":"fungicide|insecticide|acaricide|herbicide|fertilizer|stimulator|adjuvant", "active_ingredient":"", "manufacturer":"", "short_description":"", "confidence":"high|medium|low"}
+  ],
+  "search_links":[{"title":"", "url":""}]
+}`;
+  const res = await openRouterJSONTask({ system, prompt, max_tokens: 1400, temperature: 0.2 });
+  if (!res.success) return res;
+  const j = res.json || {};
+  const links = Array.isArray(j.search_links) && j.search_links.length ? j.search_links : buildOfficialSearchLinks(name);
+  return { success: true, candidates: Array.isArray(j.candidates) ? j.candidates : [], search_links: links, raw: res.raw, model: res.model };
+}

@@ -625,6 +625,9 @@ function renderProductEditForm() {
   const cont = document.getElementById('product-edit-form');
   if (!cont || !currentProductEdit) return;
   const p = currentProductEdit;
+  const filled = new Set(p.ai_filled_fields || []);
+  const mark = key => filled.has(key) ? '<span class="ai-field-check" title="Заполнено AI">✓ AI</span>' : '';
+  const rowCls = key => filled.has(key) ? 'form-row ai-filled-field' : 'form-row';
 
   const catOptions = PRODUCT_CATEGORIES.map(c =>
     `<option value="${c.id}" ${p.category === c.id ? 'selected' : ''}>${c.name}</option>`
@@ -634,77 +637,88 @@ function renderProductEditForm() {
   ).join('');
 
   cont.innerHTML = `
-    <div class="form-row">
-      <label>Название препарата</label>
+    <div class="ai-product-flow">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button type="button" class="btn small accent" id="pe-ai-find-btn" onclick="findProductWithAI()">🤖 1. Найти препарат</button>
+        <button type="button" class="btn small secondary" onclick="searchProductInstruction()">🔎 2. Найти инструкцию</button>
+        <button type="button" class="btn small primary" id="pe-ai-from-instruction-btn" onclick="fillProductFromInstructionAI()">📄 3. Заполнить из инструкции</button>
+      </div>
+      <div class="alert info" style="font-size:12px; margin-bottom:12px;">
+        Правильный порядок: введите название → AI найдёт возможные препараты → подтвердите «Это он» → вставьте ссылку/текст инструкции → AI заполнит поля. Поля, заполненные AI, подсвечиваются и получают ✓ AI.
+      </div>
+      <div id="pe-candidates"></div>
+    </div>
+
+    <div class="${rowCls('name')}">
+      <label>Название препарата ${mark('name')}</label>
       <input type="text" id="pe-name" value="${escapeHtml(p.name || '')}" placeholder="Например: Ридомил Голд МЦ">
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label>Категория</label>
+      <div class="${rowCls('category')}">
+        <label>Категория ${mark('category')}</label>
         <select id="pe-category">${catOptions}</select>
       </div>
-      <div class="form-row">
-        <label>Форма препарата (порядок в баке)</label>
+      <div class="${rowCls('form')}">
+        <label>Форма препарата (порядок в баке) ${mark('form')}</label>
         <select id="pe-form">${formOptions}</select>
       </div>
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label>Действующее вещество</label>
+      <div class="${rowCls('active_ingredient')}">
+        <label>Действующее вещество ${mark('active_ingredient')}</label>
         <input type="text" id="pe-active" value="${escapeHtml(p.active_ingredient || '')}" placeholder="Металаксил + манкоцеб">
       </div>
-      <div class="form-row">
-        <label>Концентрация ДВ</label>
+      <div class="${rowCls('concentration')}">
+        <label>Концентрация ДВ ${mark('concentration')}</label>
         <input type="text" id="pe-concentration" value="${escapeHtml(p.concentration || '')}" placeholder="5% + 64%">
       </div>
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label>Класс опасности</label>
+      <div class="${rowCls('hazard_class')}">
+        <label>Класс опасности ${mark('hazard_class')}</label>
         <input type="text" id="pe-hazard" value="${escapeHtml(p.hazard_class || '')}" placeholder="3 (умеренно опасное)">
       </div>
-      <div class="form-row">
-        <label>№ регистрации</label>
+      <div class="${rowCls('reg_number')}">
+        <label>№ регистрации ${mark('reg_number')}</label>
         <input type="text" id="pe-reg" value="${escapeHtml(p.reg_number || '')}" placeholder="АС-1234567-8-9">
       </div>
     </div>
     <div class="form-grid">
-      <div class="form-row">
-        <label>Доза от</label>
+      <div class="${rowCls('dose_min')}">
+        <label>Доза от ${mark('dose_min')}</label>
         <input type="number" step="0.1" id="pe-dose-min" value="${p.dose_min || ''}" placeholder="0">
       </div>
-      <div class="form-row">
-        <label>Доза до</label>
+      <div class="${rowCls('dose_max')}">
+        <label>Доза до ${mark('dose_max')}</label>
         <input type="number" step="0.1" id="pe-dose-max" value="${p.dose_max || ''}" placeholder="0">
       </div>
-      <div class="form-row">
-        <label>Единица</label>
+      <div class="${rowCls('dose_unit')}">
+        <label>Единица ${mark('dose_unit')}</label>
         <input type="text" id="pe-dose-unit" value="${escapeHtml(p.dose_unit || 'мл/10л')}">
       </div>
-      <div class="form-row">
-        <label>Срок ожидания, дней</label>
+      <div class="${rowCls('waiting_days')}">
+        <label>Срок ожидания, дней ${mark('waiting_days')}</label>
         <input type="number" id="pe-waiting" value="${p.waiting_days || ''}">
       </div>
     </div>
-    <div class="form-row">
-      <label>Цель / воздействие</label>
+    <div class="${rowCls('target')}">
+      <label>Цель / воздействие ${mark('target')}</label>
       <input type="text" id="pe-target" value="${escapeHtml(p.target || '')}" placeholder="Милдью, оидиум, клещ...">
     </div>
-    <div class="form-row">
-      <label>🔗 Ссылка на инструкцию</label>
+    <div class="${rowCls('instruction_url')}">
+      <label>🔗 Ссылка на инструкцию ${mark('instruction_url')}</label>
       <input type="url" id="pe-instruction" value="${escapeHtml(p.instruction_url || '')}" placeholder="https://...">
     </div>
     <div class="form-row">
-      <button type="button" class="btn small accent" id="pe-ai-btn" onclick="fillProductWithAI()">🤖 Заполнить через AI</button>
-      <button type="button" class="btn small secondary" onclick="searchProductInstruction()">🔎 Найти инструкцию в интернете</button>
-      <span id="pe-instruction-hint" style="font-size:12px; color:var(--text-muted); margin-left:8px;">AI создаёт черновик; точные дозы проверяйте по инструкции</span>
+      <label>📄 Текст инструкции / этикетки</label>
+      <textarea id="pe-instruction-text" rows="4" placeholder="Вставьте сюда текст инструкции, регламент применения или фрагмент PDF/этикетки. Тогда AI заполнит карточку именно из инструкции.">${escapeHtml(p.instruction_text || '')}</textarea>
     </div>
-    <div class="form-row">
-      <label>Заметки</label>
-      <textarea id="pe-notes" rows="2" placeholder="Особенности применения, хранения, совместимости">${escapeHtml(p.notes || '')}</textarea>
+    <div class="${rowCls('notes')}">
+      <label>Краткое описание / заметки ${mark('notes')}</label>
+      <textarea id="pe-notes" rows="2" placeholder="Краткое описание препарата, особенности применения, хранения, совместимости">${escapeHtml(p.notes || '')}</textarea>
     </div>
-    <div class="form-row">
-      <label>🪣 Баковая смесь / совместимость</label>
+    <div class="${rowCls('tank_mix_notes')}">
+      <label>🪣 Баковая смесь / совместимость ${mark('tank_mix_notes')}</label>
       <textarea id="pe-tank-notes" rows="2" placeholder="Порядок внесения, pH воды, ограничения совместимости">${escapeHtml(p.tank_mix_notes || '')}</textarea>
     </div>
     <div id="pe-ai-info" style="font-size:12px; color:var(--text-muted);">
@@ -717,43 +731,149 @@ function renderProductEditForm() {
   `;
 }
 
+async function findProductWithAI() {
+  if (!requirePermission('spray.edit', 'Нет прав на AI-поиск препарата')) return;
+  const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
+  if (!name) { toast('Введите название или часть названия препарата', 'error'); return; }
+  if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
+  const btn = document.getElementById('pe-ai-find-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI ищет...'; }
+  const res = await findProductCandidatesAI(name);
+  if (btn) { btn.disabled = false; btn.innerHTML = '🤖 1. Найти препарат'; }
+  if (!res.success) { toast('AI-поиск не удался: ' + res.error, 'error'); return; }
+  currentProductEdit.search_links = res.search_links || buildOfficialSearchLinks(name);
+  currentProductEdit.ai_candidates = res.candidates || [];
+  renderProductCandidates();
+}
+
+function renderProductCandidates() {
+  const cont = document.getElementById('pe-candidates');
+  if (!cont || !currentProductEdit) return;
+  const candidates = currentProductEdit.ai_candidates || [];
+  if (!candidates.length) {
+    cont.innerHTML = '<div class="alert warning" style="font-size:12px;">AI не нашёл уверенных вариантов. Уточните название или используйте поиск инструкции.</div>';
+    return;
+  }
+  cont.innerHTML = `
+    <div class="product-candidates">
+      <h4 style="margin:8px 0; font-size:13px;">Подтвердите препарат:</h4>
+      ${candidates.map((c, idx) => `
+        <div class="product-candidate-card">
+          <div style="flex:1; min-width:180px;">
+            <b>${escapeHtml(c.name || '')}</b>
+            <div style="font-size:12px; color:var(--text-soft); margin-top:3px;">
+              ${escapeHtml(c.short_description || '')}<br>
+              ${c.active_ingredient ? 'ДВ: ' + escapeHtml(c.active_ingredient) + ' · ' : ''}${c.manufacturer ? 'Производитель: ' + escapeHtml(c.manufacturer) + ' · ' : ''}уверенность: ${escapeHtml(c.confidence || '—')}
+            </div>
+          </div>
+          <button class="btn small primary" onclick="selectProductCandidate(${idx})">✅ Это он</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function selectProductCandidate(idx) {
+  const c = currentProductEdit?.ai_candidates?.[idx];
+  if (!c) return;
+  const filled = new Set(currentProductEdit.ai_filled_fields || []);
+  ['name','category','active_ingredient','notes'].forEach(k => filled.add(k));
+  currentProductEdit = normalizeProduct({
+    ...currentProductEdit,
+    name: c.name || currentProductEdit.name,
+    category: c.category || currentProductEdit.category,
+    active_ingredient: c.active_ingredient || currentProductEdit.active_ingredient,
+    notes: c.short_description || currentProductEdit.notes,
+    search_links: currentProductEdit.search_links?.length ? currentProductEdit.search_links : buildOfficialSearchLinks(c.name || currentProductEdit.name),
+    confidence: c.confidence || currentProductEdit.confidence || 'medium',
+    ai_filled_fields: Array.from(filled),
+    ai_updated_at: new Date().toISOString()
+  });
+  renderProductEditForm();
+  toast('✅ Препарат подтверждён. Теперь найдите/вставьте инструкцию.', 'success');
+}
+
 function searchProductInstruction() {
   const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
   if (!name) {
     toast('Сначала введите название препарата', 'warning');
     return;
   }
+  const links = buildOfficialSearchLinks(name);
+  currentProductEdit.search_links = links;
   const query = `инструкция препарат ${name}`;
   const url = `https://yandex.ru/search/?text=${encodeURIComponent(query)}`;
   window.open(url, '_blank', 'noopener,noreferrer');
+  renderProductEditForm();
 }
 
-async function fillProductWithAI() {
+async function fillProductFromInstructionAI() {
   if (!requirePermission('spray.edit', 'Нет прав на AI-карточку препарата')) return;
   const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
-  if (!name) { toast('Введите название препарата', 'error'); return; }
+  const instructionUrl = document.getElementById('pe-instruction')?.value?.trim() || '';
+  const instructionText = document.getElementById('pe-instruction-text')?.value?.trim() || '';
+  if (!name) { toast('Сначала подтвердите или введите название препарата', 'error'); return; }
   if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
-  const btn = document.getElementById('pe-ai-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI ищет...'; }
-  const res = await enrichProductWithAI(name);
-  if (btn) { btn.disabled = false; btn.innerHTML = '🤖 Заполнить через AI'; }
-  if (!res.success) { toast('AI не смог заполнить карточку: ' + res.error, 'error'); return; }
+  if (!instructionText && !instructionUrl) {
+    toast('Вставьте ссылку на инструкцию или текст инструкции/этикетки', 'warning');
+    return;
+  }
+  const btn = document.getElementById('pe-ai-from-instruction-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI читает...'; }
 
-  const merged = normalizeProduct({ ...currentProductEdit, ...res.product, name: res.product.name || name });
-  currentProductEdit = merged;
-  renderProductEditForm();
+  let res;
+  if (instructionText) {
+    const system = `Ты агрономический парсер инструкции препарата. Заполняешь карточку строго по предоставленному тексту инструкции. Если данных нет — оставь пусто/0. Ответ строго JSON.`;
+    const prompt = `Название препарата: ${name}
+Ссылка на инструкцию: ${instructionUrl || 'не указана'}
 
-  // Добавим мягкую рекомендацию в общий список, чтобы не забыть проверить инструкцию
-  if (!data.recommendations) data.recommendations = [];
-  data.recommendations.unshift({
-    priority: merged.verify_required ? 'med' : 'low',
-    title: '🧪 Проверить карточку препарата: ' + merged.name,
-    text: `AI заполнил карточку (${merged.active_ingredient || 'ДВ не указано'}). Перед применением проверьте официальную инструкцию, дозировки, срок ожидания и совместимость.`,
-    source: 'OpenRouter product card',
-    date: todayStr()
+ТЕКСТ ИНСТРУКЦИИ/ЭТИКЕТКИ:
+${instructionText.slice(0, 16000)}
+
+Заполни JSON:
+{
+ "name":"", "category":"fungicide|insecticide|acaricide|herbicide|fertilizer|stimulator|adjuvant",
+ "form":"WP|WG/WDG|SC|OD|EC/EW|SL|FERTILIZER|ADJUVANT",
+ "active_ingredient":"", "concentration":"", "target":"", "dose_min":0, "dose_max":0, "dose_unit":"",
+ "waiting_days":0, "hazard_class":"", "reg_number":"", "notes":"краткое описание препарата", "tank_mix_notes":"",
+ "usage_recommendations":["..."], "risks":["..."], "confidence":"high|medium|low"
+}`;
+    res = await openRouterJSONTask({ system, prompt, max_tokens: 2000, temperature: 0.1 });
+    if (res.success) res.product = res.json;
+  } else {
+    // fallback: без текста инструкции AI создаёт только черновик по названию + ссылке
+    res = await enrichProductWithAI(name, { instructionUrl });
+  }
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '📄 3. Заполнить из инструкции'; }
+  if (!res.success || !res.product) { toast('AI не смог заполнить из инструкции: ' + (res.error || 'нет JSON'), 'error'); return; }
+
+  const product = res.product;
+  const fields = ['name','category','form','active_ingredient','concentration','target','dose_min','dose_max','dose_unit','waiting_days','hazard_class','reg_number','notes','tank_mix_notes'];
+  const filled = new Set(currentProductEdit.ai_filled_fields || []);
+  fields.forEach(k => {
+    const v = product[k];
+    if (v !== undefined && v !== null && String(v) !== '' && String(v) !== '0') filled.add(k);
   });
-  data.recommendations = data.recommendations.slice(0, 80);
-  toast('✅ AI заполнил черновик карточки. Проверьте инструкцию.', 'success');
+  currentProductEdit = normalizeProduct({
+    ...currentProductEdit,
+    ...product,
+    name: product.name || name,
+    instruction_url: instructionUrl || product.instruction_url || currentProductEdit.instruction_url,
+    instruction_text: instructionText,
+    search_links: currentProductEdit.search_links?.length ? currentProductEdit.search_links : buildOfficialSearchLinks(name),
+    verify_required: true,
+    ai_filled_fields: Array.from(filled),
+    ai_model: res.model || product.ai_model || getOpenRouterTextModel(),
+    ai_updated_at: new Date().toISOString()
+  });
+  renderProductEditForm();
+  toast('✅ Карточка заполнена из инструкции. Поля AI подсвечены.', 'success');
+}
+
+// Backward compatibility: старая кнопка теперь запускает правильный этап 3
+async function fillProductWithAI() {
+  return fillProductFromInstructionAI();
 }
 
 function saveProductCatalog() {
@@ -779,6 +899,7 @@ function saveProductCatalog() {
     hazard_class: document.getElementById('pe-hazard')?.value?.trim() || '',
     reg_number: document.getElementById('pe-reg')?.value?.trim() || '',
     instruction_url: document.getElementById('pe-instruction')?.value?.trim() || '',
+    instruction_text: document.getElementById('pe-instruction-text')?.value?.trim() || currentProductEdit.instruction_text || '',
     notes: document.getElementById('pe-notes')?.value?.trim() || '',
     tank_mix_notes: document.getElementById('pe-tank-notes')?.value?.trim() || currentProductEdit.tank_mix_notes || '',
     usage_recommendations: currentProductEdit.usage_recommendations || [],
@@ -787,7 +908,8 @@ function saveProductCatalog() {
     verify_required: currentProductEdit.verify_required !== false,
     confidence: currentProductEdit.confidence || '',
     ai_model: currentProductEdit.ai_model || '',
-    ai_updated_at: currentProductEdit.ai_updated_at || ''
+    ai_updated_at: currentProductEdit.ai_updated_at || '',
+    ai_filled_fields: currentProductEdit.ai_filled_fields || []
   };
 
   ensureSprayData();
