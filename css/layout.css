@@ -217,3 +217,19 @@ main {
 @media (max-width: 480px) {
   .version-badge { font-size: 8px; padding: 1px 5px; }
 }
+
+/* Logout button in header */
+.logout-toggle {
+  color: var(--danger) !important;
+}
+.logout-toggle:hover {
+  color: #fff !important;
+  background: linear-gradient(135deg, var(--danger), #8b2020) !important;
+}
+@media (max-width: 520px) {
+  .logout-toggle {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+  }
+}

@@ -309,6 +309,29 @@ function hideAuthScreen() {
   }
 }
 
+async function signOutAny() {
+  if (!confirm('Выйти из личного кабинета? Локальные данные останутся на устройстве.')) return;
+  try {
+    // Firebase-вход
+    if (auth && currentUser) {
+      await auth.signOut();
+      currentUser = null;
+    }
+    // Яндекс ID
+    if (typeof YANDEX_OAUTH_TOKEN_KEY !== 'undefined') localStorage.removeItem(YANDEX_OAUTH_TOKEN_KEY);
+    if (typeof YANDEX_OAUTH_USER_KEY !== 'undefined') localStorage.removeItem(YANDEX_OAUTH_USER_KEY);
+    localStorage.removeItem('yandex_oauth_state');
+    // Подписки
+    unsubscribeListeners.forEach(u => u && u());
+    unsubscribeListeners = [];
+    toast('Вы вышли из личного кабинета', 'success');
+    setTimeout(() => location.reload(), 500);
+  } catch(e) {
+    console.error('Sign out error', e);
+    toast('Ошибка выхода: ' + e.message, 'error');
+  }
+}
+
 // Гарантированный запуск при DOMContentLoaded
 function startApp() {
   console.log('[Dionis] Starting app v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '?'));
@@ -367,6 +390,7 @@ window.toggleNav = toggleNav;
 window.closeNav = closeNav;
 window.openModal = openModal;
 window.closeModal = closeModal;
+window.signOutAny = signOutAny;
 
 // Запуск
 if (document.readyState === 'loading') {
