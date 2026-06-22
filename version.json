@@ -1,10 +1,19 @@
 {
-  "version": "0.5.2",
+  "version": "0.5.3",
   "release_date": "2026-06-22",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.5.3",
+      "date": "2026-06-22",
+      "type": "patch",
+      "title": "🔐 Проверка безопасного автодеплоя",
+      "changes": [
+        "Обновлён DEPLOY_TOKEN в GitHub Secrets и выполнена проверка цепочки private → public"
+      ]
+    },
     {
       "version": "0.5.2",
       "date": "2026-06-22",
