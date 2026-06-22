@@ -70,9 +70,9 @@ function showTab(tabId) {
     toast('⛔ Нет доступа к разделу', 'error');
     tabId = 'dashboard';
   }
-  document.querySelectorAll('.tab-btn, .nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-btn, .nav-btn, .bottom-nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll(`.tab-btn[data-tab="${tabId}"], .nav-btn[data-tab="${tabId}"]`).forEach(b => b.classList.add('active'));
+  document.querySelectorAll(`.tab-btn[data-tab="${tabId}"], .nav-btn[data-tab="${tabId}"], .bottom-nav-btn[data-tab="${tabId}"]`).forEach(b => b.classList.add('active'));
   const section = document.getElementById(tabId);
   if (section) section.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });

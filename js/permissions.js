@@ -184,7 +184,7 @@ function renderRoleSettings() {
 }
 
 function updateNavigationByPermissions() {
-  document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
+  document.querySelectorAll('.nav-btn[data-tab], .bottom-nav-btn[data-tab]').forEach(btn => {
     const tab = btn.dataset.tab;
     const allowed = canAccessTab(tab);
     btn.style.display = allowed ? '' : 'none';

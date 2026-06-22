@@ -81,7 +81,7 @@
     <button class="btn secondary full" onclick="signInGoogle()">🔐 Войти через Google</button>
 
     <p style="font-size:11px; color:var(--text-muted); margin-top:16px; text-align:center;">
-      <span style="display:block; color:var(--text-muted); font-size:10px; margin-bottom:8px;">Dionis vineyard v<span class="auth-version">0.7.1</span></span>Вход только через зарегистрированный аккаунт. Данные синхронизируются в облаке.
+      <span style="display:block; color:var(--text-muted); font-size:10px; margin-bottom:8px;">Dionis vineyard v<span class="auth-version">0.7.2</span></span>Вход только через зарегистрированный аккаунт. Данные синхронизируются в облаке.
     </p>
   </div>
 </div>
@@ -96,7 +96,7 @@
           <img src="assets/logo-mark-header.png" alt="Dionis" class="logo-mark"/>
           <span class="brand-text">
             <span class="brand-name">Dionis</span>
-            <span class="brand-sub">vineyard <span id="version-badge" class="version-badge">v0.7.1</span></span>
+            <span class="brand-sub">vineyard <span id="version-badge" class="version-badge">v0.7.2</span></span>
           </span>
         </h1>
         <div class="user-area">
@@ -159,6 +159,25 @@
   </aside>
   <div class="nav-overlay" id="nav-overlay" onclick="closeNav()"></div>
 </div>
+
+<!-- НИЖНЕЕ МОБИЛЬНОЕ МЕНЮ -->
+<nav id="bottom-nav" aria-label="Мобильная навигация">
+  <button class="bottom-nav-btn active" data-tab="dashboard" onclick="showTab('dashboard')">
+    <span>📊</span><small>Главная</small>
+  </button>
+  <button class="bottom-nav-btn" data-tab="plots" onclick="showTab('plots')">
+    <span>🗺</span><small>Участки</small>
+  </button>
+  <button class="bottom-nav-btn" data-tab="photos" onclick="showTab('photos')">
+    <span>📸</span><small>Фото</small>
+  </button>
+  <button class="bottom-nav-btn" data-tab="treatments" onclick="showTab('treatments')">
+    <span>💊</span><small>Обработки</small>
+  </button>
+  <button class="bottom-nav-btn bottom-more" onclick="toggleNav()">
+    <span>☰</span><small>Меню</small>
+  </button>
+</nav>
 
 <!-- ============ ОБЩИЕ МОДАЛКИ И ВИДЖЕТЫ ============ -->
 <!-- Модалки секций (plot, block, seedling, bulk, journal, task, photo, station) — динамически вставляются вместе с секциями -->
