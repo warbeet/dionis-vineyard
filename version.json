@@ -1,10 +1,20 @@
 {
-  "version": "0.5.3",
+  "version": "0.5.4",
   "release_date": "2026-06-22",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.5.4",
+      "date": "2026-06-22",
+      "type": "patch",
+      "title": "🧭 Документация восстановления контекста",
+      "changes": [
+        "Добавлен docs/AGENT_HANDOFF.md для быстрого восстановления нового чата",
+        "Добавлен docs/WORKFLOW.md с регламентом работы и деплоя"
+      ]
+    },
     {
       "version": "0.5.3",
       "date": "2026-06-22",
