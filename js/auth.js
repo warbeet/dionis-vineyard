@@ -43,7 +43,7 @@ async function initFirebase() {
 async function signIn() {
   if (!auth) {
     const ok = await initFirebase();
-    if (!ok) { toast('Сначала настройте Firebase в режиме «без аккаунта» → Настройки', 'error'); return; }
+    if (!ok) { toast('Сначала настройте Firebase на экране входа', 'error'); return; }
   }
   try {
     const email = document.getElementById('signin-email').value;
@@ -55,7 +55,7 @@ async function signIn() {
 async function signUp() {
   if (!auth) {
     const ok = await initFirebase();
-    if (!ok) { toast('Сначала настройте Firebase в режиме «без аккаунта» → Настройки', 'error'); return; }
+    if (!ok) { toast('Сначала настройте Firebase на экране входа', 'error'); return; }
   }
   try {
     const name = document.getElementById('signup-name').value;
@@ -317,13 +317,35 @@ function setSyncIndicator(state) {
 // ===========================================================================
 // FIREBASE CONFIG SAVE
 // ===========================================================================
-async function saveFirebaseConfig() {
-  const raw = document.getElementById('firebase-config').value.trim();
+function toggleAuthFirebaseSetup() {
+  const box = document.getElementById('auth-firebase-setup');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  const saved = localStorage.getItem(FIREBASE_CONFIG_KEY);
+  const input = document.getElementById('auth-firebase-config');
+  if (saved && input && !input.value) input.value = saved;
+}
+
+function parseFirebaseConfig(raw) {
+  const cleaned = raw.trim().replace(/^const\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '');
+  return eval('(' + cleaned + ')');
+}
+
+async function saveFirebaseConfigFromAuth() {
+  const raw = document.getElementById('auth-firebase-config')?.value.trim() || '';
   if (!raw) { toast('Введите конфиг Firebase', 'error'); return; }
   try {
-    // Очистим JS-объект от обёрток
-    const cleaned = raw.replace(/^const\s+\w+\s*=\s*/, '').replace(/;?\s*$/, '');
-    const config = typeof cleaned === 'string' ? eval('(' + cleaned + ')') : cleaned;
+    const config = parseFirebaseConfig(raw);
+    localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(config));
+    toast('✅ Firebase config сохранён. Перезагружаем...', 'success');
+    setTimeout(() => location.reload(), 1000);
+  } catch(e) { toast('Невалидный конфиг: ' + e.message, 'error'); }
+}
+
+async function saveFirebaseConfig() {
+  const raw = document.getElementById('firebase-config')?.value.trim() || document.getElementById('auth-firebase-config')?.value.trim() || '';
+  if (!raw) { toast('Введите конфиг Firebase', 'error'); return; }
+  try {
+    const config = parseFirebaseConfig(raw);
     localStorage.setItem(FIREBASE_CONFIG_KEY, JSON.stringify(config));
     toast('✅ Конфиг сохранён. Перезагружаем...', 'success');
     setTimeout(() => location.reload(), 1500);

@@ -1,10 +1,22 @@
 {
-  "version": "0.6.4",
+  "version": "0.6.5",
   "release_date": "2026-06-22",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.6.5",
+      "date": "2026-06-22",
+      "type": "patch",
+      "title": "🔐 Только Firebase-вход",
+      "changes": [
+        "Убран вход без регистрации с экрана авторизации",
+        "Яндекс ID временно убран из интерфейса и загрузки приложения",
+        "На экран входа добавлена настройка Firebase config без локального режима",
+        "Оставлены только Email/Password и Google для облачной синхронизации"
+      ]
+    },
     {
       "version": "0.6.4",
       "date": "2026-06-22",
