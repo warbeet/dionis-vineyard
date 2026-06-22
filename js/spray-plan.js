@@ -72,8 +72,18 @@ function normalizeProduct(p) {
     target: p.target || '',
     active_ingredient: p.active_ingredient || '',
     concentration: p.concentration || '',
+    manufacturer: p.manufacturer || '',
+    mechanism: p.mechanism || '',
     hazard_class: p.hazard_class || '',
     reg_number: p.reg_number || '',
+    registration_until: p.registration_until || '',
+    storage_life: p.storage_life || '',
+    rainfastness: p.rainfastness || '',
+    phytotoxicity: p.phytotoxicity || '',
+    resistance_notes: p.resistance_notes || '',
+    precautions: p.precautions || '',
+    crops_regulations: p.crops_regulations || '',
+    source_urls: p.source_urls || '',
     instruction_url: p.instruction_url || '',
     notes: p.notes || '',
     tank_mix_notes: p.tank_mix_notes || '',
@@ -674,6 +684,16 @@ function renderProductEditForm() {
       </div>
     </div>
     <div class="form-grid">
+      <div class="${rowCls('manufacturer')}">
+        <label>Производитель ${mark('manufacturer')}</label>
+        <input type="text" id="pe-manufacturer" value="${escapeHtml(p.manufacturer || '')}" placeholder="BASF, Syngenta, Avgust...">
+      </div>
+      <div class="${rowCls('mechanism')}">
+        <label>Механизм действия ${mark('mechanism')}</label>
+        <input type="text" id="pe-mechanism" value="${escapeHtml(p.mechanism || '')}" placeholder="системный, трансламинарный, контактный...">
+      </div>
+    </div>
+    <div class="form-grid">
       <div class="${rowCls('hazard_class')}">
         <label>Класс опасности ${mark('hazard_class')}</label>
         <input type="text" id="pe-hazard" value="${escapeHtml(p.hazard_class || '')}" placeholder="3 (умеренно опасное)">
@@ -681,6 +701,16 @@ function renderProductEditForm() {
       <div class="${rowCls('reg_number')}">
         <label>№ регистрации ${mark('reg_number')}</label>
         <input type="text" id="pe-reg" value="${escapeHtml(p.reg_number || '')}" placeholder="АС-1234567-8-9">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="${rowCls('registration_until')}">
+        <label>Регистрация действует до ${mark('registration_until')}</label>
+        <input type="text" id="pe-registration-until" value="${escapeHtml(p.registration_until || '')}" placeholder="23.05.2027">
+      </div>
+      <div class="${rowCls('storage_life')}">
+        <label>Срок хранения ${mark('storage_life')}</label>
+        <input type="text" id="pe-storage-life" value="${escapeHtml(p.storage_life || '')}" placeholder="3 года">
       </div>
     </div>
     <div class="form-grid">
@@ -705,12 +735,20 @@ function renderProductEditForm() {
       <label>Цель / воздействие ${mark('target')}</label>
       <input type="text" id="pe-target" value="${escapeHtml(p.target || '')}" placeholder="Милдью, оидиум, клещ...">
     </div>
+    <div class="${rowCls('crops_regulations')}">
+      <label>Регламент по культурам ${mark('crops_regulations')}</label>
+      <textarea id="pe-crops-regulations" rows="3" placeholder="Виноград — оидиум — 0,15–0,2 л/га — 60 дней; картофель — ...">${escapeHtml(p.crops_regulations || '')}</textarea>
+    </div>
     <div class="${rowCls('instruction_url')}">
-      <label>🔗 Ссылка на инструкцию ${mark('instruction_url')}</label>
+      <label>🔗 Основная ссылка на инструкцию ${mark('instruction_url')}</label>
       <input type="url" id="pe-instruction" value="${escapeHtml(p.instruction_url || '')}" placeholder="https://...">
     </div>
+    <div class="${rowCls('source_urls')}">
+      <label>🔗 Дополнительные источники ${mark('source_urls')}</label>
+      <textarea id="pe-source-urls" rows="2" placeholder="Вставьте ссылки на источники — по одной в строке: BASF, Госреестр, AgroXXI...">${escapeHtml(p.source_urls || '')}</textarea>
+    </div>
     <div class="form-row">
-      <label>📄 Текст инструкции / этикетки</label>
+      <label>📄 Текст инструкции / этикетки / нескольких источников</label>
       <div class="toolbar" style="margin-bottom:8px;">
         <button type="button" class="btn small secondary" onclick="document.getElementById('pe-instruction-file').click()">📎 Загрузить PDF/TXT</button>
         <span id="pe-file-status" style="font-size:12px; color:var(--text-muted);">PDF.js извлечёт текст из инструкции; TXT/CSV читаются напрямую.</span>
@@ -725,6 +763,24 @@ function renderProductEditForm() {
     <div class="${rowCls('tank_mix_notes')}">
       <label>🪣 Баковая смесь / совместимость ${mark('tank_mix_notes')}</label>
       <textarea id="pe-tank-notes" rows="2" placeholder="Порядок внесения, pH воды, ограничения совместимости">${escapeHtml(p.tank_mix_notes || '')}</textarea>
+    </div>
+    <div class="form-grid">
+      <div class="${rowCls('rainfastness')}">
+        <label>Дождестойкость ${mark('rainfastness')}</label>
+        <input type="text" id="pe-rainfastness" value="${escapeHtml(p.rainfastness || '')}" placeholder="устойчив к осадкам / через X часов">
+      </div>
+      <div class="${rowCls('phytotoxicity')}">
+        <label>Фитотоксичность ${mark('phytotoxicity')}</label>
+        <input type="text" id="pe-phytotoxicity" value="${escapeHtml(p.phytotoxicity || '')}" placeholder="не фитотоксичен при соблюдении регламента">
+      </div>
+    </div>
+    <div class="${rowCls('resistance_notes')}">
+      <label>Резистентность ${mark('resistance_notes')}</label>
+      <textarea id="pe-resistance" rows="2" placeholder="Не более 2 последовательных обработок одним классом ДВ...">${escapeHtml(p.resistance_notes || '')}</textarea>
+    </div>
+    <div class="${rowCls('precautions')}">
+      <label>Меры предосторожности ${mark('precautions')}</label>
+      <textarea id="pe-precautions" rows="2" placeholder="СИЗ, водоохранные зоны, токсичность, ограничения...">${escapeHtml(p.precautions || '')}</textarea>
     </div>
     <div id="pe-ai-info" style="font-size:12px; color:var(--text-muted);">
       ${p.ai_updated_at ? `🤖 AI: ${escapeHtml(p.ai_model || '')} · ${new Date(p.ai_updated_at).toLocaleString('ru-RU')} · уверенность: ${escapeHtml(p.confidence || '—')}` : ''}
@@ -816,6 +872,7 @@ async function fillProductFromInstructionAI() {
   if (!requirePermission('spray.edit', 'Нет прав на AI-карточку препарата')) return;
   const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
   const instructionUrl = document.getElementById('pe-instruction')?.value?.trim() || '';
+  const sourceUrls = document.getElementById('pe-source-urls')?.value?.trim() || '';
   const instructionText = document.getElementById('pe-instruction-text')?.value?.trim() || '';
   if (!name) { toast('Сначала подтвердите или введите название препарата', 'error'); return; }
   if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
@@ -830,17 +887,21 @@ async function fillProductFromInstructionAI() {
   if (instructionText) {
     const system = `Ты агрономический парсер инструкции препарата. Заполняешь карточку строго по предоставленному тексту инструкции. Если данных нет — оставь пусто/0. Ответ строго JSON.`;
     const prompt = `Название препарата: ${name}
-Ссылка на инструкцию: ${instructionUrl || 'не указана'}
+Основная ссылка на инструкцию: ${instructionUrl || 'не указана'}
+Дополнительные источники:
+${sourceUrls || 'не указаны'}
 
-ТЕКСТ ИНСТРУКЦИИ/ЭТИКЕТКИ:
+ТЕКСТ ИНСТРУКЦИИ/ЭТИКЕТКИ/НЕСКОЛЬКИХ ИСТОЧНИКОВ:
 ${instructionText.slice(0, 16000)}
 
 Заполни JSON:
 {
  "name":"", "category":"fungicide|insecticide|acaricide|herbicide|fertilizer|stimulator|adjuvant",
  "form":"WP|WG/WDG|SC|OD|EC/EW|SL|FERTILIZER|ADJUVANT",
- "active_ingredient":"", "concentration":"", "target":"", "dose_min":0, "dose_max":0, "dose_unit":"",
- "waiting_days":0, "hazard_class":"", "reg_number":"", "notes":"краткое описание препарата", "tank_mix_notes":"",
+ "active_ingredient":"", "concentration":"", "manufacturer":"", "mechanism":"", "target":"", "dose_min":0, "dose_max":0, "dose_unit":"",
+ "waiting_days":0, "hazard_class":"", "reg_number":"", "registration_until":"", "storage_life":"",
+ "crops_regulations":"регламент по культурам, нормам, срокам ожидания", "notes":"краткое описание препарата", "tank_mix_notes":"",
+ "rainfastness":"", "phytotoxicity":"", "resistance_notes":"", "precautions":"",
  "usage_recommendations":["..."], "risks":["..."], "confidence":"high|medium|low"
 }`;
     res = await openRouterJSONTask({ system, prompt, max_tokens: 2000, temperature: 0.1 });
@@ -854,7 +915,7 @@ ${instructionText.slice(0, 16000)}
   if (!res.success || !res.product) { toast('AI не смог заполнить из инструкции: ' + (res.error || 'нет JSON'), 'error'); return; }
 
   const product = res.product;
-  const fields = ['name','category','form','active_ingredient','concentration','target','dose_min','dose_max','dose_unit','waiting_days','hazard_class','reg_number','notes','tank_mix_notes'];
+  const fields = ['name','category','form','active_ingredient','concentration','manufacturer','mechanism','target','dose_min','dose_max','dose_unit','waiting_days','hazard_class','reg_number','registration_until','storage_life','crops_regulations','notes','tank_mix_notes','rainfastness','phytotoxicity','resistance_notes','precautions'];
   const filled = new Set(currentProductEdit.ai_filled_fields || []);
   fields.forEach(k => {
     const v = product[k];
@@ -865,6 +926,7 @@ ${instructionText.slice(0, 16000)}
     ...product,
     name: product.name || name,
     instruction_url: instructionUrl || product.instruction_url || currentProductEdit.instruction_url,
+    source_urls: sourceUrls || currentProductEdit.source_urls || '',
     instruction_text: instructionText,
     search_links: currentProductEdit.search_links?.length ? currentProductEdit.search_links : buildOfficialSearchLinks(name),
     verify_required: true,
@@ -901,12 +963,22 @@ function saveProductCatalog() {
     target: document.getElementById('pe-target')?.value?.trim() || '',
     active_ingredient: document.getElementById('pe-active')?.value?.trim() || '',
     concentration: document.getElementById('pe-concentration')?.value?.trim() || '',
+    manufacturer: document.getElementById('pe-manufacturer')?.value?.trim() || '',
+    mechanism: document.getElementById('pe-mechanism')?.value?.trim() || '',
     hazard_class: document.getElementById('pe-hazard')?.value?.trim() || '',
     reg_number: document.getElementById('pe-reg')?.value?.trim() || '',
+    registration_until: document.getElementById('pe-registration-until')?.value?.trim() || '',
+    storage_life: document.getElementById('pe-storage-life')?.value?.trim() || '',
+    crops_regulations: document.getElementById('pe-crops-regulations')?.value?.trim() || '',
+    source_urls: document.getElementById('pe-source-urls')?.value?.trim() || '',
     instruction_url: document.getElementById('pe-instruction')?.value?.trim() || '',
     instruction_text: document.getElementById('pe-instruction-text')?.value?.trim() || currentProductEdit.instruction_text || '',
     notes: document.getElementById('pe-notes')?.value?.trim() || '',
     tank_mix_notes: document.getElementById('pe-tank-notes')?.value?.trim() || currentProductEdit.tank_mix_notes || '',
+    rainfastness: document.getElementById('pe-rainfastness')?.value?.trim() || '',
+    phytotoxicity: document.getElementById('pe-phytotoxicity')?.value?.trim() || '',
+    resistance_notes: document.getElementById('pe-resistance')?.value?.trim() || '',
+    precautions: document.getElementById('pe-precautions')?.value?.trim() || '',
     usage_recommendations: currentProductEdit.usage_recommendations || [],
     risks: currentProductEdit.risks || [],
     search_links: currentProductEdit.search_links || [],
