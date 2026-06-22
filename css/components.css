@@ -690,3 +690,24 @@ tr:hover td { background: var(--bg-elevated); }
     min-width: 720px;
   }
 }
+
+/* Product directory */
+.product-dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+.product-dir-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: 5px 5px 12px var(--shadow-dark), -5px -5px 12px var(--shadow-light);
+}
+@media (max-width: 520px) {
+  .card { padding: 16px; border-radius: 20px; }
+  .toolbar { gap: 8px; }
+  .toolbar .btn, button.btn { width: auto; }
+  .modal-tabs.treatments-tabs { max-width: none !important; overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; }
+  .modal-tabs.treatments-tabs .modal-tab { white-space: nowrap; flex: 0 0 auto; }
+  .product-dir-grid { grid-template-columns: 1fr; }
+}

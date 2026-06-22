@@ -414,6 +414,7 @@ function switchTreatmentsTab(tab) {
   const el = document.getElementById('trtab-' + tab);
   if (el) el.style.display = 'block';
   if (tab === 'plan' && typeof renderSprayPlans === 'function') renderSprayPlans();
+  if (tab === 'products' && typeof renderProductsDirectory === 'function') renderProductsDirectory();
 }
 
 // Активный таб опрыскивания при первой загрузке

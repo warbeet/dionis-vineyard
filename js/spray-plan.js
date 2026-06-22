@@ -426,6 +426,9 @@ function renderSprayPlanForm() {
       </div>
 
       <h4 style="margin-top:14px;">📋 Последовательность смешивания</h4>
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn small accent" id="tank-ai-btn" onclick="analyzeTankMixWithAI()">🤖 Проверить смесь AI</button>
+      </div>
       <div id="sp-tank-order"></div>
 
       <div class="alert info" style="font-size:12px; margin-top:14px;">
@@ -820,6 +823,7 @@ function saveProductCatalog() {
   // Обновляем список препаратов в плане, если мы редактировали из плана
   if (typeof renderSprayProductsList === 'function') renderSprayProductsList();
   if (typeof renderTankOrder === 'function') renderTankOrder();
+  if (typeof renderProductsDirectory === 'function') renderProductsDirectory();
 
   toast('✅ Препарат сохранён в базу', 'success');
 }
@@ -841,7 +845,23 @@ function renderTankOrder() {
     return { ...p, form: cat?.form || '?', order: orderInfo?.order || 99, orderName: orderInfo?.name || '' };
   }).sort((a, b) => a.order - b.order);
 
+  const ai = currentSprayPlan?.ai_mix_analysis;
+  const aiBadge = ai ? (ai.verdict === 'danger' ? 'red' : ai.verdict === 'caution' ? 'yellow' : 'green') : '';
   cont.innerHTML = `
+    ${ai ? `
+      <div class="alert ${ai.verdict === 'danger' ? 'danger' : ai.verdict === 'caution' ? 'warning' : 'success'}" style="font-size:13px;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:6px;">
+          <b>🤖 AI-проверка смеси</b>
+          <span class="badge ${aiBadge}">${escapeHtml(ai.verdict || '—')}</span>
+          <span style="font-size:11px; color:var(--text-muted);">${ai.updated_at ? new Date(ai.updated_at).toLocaleString('ru-RU') : ''}</span>
+        </div>
+        <div>${escapeHtml(ai.summary || '')}</div>
+        ${ai.warnings?.length ? `<div style="margin-top:8px;"><b>Предупреждения:</b><ul>${ai.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul></div>` : ''}
+        ${ai.recommendations?.length ? `<div style="margin-top:8px;"><b>Рекомендации:</b><ul>${ai.recommendations.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul></div>` : ''}
+        ${ai.water_ph ? `<div style="margin-top:8px;"><b>pH воды:</b> ${escapeHtml(ai.water_ph)}</div>` : ''}
+        ${ai.official_check ? `<div style="margin-top:8px;"><b>Проверить:</b> ${escapeHtml(ai.official_check)}</div>` : ''}
+      </div>
+    ` : ''}
     <div style="display:flex; flex-direction:column; gap:8px;">
       ${sorted.map((p, idx) => `
         <div style="display:flex; gap:10px; align-items:center; padding:10px 14px; background:var(--bg-elevated); border-radius:12px;">
@@ -1059,4 +1079,92 @@ function importSprayCSV(event) {
   };
   reader.readAsText(file);
   event.target.value = '';
+}
+
+// =========== ДИРЕКТОРИЯ ПРЕПАРАТОВ ===========
+function renderProductsDirectory() {
+  ensureSprayData();
+  const cont = document.getElementById('products-directory');
+  if (!cont) return;
+  const q = (document.getElementById('products-dir-search')?.value || '').toLowerCase().trim();
+  const catalog = (data.products_catalog || []).filter(p => {
+    if (!q) return true;
+    return [p.name, p.active_ingredient, p.target, p.category, p.notes].some(x => String(x || '').toLowerCase().includes(q));
+  }).sort((a,b) => (a.name || '').localeCompare(b.name || '', 'ru'));
+  if (!catalog.length) {
+    cont.innerHTML = '<div class="empty">Препараты не найдены.</div>';
+    return;
+  }
+  cont.innerHTML = `
+    <div class="product-dir-grid">
+      ${catalog.map(p => `
+        <div class="product-dir-card">
+          <div style="display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;">
+            <h4 style="margin:0; flex:1; min-width:170px;">${escapeHtml(p.name)}</h4>
+            <span class="badge purple">${escapeHtml(p.form || '')}</span>
+            ${p.verify_required ? '<span class="badge yellow">проверить</span>' : '<span class="badge green">проверено</span>'}
+          </div>
+          <div style="font-size:12px; color:var(--text-soft); margin-top:8px; line-height:1.55;">
+            ${p.active_ingredient ? `<b>ДВ:</b> ${escapeHtml(p.active_ingredient)}${p.concentration ? ' · ' + escapeHtml(p.concentration) : ''}<br>` : ''}
+            ${p.target ? `<b>Цель:</b> ${escapeHtml(p.target)}<br>` : ''}
+            <b>Доза:</b> ${escapeHtml(String(p.dose_min || 0))}-${escapeHtml(String(p.dose_max || 0))} ${escapeHtml(p.dose_unit || '')} · <b>ожидание:</b> ${Number(p.waiting_days || 0)} дн.
+          </div>
+          ${p.instruction_url ? `<a href="${escapeHtml(p.instruction_url)}" target="_blank" rel="noopener" style="display:inline-block; margin-top:8px; font-size:12px;">📄 Инструкция</a>` : ''}
+          <div class="toolbar" style="margin-top:10px;">
+            <button class="btn small" onclick="openProductEditModal('${escapeHtml(p.name).replace(/'/g, '&apos;')}')">✏️ Редактировать</button>
+            <button class="btn small accent" onclick="openProductEditModal('${escapeHtml(p.name).replace(/'/g, '&apos;')}'); setTimeout(()=>fillProductWithAI(), 100)">🤖 AI</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// =========== AI-ПРОВЕРКА БАКОВОЙ СМЕСИ ===========
+async function analyzeTankMixWithAI() {
+  if (!requirePermission('spray.edit', 'Нет прав на AI-проверку баковой смеси')) return;
+  if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
+  const plan = currentSprayPlan;
+  if (!plan || !plan.products || plan.products.length < 2) {
+    toast('Добавьте минимум 2 препарата для проверки смеси', 'warning');
+    return;
+  }
+  // Подтянем текущий объём из UI
+  plan.tank_volume_l = parseFloat(document.getElementById('sp-tank-volume')?.value) || plan.tank_volume_l || 1000;
+  plan.mix_lifetime_hours = parseFloat(document.getElementById('sp-mix-lifetime')?.value) || plan.mix_lifetime_hours || 4;
+  const products = plan.products.map(p => {
+    const cat = (data.products_catalog || PRODUCT_CATALOG).find(c => c.name === p.name) || {};
+    return { ...cat, selected_dose: p.dose };
+  });
+  const btn = document.getElementById('tank-ai-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI проверяет...'; }
+  const system = `Ты агроном по защите винограда. Проверяешь баковую смесь на совместимость, порядок внесения и риски. Не выдумывай официальные факты; если не уверен — требуй jar-test и проверку инструкций. Ответ строго JSON.`;
+  const prompt = `Проверь баковую смесь для виноградника.
+
+План:
+${JSON.stringify({ date: plan.date, tank_volume_l: plan.tank_volume_l, mix_lifetime_hours: plan.mix_lifetime_hours, notes: plan.notes, products }, null, 2)}
+
+Верни JSON:
+{
+  "verdict": "ok|caution|danger",
+  "summary": "короткий вывод",
+  "mix_order": [{"step":1,"product":"","action":"как добавить"}],
+  "warnings": ["..."],
+  "recommendations": ["..."],
+  "jar_test_required": true,
+  "recommended_lifetime_hours": 0,
+  "water_ph": "рекомендация по pH",
+  "official_check": "что проверить в инструкциях"
+}`;
+  const res = await openRouterJSONTask({ system, prompt, max_tokens: 1800, temperature: 0.2 });
+  if (btn) { btn.disabled = false; btn.innerHTML = '🤖 Проверить смесь AI'; }
+  if (!res.success || !res.json) { toast('AI-проверка не удалась: ' + (res.error || 'нет JSON'), 'error'); return; }
+  plan.ai_mix_analysis = { ...res.json, model: res.model, updated_at: new Date().toISOString() };
+  if (res.json.recommended_lifetime_hours) {
+    plan.mix_lifetime_hours = Number(res.json.recommended_lifetime_hours) || plan.mix_lifetime_hours;
+    const lt = document.getElementById('sp-mix-lifetime');
+    if (lt) lt.value = plan.mix_lifetime_hours;
+  }
+  renderTankOrder();
+  toast('✅ AI-проверка баковой смеси готова', 'success');
 }

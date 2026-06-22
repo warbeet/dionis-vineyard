@@ -2,8 +2,9 @@
   <h2>💊 Обработки и план опрыскивания</h2>
 
   <!-- ВКЛАДКИ РАЗДЕЛА -->
-  <div class="modal-tabs" style="max-width:560px;">
+  <div class="modal-tabs treatments-tabs">
     <button class="modal-tab tr-tab active" data-trtab="plan" onclick="switchTreatmentsTab('plan')">📅 План опрыскивания</button>
+    <button class="modal-tab tr-tab" data-trtab="products" onclick="switchTreatmentsTab('products')">🧪 Препараты</button>
     <button class="modal-tab tr-tab" data-trtab="log" onclick="switchTreatmentsTab('log')">📋 Журнал обработок</button>
     <button class="modal-tab tr-tab" data-trtab="diseases" onclick="switchTreatmentsTab('diseases')">⚠️ Болезни</button>
   </div>
@@ -25,6 +26,20 @@
       </div>
 
       <div id="spray-plans-content"></div>
+    </div>
+  </div>
+
+  <!-- === ВКЛАДКА: ПРЕПАРАТЫ === -->
+  <div class="tr-tab-content" id="trtab-products" style="display:none;">
+    <div class="card">
+      <div class="toolbar">
+        <button class="btn primary" onclick="openProductEditModal()">+ Новый препарат</button>
+        <input type="text" id="products-dir-search" placeholder="Поиск по препарату, ДВ, цели..." oninput="renderProductsDirectory()" style="max-width:360px;">
+      </div>
+      <div class="alert info" style="font-size:13px;">
+        🧪 Директория препаратов используется в плане опрыскивания. Новые карточки можно заполнять через OpenRouter AI, но официальные дозировки и инструкции обязательно проверяйте.
+      </div>
+      <div id="products-directory"></div>
     </div>
   </div>
 

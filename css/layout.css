@@ -233,3 +233,66 @@ main {
     font-size: 16px !important;
   }
 }
+
+/* Mobile compact header — чтобы шапка помещалась на телефонах */
+@media (max-width: 520px) {
+  .header-inner {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  header h1 {
+    gap: 7px;
+    min-width: 0;
+    flex: 1;
+  }
+  header h1 .logo-mark {
+    width: 34px;
+    height: 34px;
+    padding: 4px;
+  }
+  header h1 .brand-name {
+    font-size: 16px;
+  }
+  header h1 .brand-sub {
+    font-size: 8px;
+    letter-spacing: 1.6px;
+  }
+  .version-badge {
+    display: block;
+    width: fit-content;
+    margin-left: 0;
+    margin-top: 2px;
+    font-size: 8px;
+    padding: 1px 5px;
+  }
+  .user-area {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .theme-toggle,
+  .nav-toggle,
+  .user-area .avatar {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    font-size: 15px !important;
+  }
+  .sync-indicator {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    font-size: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .sync-indicator.synced::before { content: '✓'; font-size: 17px; color: var(--success); }
+  .sync-indicator.syncing::before { content: '↻'; font-size: 17px; color: var(--warning); }
+  .sync-indicator.offline::before { content: '⚠'; font-size: 16px; color: var(--danger); }
+  .sync-indicator.local::before { content: '💻'; font-size: 14px; }
+  main {
+    padding: 8px 12px 130px;
+  }
+}
