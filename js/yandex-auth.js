@@ -17,6 +17,16 @@ function getYandexClientId() {
   return localStorage.getItem(YANDEX_OAUTH_CLIENT_ID_KEY) || '';
 }
 
+function getYandexRedirectUri() {
+  // Для GitHub Pages важно не получить /index.html или случайный hash.
+  // Канонический redirect: https://warbeet.github.io/dionis-vineyard/
+  const origin = window.location.origin;
+  let path = window.location.pathname || '/';
+  if (path.endsWith('/index.html')) path = path.slice(0, -'index.html'.length);
+  if (!path.endsWith('/')) path = path.replace(/[^/]*$/, '');
+  return origin + path;
+}
+
 function saveYandexClientId(clientId) {
   if (clientId && clientId.trim()) {
     localStorage.setItem(YANDEX_OAUTH_CLIENT_ID_KEY, clientId.trim());
@@ -40,12 +50,21 @@ function signInYandex() {
     return;
   }
 
-  const redirectUri = window.location.origin + window.location.pathname;
+  const redirectUri = getYandexRedirectUri();
   const state = Math.random().toString(36).slice(2);
   localStorage.setItem('yandex_oauth_state', state);
 
-  // Implicit flow — токен прилетает прямо в URL
-  const authUrl = `https://oauth.yandex.ru/authorize?response_type=token&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&force_confirm=yes`;
+  // Implicit flow — токен прилетает прямо в URL.
+  // Важно: Яндекс ID здесь используется только как локальная идентификация.
+  // Для облачной синхронизации и ролей нужен Firebase-вход (Email/Google).
+  const params = new URLSearchParams({
+    response_type: 'token',
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    state,
+    force_confirm: 'yes'
+  });
+  const authUrl = `https://oauth.yandex.ru/authorize?${params.toString()}`;
 
   window.location.href = authUrl;
 }
@@ -86,8 +105,8 @@ function checkYandexOAuthReturn() {
     }
   });
 
-  // Очищаем URL от токена
-  history.replaceState(null, '', window.location.pathname);
+  // Очищаем URL от токена, оставляя канонический путь приложения
+  history.replaceState(null, '', getYandexRedirectUri());
   return true;
 }
 
@@ -183,8 +202,8 @@ function renderYandexAuthSettings() {
           <li>Открой <a href="https://oauth.yandex.ru/client/new" target="_blank">oauth.yandex.ru/client/new</a></li>
           <li><b>Название:</b> Dionis vineyard</li>
           <li><b>Платформа:</b> ☑️ Веб-сервисы</li>
-          <li><b>Redirect URI:</b> <code style="background:var(--bg);padding:2px 6px;border-radius:4px;">${escapeHtml(window.location.origin + window.location.pathname)}</code> <button class="btn small secondary" onclick="navigator.clipboard.writeText('${window.location.origin + window.location.pathname}').then(()=>toast('📋 Скопировано', 'success'))">📋</button></li>
-          <li><b>Какие данные:</b> ☑️ Доступ к логину, имени и фамилии, полу + ☑️ Доступ к адресу электронной почты + ☑️ Доступ к портрету пользователя</li>
+          <li><b>Redirect URI:</b> <code style="background:var(--bg);padding:2px 6px;border-radius:4px;">${escapeHtml(getYandexRedirectUri())}</code> <button class="btn small secondary" onclick="navigator.clipboard.writeText(getYandexRedirectUri()).then(()=>toast('📋 Скопировано', 'success'))">📋</button></li>
+          <li><b>Какие данные:</b> ☑️ Доступ к логину, имени и фамилии + ☑️ Доступ к адресу электронной почты + ☑️ Доступ к портрету пользователя</li>
           <li>Создать → скопировать <b>Client ID</b> сюда</li>
         </ol>
       </p>

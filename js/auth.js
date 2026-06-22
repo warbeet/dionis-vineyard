@@ -98,35 +98,85 @@ function onAuthChanged(user) {
 }
 
 // ===========================================================================
+// APPROVAL / ACCESS REQUESTS
+// ===========================================================================
+
+async function createOrRefreshAccessRequest() {
+  if (!db || !currentUser) return;
+  const uid = currentUser.uid;
+  const email = (currentUser.email || '').toLowerCase();
+  const name = currentUser.displayName || '';
+  await db.collection('accessRequests').doc(uid).set({
+    uid,
+    email,
+    name,
+    status: 'pending',
+    requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    appVersion: typeof APP_VERSION !== 'undefined' ? APP_VERSION : '?'
+  }, { merge: true });
+  await db.collection('users').doc(uid).set({
+    email,
+    name,
+    status: 'pending',
+    role: null,
+    vineyardId: null,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+}
+
+async function showPendingApproval(status = 'pending', profile = {}) {
+  const screen = document.getElementById('auth-screen');
+  if (!screen) return;
+  const email = currentUser?.email || profile.email || '—';
+  const isRejected = status === 'rejected' || status === 'blocked';
+  screen.classList.remove('hidden');
+  screen.style.display = 'flex';
+  screen.innerHTML = `
+    <div class="auth-card">
+      <div class="auth-logo"><img src="assets/logo-full-transparent.png" alt="Dionis vineyard"/></div>
+      <h2 style="text-align:center;">${isRejected ? 'Доступ не активен' : 'Заявка ожидает одобрения'}</h2>
+      <p class="sub" style="text-align:center;">
+        ${isRejected
+          ? 'Ваш аккаунт не имеет доступа к винограднику. Свяжитесь с владельцем.'
+          : 'Вы зарегистрировались, но работа в системе начнётся только после одобрения владельцем и назначения роли.'}
+      </p>
+      <div class="alert ${isRejected ? 'danger' : 'warning'}" style="font-size:13px;">
+        <b>Email:</b> ${escapeHtml(email)}<br>
+        <b>Статус:</b> ${escapeHtml(status || 'pending')}
+      </div>
+      <button class="btn primary full" onclick="location.reload()">🔄 Проверить статус</button>
+      <button class="btn secondary full" style="margin-top:8px;" onclick="signOut()">🚪 Выйти</button>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:14px; text-align:center;">
+        Владелец увидит заявку в разделе «Команда → Заявки на доступ».
+      </p>
+    </div>
+  `;
+  setSyncIndicator('offline');
+}
+
+// ===========================================================================
 // FIREBASE SYNC
 // ===========================================================================
 async function loadUserVineyard() {
   if (!db || !currentUser) return;
   try {
-    // Найти виноградник пользователя (где он owner или member)
+    // Найти профиль пользователя. Новые пользователи НЕ получают доступ автоматически:
+    // сначала заявка → владелец одобряет → назначает роль.
     const userDoc = await db.collection('users').doc(currentUser.uid).get();
     let vineyardId;
     if (userDoc.exists && userDoc.data().vineyardId) {
-      vineyardId = userDoc.data().vineyardId;
-      currentRole = userDoc.data().role || 'owner';
+      const u = userDoc.data();
+      if (u.status && u.status !== 'approved') {
+        await showPendingApproval(u.status, u);
+        return;
+      }
+      vineyardId = u.vineyardId;
+      currentRole = u.role || 'viewer';
     } else {
-      // Создаём новый виноградник
-      vineyardId = 'vyd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
-      const code = 'VYD-' + vineyardId.slice(-4).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
-      await db.collection('vineyards').doc(vineyardId).set({
-        ownerId: currentUser.uid,
-        code: code,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        members: [{ uid: currentUser.uid, email: currentUser.email, name: currentUser.displayName || '', role: 'owner' }]
-      });
-      await db.collection('users').doc(currentUser.uid).set({
-        email: currentUser.email,
-        name: currentUser.displayName || '',
-        vineyardId: vineyardId,
-        role: 'owner'
-      });
-      settings.vineyardCode = code;
-      saveSettingsLocal();
+      await createOrRefreshAccessRequest();
+      await showPendingApproval('pending');
+      return;
     }
     currentVineyardId = vineyardId;
 

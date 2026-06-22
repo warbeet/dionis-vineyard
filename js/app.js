@@ -312,6 +312,13 @@ function hideAuthScreen() {
 // Гарантированный запуск при DOMContentLoaded
 function startApp() {
   console.log('[Dionis] Starting app v' + (typeof APP_VERSION !== 'undefined' ? APP_VERSION : '?'));
+
+  // Если вернулись из Яндекс OAuth, сначала обработаем access_token.
+  // Иначе Firebase-start может показать auth-screen поверх успешного Яндекс-входа.
+  if (window.location.hash && window.location.hash.includes('access_token') && typeof checkYandexOAuthReturn === 'function') {
+    const handled = checkYandexOAuthReturn();
+    if (handled) return;
+  }
   
   // Сразу показываем auth screen, если он скрыт по умолчанию
   showAuthScreen();

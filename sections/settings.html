@@ -39,7 +39,7 @@
     <div class="setting-group">
       <h3>🟡 Авторизация через Яндекс ID</h3>
       <p style="font-size:13px; color:var(--text-soft); margin-bottom:14px;">
-        Войдите через свой Яндекс-аккаунт. Безопасно, без хранения пароля. Используется для идентификации команды.
+        Войдите через свой Яндекс-аккаунт без хранения пароля. Сейчас Яндекс ID работает как локальная идентификация профиля; для облачной синхронизации, ролей и одобрения пользователей используйте Firebase-вход Email/Google.
       </p>
       <div id="yandex-auth-settings"></div>
     </div>
@@ -65,6 +65,9 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
     match /invitations/{id} {
+      allow read, write: if request.auth != null;
+    }
+    match /accessRequests/{uid} {
       allow read, write: if request.auth != null;
     }
   }
