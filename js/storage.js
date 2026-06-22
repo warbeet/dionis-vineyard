@@ -19,8 +19,9 @@ function importData(e) {
   reader.onload = ev => {
     try {
       const imported = JSON.parse(ev.target.result);
+      const payload = imported && imported.data ? imported.data : imported;
       if (confirm('Заменить текущие данные?')) {
-        data = imported;
+        data = Object.assign(defaultData(), payload);
         saveData(); renderAll();
         toast('✅ Импортировано', 'success');
       }

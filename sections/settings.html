@@ -45,11 +45,31 @@
     </div>
 
     <div class="setting-group">
-      <h3>🔥 Firebase (синхронизация)</h3>
-      <p style="font-size:13px; color:#6b5a4a; margin-bottom:10px;">
-        Создайте проект на <a href="https://console.firebase.google.com" target="_blank" style="color:#8b3a5c;">console.firebase.google.com</a>,
-        включите Authentication (Email + Google) и Firestore. Скопируйте конфиг из настроек проекта.
+      <h3>🔥 Firebase (облачная база и синхронизация)</h3>
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:10px;">
+        Создайте проект на <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>,
+        включите Authentication (Email + Google) и Firestore. Новая схема Sync V2 хранит данные чанками и не упирается в лимит 1 МБ одного документа.
       </p>
+      <div class="alert info" style="font-size:12px;">
+        🔐 <b>Правила Firestore для Sync V2:</b><br>
+        <pre style="white-space:pre-wrap; margin-top:8px; font-size:11px;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /vineyards/{vineyardId} {
+      allow read, write: if request.auth != null;
+      match /{document=**} {
+        allow read, write: if request.auth != null;
+      }
+    }
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /invitations/{id} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}</pre>
+      </div>
       <div class="form-row"><label>Конфиг Firebase (JSON)</label>
         <textarea id="firebase-config" rows="9" placeholder='{
   "apiKey": "AIza...",
@@ -74,11 +94,15 @@
     </div>
 
     <div class="setting-group">
-      <h3>💾 Данные</h3>
-      <button class="btn secondary" onclick="exportData()">⬇ Экспорт всех данных (JSON)</button>
-      <button class="btn secondary" onclick="document.getElementById('import-file2').click()">⬆ Импорт</button>
+      <h3>💾 Данные и резервные копии</h3>
+      <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px;">
+        Здесь видно, где сейчас хранится база: только локально или локально + Firebase. Делайте JSON-бэкап перед крупными изменениями.
+      </p>
+      <div id="storage-health-panel"></div>
       <input type="file" id="import-file2" accept=".json" style="display:none" onchange="importData(event)">
-      <button class="btn danger" onclick="clearAllData()">🗑 Очистить все данные</button>
+      <div style="margin-top:12px;">
+        <button class="btn danger" onclick="clearAllData()">🗑 Очистить все данные</button>
+      </div>
     </div>
 
     <div class="setting-group">

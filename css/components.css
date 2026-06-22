@@ -622,3 +622,42 @@ tr:hover td { background: var(--bg-elevated); }
   .cal-plan { font-size: 9px; }
   .cal-day-name { font-size: 10px; }
 }
+
+/* ========================================================================
+   STORAGE / SYNC V2
+   ======================================================================== */
+.storage-health {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
+}
+.mini-stat {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  text-align: center;
+  box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
+}
+.mini-stat b {
+  display: block;
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1.1;
+}
+.mini-stat span {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-top: 4px;
+}
+.storage-health pre {
+  max-height: 260px;
+  overflow: auto;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  box-shadow: inset 2px 2px 4px var(--shadow-inset-dark), inset -2px -2px 4px var(--shadow-inset-light);
+}

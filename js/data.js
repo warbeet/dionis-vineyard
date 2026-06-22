@@ -5,7 +5,7 @@
 // ============================================================================
 // VERSION — Текущая версия приложения (обновляется при каждом релизе)
 // ============================================================================
-const APP_VERSION = '0.5.4';
+const APP_VERSION = '0.6.0';
 const APP_VERSION_DATE = '2026-06-22';
 const APP_CODENAME = 'Geometry+';
 
@@ -73,6 +73,11 @@ function loadSettings() {
 function saveData() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+    // Облачная синхронизация: локальное сохранение происходит всегда,
+    // а Firebase получает изменения с debounce через syncToFirebase().
+    if (typeof syncV2ApplyingRemote !== 'undefined' && syncV2ApplyingRemote) return;
+    if (typeof markSyncDirty === 'function') markSyncDirty();
     if (currentUser && db && currentVineyardId) {
       syncToFirebase();
     }

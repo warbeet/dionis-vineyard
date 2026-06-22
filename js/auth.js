@@ -130,22 +130,37 @@ async function loadUserVineyard() {
     }
     currentVineyardId = vineyardId;
 
-    // Подписка на данные виноградника
-    const unsub = db.collection('vineyards').doc(vineyardId).onSnapshot(snap => {
+    // Подписка на служебные данные виноградника (код, команда)
+    const rootUnsub = db.collection('vineyards').doc(vineyardId).onSnapshot(snap => {
       if (snap.exists) {
         const remote = snap.data();
         if (remote.code) { settings.vineyardCode = remote.code; saveSettingsLocal(); }
-        if (remote.members) data.members = remote.members;
-        if (remote.data) {
-          // Применяем удалённые данные (приоритет remote)
-          Object.assign(data, remote.data);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          renderAll();
-        }
-        setSyncIndicator('synced');
+        if (remote.members) { data.members = remote.members; if (typeof renderTeam === 'function') renderTeam(); }
       }
     });
-    unsubscribeListeners.push(unsub);
+    unsubscribeListeners.push(rootUnsub);
+
+    // Надёжная синхронизация V2: данные хранятся в чанках, без лимита 1 МБ на весь виноградник.
+    if (typeof syncV2InitialLoad === 'function') {
+      await syncV2InitialLoad(vineyardId);
+      const syncUnsub = subscribeSyncV2(vineyardId);
+      if (syncUnsub) unsubscribeListeners.push(syncUnsub);
+      syncV2Ready = true;
+    } else {
+      // Legacy fallback, если sync-v2.js не загрузился
+      const legacyUnsub = db.collection('vineyards').doc(vineyardId).onSnapshot(snap => {
+        if (snap.exists) {
+          const remote = snap.data();
+          if (remote.data) {
+            Object.assign(data, remote.data);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            renderAll();
+          }
+          setSyncIndicator('synced');
+        }
+      });
+      unsubscribeListeners.push(legacyUnsub);
+    }
 
     init();
   } catch(e) {
@@ -159,20 +174,25 @@ let syncTimer;
 async function syncToFirebase() {
   if (!db || !currentVineyardId) return;
   if (currentRole === 'viewer') return;
+  if (typeof syncV2ApplyingRemote !== 'undefined' && syncV2ApplyingRemote) return;
   setSyncIndicator('syncing');
   clearTimeout(syncTimer);
   syncTimer = setTimeout(async () => {
     try {
-      // Уберём фото из payload (большие base64) — они должны идти в Storage
-      const payload = { ...data };
-      // Для простоты — оставляем base64 в Firestore (лимит 1 МБ на документ — фото уже сжаты)
-      await db.collection('vineyards').doc(currentVineyardId).update({
-        data: payload,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      setSyncIndicator('synced');
+      if (typeof writeDataToChunks === 'function') {
+        await writeDataToChunks(data);
+      } else {
+        // Legacy fallback: старый режим, оставлен только на случай сбоя загрузки sync-v2.js
+        const payload = { ...data };
+        await db.collection('vineyards').doc(currentVineyardId).update({
+          data: payload,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        setSyncIndicator('synced');
+      }
     } catch(e) {
       console.error('Sync error', e);
+      if (typeof markSyncDirty === 'function') markSyncDirty();
       setSyncIndicator('offline');
     }
   }, 1500);
