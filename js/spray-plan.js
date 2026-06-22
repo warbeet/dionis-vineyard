@@ -59,11 +59,35 @@ const INCOMPATIBLE_PAIRS = [
 let currentSprayPlan = null;       // редактируемый план
 let currentSprayView = 'table';    // 'table' | 'kanban' | 'calendar'
 
+function normalizeProduct(p) {
+  if (!p) return null;
+  return {
+    name: p.name || '',
+    category: p.category || 'fungicide',
+    form: p.form || 'EC/EW',
+    dose_min: p.dose_min || 0,
+    dose_max: p.dose_max || 0,
+    dose_unit: p.dose_unit || 'мл/10л',
+    waiting_days: p.waiting_days || 0,
+    target: p.target || '',
+    active_ingredient: p.active_ingredient || '',
+    concentration: p.concentration || '',
+    hazard_class: p.hazard_class || '',
+    reg_number: p.reg_number || '',
+    instruction_url: p.instruction_url || '',
+    notes: p.notes || '',
+    ...p
+  };
+}
+
 function ensureSprayData() {
   if (!data.spray_plans) data.spray_plans = [];
   if (!data.products_catalog) {
-    // Копируем дефолтный каталог
-    data.products_catalog = JSON.parse(JSON.stringify(PRODUCT_CATALOG));
+    // Копируем дефолтный каталог и нормализуем
+    data.products_catalog = JSON.parse(JSON.stringify(PRODUCT_CATALOG)).map(normalizeProduct);
+  } else {
+    // При открытии старых данных дополняем новые поля
+    data.products_catalog = data.products_catalog.map(normalizeProduct);
   }
 }
 
@@ -428,6 +452,9 @@ function renderSprayProductsList() {
   cont.innerHTML = plan.products.map((p, idx) => {
     const cat = data.products_catalog?.find(c => c.name === p.name);
     const totalDose = ((p.dose || 0) * (plan.tank_volume_l || 1000) / 10).toFixed(1);
+    const instructionLink = cat?.instruction_url
+      ? `<a href="${escapeHtml(cat.instruction_url)}" target="_blank" rel="noopener" class="btn small secondary" style="margin-left:4px;">📄 Инструкция</a>`
+      : '';
     return `
       <div class="spray-product-card">
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -435,7 +462,14 @@ function renderSprayProductsList() {
           <span style="flex:1; min-width:120px;"><b>${escapeHtml(p.name)}</b></span>
           ${cat ? '<span class="badge purple">' + escapeHtml(cat.form) + '</span>' : ''}
           ${cat ? '<span class="badge gray">' + (cat.waiting_days || 0) + ' дн.</span>' : ''}
+          ${instructionLink}
+          <button class="btn small" onclick="openProductEditModal('${escapeHtml(p.name).replace(/'/g, '&apos;')}')">✏️</button>
           <button class="btn small danger" onclick="removeSprayProduct(${idx})">🗑</button>
+        </div>
+        <div style="font-size:12px; color:var(--text-soft); margin-top:4px;">
+          ${cat?.active_ingredient ? '🧪 ДВ: ' + escapeHtml(cat.active_ingredient) + ' · ' : ''}
+          ${cat?.concentration ? escapeHtml(cat.concentration) + ' · ' : ''}
+          ${cat?.reg_number ? 'Рег.№ ' + escapeHtml(cat.reg_number) : ''}
         </div>
         <div class="form-grid" style="margin-top:8px;">
           <div class="form-row" style="margin-bottom:0;">
@@ -463,9 +497,10 @@ function openProductPicker() {
     <div id="product-picker-list" style="max-height:50vh; overflow-y:auto;">
       ${renderProductPickerList('')}
     </div>
-    <button class="btn small secondary" onclick="addCustomProduct()" style="margin-top:10px;">+ Свой препарат</button>
+    <button class="btn small secondary" onclick="openProductEditModal()" style="margin-top:10px;">+ Новый препарат</button>
   `;
-  openModal('product-picker-modal');
+  // true = не закрываем план опрыскивания, picker открывается поверх
+  openModal('product-picker-modal', true);
 }
 
 function filterProducts(query) {
@@ -474,25 +509,35 @@ function filterProducts(query) {
 }
 
 function renderProductPickerList(query) {
+  ensureSprayData();
   const catalog = data.products_catalog || PRODUCT_CATALOG;
+  const q = query.toLowerCase();
   const filtered = catalog.filter(p =>
-    !query ||
-    p.name.toLowerCase().includes(query) ||
-    p.target.toLowerCase().includes(query) ||
-    p.category.toLowerCase().includes(query)
+    !q ||
+    (p.name || '').toLowerCase().includes(q) ||
+    (p.target || '').toLowerCase().includes(q) ||
+    (p.category || '').toLowerCase().includes(q) ||
+    (p.active_ingredient || '').toLowerCase().includes(q)
   );
   if (!filtered.length) return '<p style="color:var(--text-muted); font-size:13px; padding:10px;">Ничего не найдено</p>';
   return filtered.map(p => {
     const cat = PRODUCT_CATEGORIES.find(c => c.id === p.category);
+    const instructionLink = p.instruction_url
+      ? `<a href="${escapeHtml(p.instruction_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation();" class="btn small secondary" style="margin-left:6px;">📄 Инструкция</a>`
+      : '';
     return `
       <div class="product-picker-item" onclick="selectProduct('${escapeHtml(p.name).replace(/'/g, '&apos;')}')">
-        <div>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <b>${escapeHtml(p.name)}</b>
           <span class="badge purple">${escapeHtml(cat?.name || '')}</span>
           <span class="badge gray">${escapeHtml(p.form)}</span>
+          <button class="btn small" onclick="event.stopPropagation(); openProductEditModal('${escapeHtml(p.name).replace(/'/g, '&apos;')}')" style="margin-left:auto;">✏️</button>
+          ${instructionLink}
         </div>
         <div style="font-size:12px; color:var(--text-soft); margin-top:4px;">
-          🎯 ${escapeHtml(p.target)} · 💧 ${p.dose_min}-${p.dose_max} ${p.dose_unit} · ⏳ ${p.waiting_days} дн.
+          🎯 ${escapeHtml(p.target || '—')} · 💧 ${p.dose_min || 0}-${p.dose_max || 0} ${p.dose_unit || 'мл/10л'} · ⏳ ${p.waiting_days || 0} дн.
+          ${p.active_ingredient ? '<br><b>ДВ:</b> ' + escapeHtml(p.active_ingredient) : ''}
+          ${p.reg_number ? ' · <b>Рег.№:</b> ' + escapeHtml(p.reg_number) : ''}
         </div>
       </div>
     `;
@@ -526,22 +571,200 @@ function updateSprayProduct(idx, field, value) {
 }
 
 function addCustomProduct() {
-  const name = prompt('Название препарата:');
-  if (!name) return;
-  if (!data.products_catalog) data.products_catalog = JSON.parse(JSON.stringify(PRODUCT_CATALOG));
-  data.products_catalog.push({
-    name: name.trim(),
-    category: 'fungicide',
-    form: 'EC/EW',
-    dose_min: 5,
-    dose_max: 10,
-    dose_unit: 'мл/10л',
-    waiting_days: 14,
-    target: ''
-  });
+  // Устаревший prompt-вариант заменён на полноценную карточку
+  openProductEditModal();
+}
+
+// =========== КАРТОЧКА ПРЕПАРАТА ===========
+
+let currentProductEdit = null; // объект препарата, который редактируем
+
+function openProductEditModal(productName) {
+  ensureSprayData();
+  const catalog = data.products_catalog || [];
+  let p = null;
+  if (productName) {
+    p = catalog.find(item => item.name === productName) || null;
+  }
+  if (!p) {
+    // Создаём новый пустой шаблон
+    p = {
+      name: '',
+      category: 'fungicide',
+      form: 'EC/EW',
+      dose_min: '',
+      dose_max: '',
+      dose_unit: 'мл/10л',
+      waiting_days: '',
+      target: '',
+      active_ingredient: '',
+      concentration: '',
+      hazard_class: '',
+      reg_number: '',
+      instruction_url: '',
+      notes: ''
+    };
+  }
+  currentProductEdit = normalizeProduct(p);
+  renderProductEditForm();
+  openModal('product-edit-modal', true); // поверх picker или плана
+}
+
+function renderProductEditForm() {
+  const cont = document.getElementById('product-edit-form');
+  if (!cont || !currentProductEdit) return;
+  const p = currentProductEdit;
+
+  const catOptions = PRODUCT_CATEGORIES.map(c =>
+    `<option value="${c.id}" ${p.category === c.id ? 'selected' : ''}>${c.name}</option>`
+  ).join('');
+  const formOptions = TANK_ORDER.map(o =>
+    `<option value="${o.type}" ${p.form === o.type ? 'selected' : ''}>${o.order}. ${o.name}</option>`
+  ).join('');
+
+  cont.innerHTML = `
+    <div class="form-row">
+      <label>Название препарата</label>
+      <input type="text" id="pe-name" value="${escapeHtml(p.name || '')}" placeholder="Например: Ридомил Голд МЦ">
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Категория</label>
+        <select id="pe-category">${catOptions}</select>
+      </div>
+      <div class="form-row">
+        <label>Форма препарата (порядок в баке)</label>
+        <select id="pe-form">${formOptions}</select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Действующее вещество</label>
+        <input type="text" id="pe-active" value="${escapeHtml(p.active_ingredient || '')}" placeholder="Металаксил + манкоцеб">
+      </div>
+      <div class="form-row">
+        <label>Концентрация ДВ</label>
+        <input type="text" id="pe-concentration" value="${escapeHtml(p.concentration || '')}" placeholder="5% + 64%">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Класс опасности</label>
+        <input type="text" id="pe-hazard" value="${escapeHtml(p.hazard_class || '')}" placeholder="3 (умеренно опасное)">
+      </div>
+      <div class="form-row">
+        <label>№ регистрации</label>
+        <input type="text" id="pe-reg" value="${escapeHtml(p.reg_number || '')}" placeholder="АС-1234567-8-9">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Доза от</label>
+        <input type="number" step="0.1" id="pe-dose-min" value="${p.dose_min || ''}" placeholder="0">
+      </div>
+      <div class="form-row">
+        <label>Доза до</label>
+        <input type="number" step="0.1" id="pe-dose-max" value="${p.dose_max || ''}" placeholder="0">
+      </div>
+      <div class="form-row">
+        <label>Единица</label>
+        <input type="text" id="pe-dose-unit" value="${escapeHtml(p.dose_unit || 'мл/10л')}">
+      </div>
+      <div class="form-row">
+        <label>Срок ожидания, дней</label>
+        <input type="number" id="pe-waiting" value="${p.waiting_days || ''}">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>Цель / воздействие</label>
+      <input type="text" id="pe-target" value="${escapeHtml(p.target || '')}" placeholder="Милдью, оидиум, клещ...">
+    </div>
+    <div class="form-row">
+      <label>🔗 Ссылка на инструкцию</label>
+      <input type="url" id="pe-instruction" value="${escapeHtml(p.instruction_url || '')}" placeholder="https://...">
+    </div>
+    <div class="form-row">
+      <button type="button" class="btn small secondary" onclick="searchProductInstruction()">🔎 Найти инструкцию в интернете</button>
+      <span id="pe-instruction-hint" style="font-size:12px; color:var(--text-muted); margin-left:8px;">Поиск откроется в новой вкладке — скопируйте ссылку и вставьте выше</span>
+    </div>
+    <div class="form-row">
+      <label>Заметки</label>
+      <textarea id="pe-notes" rows="2" placeholder="Особенности применения, хранения, совместимости">${escapeHtml(p.notes || '')}</textarea>
+    </div>
+  `;
+}
+
+function searchProductInstruction() {
+  const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
+  if (!name) {
+    toast('Сначала введите название препарата', 'warning');
+    return;
+  }
+  const query = `инструкция препарат ${name}`;
+  const url = `https://yandex.ru/search/?text=${encodeURIComponent(query)}`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function saveProductCatalog() {
+  if (!currentProductEdit) return;
+  const name = document.getElementById('pe-name')?.value?.trim();
+  if (!name) {
+    toast('Укажите название препарата', 'error');
+    return;
+  }
+
+  const updated = {
+    name,
+    category: document.getElementById('pe-category')?.value || 'fungicide',
+    form: document.getElementById('pe-form')?.value || 'EC/EW',
+    dose_min: parseFloat(document.getElementById('pe-dose-min')?.value) || 0,
+    dose_max: parseFloat(document.getElementById('pe-dose-max')?.value) || 0,
+    dose_unit: document.getElementById('pe-dose-unit')?.value?.trim() || 'мл/10л',
+    waiting_days: parseInt(document.getElementById('pe-waiting')?.value) || 0,
+    target: document.getElementById('pe-target')?.value?.trim() || '',
+    active_ingredient: document.getElementById('pe-active')?.value?.trim() || '',
+    concentration: document.getElementById('pe-concentration')?.value?.trim() || '',
+    hazard_class: document.getElementById('pe-hazard')?.value?.trim() || '',
+    reg_number: document.getElementById('pe-reg')?.value?.trim() || '',
+    instruction_url: document.getElementById('pe-instruction')?.value?.trim() || '',
+    notes: document.getElementById('pe-notes')?.value?.trim() || ''
+  };
+
+  ensureSprayData();
+  const catalog = data.products_catalog;
+  const originalName = currentProductEdit.name;
+
+  // Если редактируем существующий — обновляем по старому имени
+  if (originalName) {
+    const idx = catalog.findIndex(p => p.name === originalName);
+    if (idx >= 0) {
+      catalog[idx] = normalizeProduct(updated);
+    } else {
+      catalog.push(normalizeProduct(updated));
+    }
+  } else {
+    // Новый препарат
+    const idx = catalog.findIndex(p => p.name === name);
+    if (idx >= 0) {
+      // Если препарат с таким именем уже есть — обновляем его
+      catalog[idx] = normalizeProduct(updated);
+    } else {
+      catalog.push(normalizeProduct(updated));
+    }
+  }
+
   saveData();
-  filterProducts(document.getElementById('product-search')?.value || '');
-  toast('✅ Препарат добавлен в каталог', 'success');
+  currentProductEdit = null;
+  closeModal('product-edit-modal');
+
+  // Обновляем picker, если он открыт
+  const searchValue = document.getElementById('product-search')?.value || '';
+  filterProducts(searchValue);
+  // Обновляем список препаратов в плане, если мы редактировали из плана
+  if (typeof renderSprayProductsList === 'function') renderSprayProductsList();
+  if (typeof renderTankOrder === 'function') renderTankOrder();
+
+  toast('✅ Препарат сохранён в базу', 'success');
 }
 
 // =========== ТАНК-ОРДЕР ===========

@@ -77,11 +77,14 @@ function showTab(tabId) {
 }
 
 // =========== МОДАЛКИ ===========
-function openModal(id) {
-  // Сначала закрываем все остальные открытые модалки
-  document.querySelectorAll('.modal-bg.show').forEach(el => {
-    if (el.id !== id) el.classList.remove('show');
-  });
+function openModal(id, keepOthers = false) {
+  // По умолчанию закрываем остальные модалки. Если keepOthers = true — открываем поверх
+  // (например, picker поверх spray-plan). Это позволяет работать со стэком модалок.
+  if (!keepOthers) {
+    document.querySelectorAll('.modal-bg.show').forEach(el => {
+      if (el.id !== id) el.classList.remove('show');
+    });
+  }
   const m = document.getElementById(id);
   if (m) {
     m.classList.add('show');

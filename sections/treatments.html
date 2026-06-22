@@ -116,3 +116,20 @@
     </div>
   </div>
 </div>
+
+<!-- ============ МОДАЛКА: КАРТОЧКА ПРЕПАРАТА ============ -->
+<div class="modal-bg" id="product-edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>🧪 Карточка препарата</h3>
+      <button class="modal-close" onclick="closeModal('product-edit-modal')" title="Закрыть">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="product-edit-form"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('product-edit-modal')">Отмена</button>
+      <button class="btn primary" onclick="saveProductCatalog()">💾 Сохранить в базу</button>
+    </div>
+  </div>
+</div>
