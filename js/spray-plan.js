@@ -76,6 +76,14 @@ function normalizeProduct(p) {
     reg_number: p.reg_number || '',
     instruction_url: p.instruction_url || '',
     notes: p.notes || '',
+    tank_mix_notes: p.tank_mix_notes || '',
+    usage_recommendations: Array.isArray(p.usage_recommendations) ? p.usage_recommendations : [],
+    risks: Array.isArray(p.risks) ? p.risks : [],
+    search_links: Array.isArray(p.search_links) ? p.search_links : [],
+    verify_required: p.verify_required !== false,
+    confidence: p.confidence || '',
+    ai_model: p.ai_model || '',
+    ai_updated_at: p.ai_updated_at || '',
     ...p
   };
 }
@@ -684,12 +692,24 @@ function renderProductEditForm() {
       <input type="url" id="pe-instruction" value="${escapeHtml(p.instruction_url || '')}" placeholder="https://...">
     </div>
     <div class="form-row">
+      <button type="button" class="btn small accent" id="pe-ai-btn" onclick="fillProductWithAI()">🤖 Заполнить через AI</button>
       <button type="button" class="btn small secondary" onclick="searchProductInstruction()">🔎 Найти инструкцию в интернете</button>
-      <span id="pe-instruction-hint" style="font-size:12px; color:var(--text-muted); margin-left:8px;">Поиск откроется в новой вкладке — скопируйте ссылку и вставьте выше</span>
+      <span id="pe-instruction-hint" style="font-size:12px; color:var(--text-muted); margin-left:8px;">AI создаёт черновик; точные дозы проверяйте по инструкции</span>
     </div>
     <div class="form-row">
       <label>Заметки</label>
       <textarea id="pe-notes" rows="2" placeholder="Особенности применения, хранения, совместимости">${escapeHtml(p.notes || '')}</textarea>
+    </div>
+    <div class="form-row">
+      <label>🪣 Баковая смесь / совместимость</label>
+      <textarea id="pe-tank-notes" rows="2" placeholder="Порядок внесения, pH воды, ограничения совместимости">${escapeHtml(p.tank_mix_notes || '')}</textarea>
+    </div>
+    <div id="pe-ai-info" style="font-size:12px; color:var(--text-muted);">
+      ${p.ai_updated_at ? `🤖 AI: ${escapeHtml(p.ai_model || '')} · ${new Date(p.ai_updated_at).toLocaleString('ru-RU')} · уверенность: ${escapeHtml(p.confidence || '—')}` : ''}
+      ${p.verify_required ? '<div class="alert warning" style="font-size:12px; margin-top:8px;">⚠️ Проверьте данные по официальной инструкции перед применением.</div>' : ''}
+      ${p.search_links?.length ? `<div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">${p.search_links.map(l => `<a class="btn small secondary" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.title)}</a>`).join('')}</div>` : ''}
+      ${p.usage_recommendations?.length ? `<div style="margin-top:8px;"><b>Рекомендации:</b><ul>${p.usage_recommendations.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>` : ''}
+      ${p.risks?.length ? `<div style="margin-top:8px;"><b>Риски:</b><ul>${p.risks.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>` : ''}
     </div>
   `;
 }
@@ -703,6 +723,34 @@ function searchProductInstruction() {
   const query = `инструкция препарат ${name}`;
   const url = `https://yandex.ru/search/?text=${encodeURIComponent(query)}`;
   window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+async function fillProductWithAI() {
+  if (!requirePermission('spray.edit', 'Нет прав на AI-карточку препарата')) return;
+  const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
+  if (!name) { toast('Введите название препарата', 'error'); return; }
+  if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
+  const btn = document.getElementById('pe-ai-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI ищет...'; }
+  const res = await enrichProductWithAI(name);
+  if (btn) { btn.disabled = false; btn.innerHTML = '🤖 Заполнить через AI'; }
+  if (!res.success) { toast('AI не смог заполнить карточку: ' + res.error, 'error'); return; }
+
+  const merged = normalizeProduct({ ...currentProductEdit, ...res.product, name: res.product.name || name });
+  currentProductEdit = merged;
+  renderProductEditForm();
+
+  // Добавим мягкую рекомендацию в общий список, чтобы не забыть проверить инструкцию
+  if (!data.recommendations) data.recommendations = [];
+  data.recommendations.unshift({
+    priority: merged.verify_required ? 'med' : 'low',
+    title: '🧪 Проверить карточку препарата: ' + merged.name,
+    text: `AI заполнил карточку (${merged.active_ingredient || 'ДВ не указано'}). Перед применением проверьте официальную инструкцию, дозировки, срок ожидания и совместимость.`,
+    source: 'OpenRouter product card',
+    date: todayStr()
+  });
+  data.recommendations = data.recommendations.slice(0, 80);
+  toast('✅ AI заполнил черновик карточки. Проверьте инструкцию.', 'success');
 }
 
 function saveProductCatalog() {
@@ -728,7 +776,15 @@ function saveProductCatalog() {
     hazard_class: document.getElementById('pe-hazard')?.value?.trim() || '',
     reg_number: document.getElementById('pe-reg')?.value?.trim() || '',
     instruction_url: document.getElementById('pe-instruction')?.value?.trim() || '',
-    notes: document.getElementById('pe-notes')?.value?.trim() || ''
+    notes: document.getElementById('pe-notes')?.value?.trim() || '',
+    tank_mix_notes: document.getElementById('pe-tank-notes')?.value?.trim() || currentProductEdit.tank_mix_notes || '',
+    usage_recommendations: currentProductEdit.usage_recommendations || [],
+    risks: currentProductEdit.risks || [],
+    search_links: currentProductEdit.search_links || [],
+    verify_required: currentProductEdit.verify_required !== false,
+    confidence: currentProductEdit.confidence || '',
+    ai_model: currentProductEdit.ai_model || '',
+    ai_updated_at: currentProductEdit.ai_updated_at || ''
   };
 
   ensureSprayData();

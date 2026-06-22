@@ -31,6 +31,20 @@
           <option value="x-ai/grok-vision-beta">Grok Vision Beta</option>
         </select>
       </div>
+      <div class="form-row">
+        <label>Модель для агрономических текстовых задач</label>
+        <select id="openrouter-text-model">
+          <option value="openai/gpt-4o-mini">GPT-4o Mini (рекомендую: карточки препаратов, прогнозы)</option>
+          <option value="openai/gpt-4o">GPT-4o (лучше, дороже)</option>
+          <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="google/gemini-flash-1.5">Gemini Flash 1.5</option>
+          <option value="google/gemini-pro-1.5">Gemini Pro 1.5</option>
+          <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B</option>
+        </select>
+      </div>
+      <div class="alert info" style="font-size:12px;">
+        🤖 OpenRouter используется для: анализа фото, заполнения карточек препаратов/удобрений, AI-прогноза полива/болезней/работ на 7 дней.
+      </div>
       <button class="btn" onclick="saveAPIKeys()">💾 Сохранить ключи</button>
       <button class="btn secondary" onclick="testAIConnection()">🧪 Проверить подключение</button>
     </div>

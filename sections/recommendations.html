@@ -3,6 +3,7 @@
   <div class="alert info">Анализ объединяет: фенофазу + погоду + проблемы + ваши фотоотчёты. Для AI-анализа фото настройте API в «Настройках».</div>
   <div class="toolbar">
     <button class="btn primary" onclick="generateRecommendations()">🔄 Обновить (правила)</button>
+    <button class="btn accent" onclick="generateAIAgroForecast()" id="ai-forecast-btn">🤖 AI-прогноз 7 дней</button>
     <button class="btn success" onclick="runAIAnalysisForAll()" id="ai-all-btn">🤖 AI-анализ всех фото</button>
   </div>
   <div id="recommendations-list" style="margin-top:16px;"></div>

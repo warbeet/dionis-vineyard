@@ -214,3 +214,194 @@ async function runAIAnalysisForAll() {
 }
 
 // ===========================================================================
+
+// =========== OPENROUTER: универсальные AI-задачи (текст/JSON) ===========
+function getOpenRouterTextModel() {
+  return settings.openrouterTextModel || settings.openrouterModel || 'openai/gpt-4o-mini';
+}
+
+function extractJSONFromText(text) {
+  if (!text) return null;
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const raw = fenced ? fenced[1] : text;
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try { return JSON.parse(match[0]); } catch(e) { return null; }
+}
+
+async function openRouterJSONTask({ system = '', prompt = '', model = null, max_tokens = 1800, temperature = 0.2 }) {
+  if (!settings.openrouterKey) {
+    return { error: 'Не настроен OpenRouter API. Откройте «Настройки».' };
+  }
+  try {
+    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + settings.openrouterKey,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': location.origin,
+        'X-Title': 'Dionis vineyard'
+      },
+      body: JSON.stringify({
+        model: model || getOpenRouterTextModel(),
+        messages: [
+          ...(system ? [{ role: 'system', content: system }] : []),
+          { role: 'user', content: prompt }
+        ],
+        max_tokens,
+        temperature
+      })
+    });
+    if (!r.ok) {
+      const text = await r.text();
+      return { error: `OpenRouter ${r.status}: ${text.slice(0, 300)}` };
+    }
+    const json = await r.json();
+    const text = json.choices?.[0]?.message?.content || '';
+    const parsed = extractJSONFromText(text);
+    return { success: true, json: parsed, raw: text, model: model || getOpenRouterTextModel() };
+  } catch(e) {
+    return { error: 'Сеть: ' + e.message };
+  }
+}
+
+function buildOfficialSearchLinks(productName) {
+  const q = encodeURIComponent(productName || '');
+  return [
+    { title: '🔎 Яндекс: инструкция препарата', url: `https://yandex.ru/search/?text=${encodeURIComponent('инструкция препарат ' + productName)}` },
+    { title: '📚 Госреестр пестицидов РФ', url: `https://yandex.ru/search/?text=${encodeURIComponent('site:mcx.gov.ru Государственный каталог пестицидов ' + productName)}` },
+    { title: '🌱 AgroXXI', url: `https://yandex.ru/search/?text=${encodeURIComponent('site:agroxxi.ru ' + productName + ' инструкция')}` },
+    { title: '🏭 Производитель / инструкция PDF', url: `https://yandex.ru/search/?text=${encodeURIComponent(productName + ' инструкция PDF производитель')}` }
+  ];
+}
+
+async function enrichProductWithAI(productName, context = {}) {
+  const name = (productName || '').trim();
+  if (!name) return { error: 'Введите название препарата' };
+  const system = `Ты агроном-консультант по виноградарству РФ. Заполняешь карточку препарата/удобрения для системы Dionis vineyard.
+Важно: не выдумывай точные регистрационные номера и официальные дозировки, если не уверен. Для спорных данных ставь пустую строку и укажи, что нужна проверка инструкции. Ответ строго JSON без markdown.`;
+  const prompt = `Препарат/удобрение: "${name}".
+Контекст: виноградник, Россия, коммерческое производство.
+
+Собери черновую карточку. Если препарат известен — укажи действующее вещество, категорию, препаративную форму, типовые цели применения на винограде, срок ожидания и ориентировочные дозы только если уверен. Добавь рекомендации по баковой смеси и безопасности.
+
+Верни JSON:
+{
+  "name": "",
+  "category": "fungicide|insecticide|acaricide|herbicide|fertilizer|stimulator|adjuvant",
+  "form": "WP|WG/WDG|SC|OD|EC/EW|SL|FERTILIZER|ADJUVANT",
+  "active_ingredient": "",
+  "concentration": "",
+  "target": "",
+  "dose_min": 0,
+  "dose_max": 0,
+  "dose_unit": "г/10л|мл/10л|кг/га|л/га",
+  "waiting_days": 0,
+  "hazard_class": "",
+  "reg_number": "",
+  "instruction_url": "",
+  "notes": "краткое описание и оговорки проверки инструкции",
+  "tank_mix_notes": "порядок внесения/совместимость/рН воды",
+  "usage_recommendations": ["..."],
+  "risks": ["..."],
+  "verify_required": true,
+  "confidence": "high|medium|low"
+}`;
+  const res = await openRouterJSONTask({ system, prompt, max_tokens: 1800, temperature: 0.15 });
+  if (!res.success) return res;
+  const p = res.json || {};
+  return {
+    success: true,
+    product: {
+      name: p.name || name,
+      category: p.category || 'fungicide',
+      form: p.form || 'EC/EW',
+      active_ingredient: p.active_ingredient || '',
+      concentration: p.concentration || '',
+      target: p.target || '',
+      dose_min: Number(p.dose_min) || 0,
+      dose_max: Number(p.dose_max) || 0,
+      dose_unit: p.dose_unit || 'мл/10л',
+      waiting_days: Number(p.waiting_days) || 0,
+      hazard_class: p.hazard_class || '',
+      reg_number: p.reg_number || '',
+      instruction_url: p.instruction_url || '',
+      notes: p.notes || '',
+      tank_mix_notes: p.tank_mix_notes || '',
+      usage_recommendations: Array.isArray(p.usage_recommendations) ? p.usage_recommendations : [],
+      risks: Array.isArray(p.risks) ? p.risks : [],
+      verify_required: p.verify_required !== false,
+      confidence: p.confidence || 'low',
+      search_links: buildOfficialSearchLinks(name),
+      ai_model: res.model,
+      ai_updated_at: new Date().toISOString()
+    },
+    raw: res.raw,
+    model: res.model
+  };
+}
+
+async function generateAIAgroForecast() {
+  if (!requirePermission('tab.recommendations', 'Нет доступа к AI-рекомендациям')) return;
+  if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
+  const btn = document.getElementById('ai-forecast-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI прогнозирует...'; }
+  const phase = PHENO_STAGES.find(p => p.id === data.currentPheno);
+  const context = {
+    date: todayStr(),
+    location: data.location,
+    pheno: phase ? { id: phase.id, name: phase.name, desc: phase.desc } : null,
+    plots: (data.plots || []).map(p => ({ id: p.id, name: p.name, area_ha: p.area_ha || p.area, blocks: (p.blocks || []).map(b => ({ scion: b.scion, rootstock: b.rootstock, year: b.planting_year })) })).slice(0, 20),
+    forecast7d: (data.forecast || []).slice(0, 7),
+    recentWeather: (data.weather || []).slice(0, 10),
+    recentDiseases: (data.diseases || []).slice(-10),
+    recentTreatments: (data.treatments || []).slice(-10),
+    sprayPlans: (data.spray_plans || []).slice(-10),
+    seedlingsSummary: {
+      total: (data.seedlings || []).length,
+      dead: (data.seedlings || []).filter(s => s.status === 'dead').length,
+      sick: (data.seedlings || []).filter(s => s.status === 'sick').length,
+      attention: (data.seedlings || []).filter(s => s.status === 'attention').length
+    }
+  };
+  const system = `Ты опытный агроном-виноградарь и консультант по орошению/защите растений. Дай практичный прогноз работ по винограднику. Ответ строго JSON.`;
+  const prompt = `Проанализируй данные Dionis vineyard и составь рекомендации на 7-10 дней.
+
+ДАННЫЕ:
+${JSON.stringify(context, null, 2)}
+
+Верни JSON:
+{
+  "summary": "краткая сводка состояния",
+  "recommendations": [
+    {"priority":"high|med|low", "title":"", "text":"", "deadline":"", "category":"irrigation|spray|canopy|soil|harvest|monitoring"}
+  ],
+  "irrigation_forecast": {"need":"none|low|medium|high", "text":"", "risk":""},
+  "disease_risk": [{"name":"милдью|оидиум|серая гниль|...", "risk":"low|medium|high", "reason":""}],
+  "notes": ["..."]
+}`;
+  const res = await openRouterJSONTask({ system, prompt, max_tokens: 2200, temperature: 0.25 });
+  if (btn) { btn.disabled = false; btn.innerHTML = '🤖 AI-прогноз 7 дней'; }
+  if (!res.success || !res.json) { toast('AI-прогноз не удался: ' + (res.error || 'нет JSON'), 'error'); return; }
+  const j = res.json;
+  const recs = Array.isArray(j.recommendations) ? j.recommendations : [];
+  recs.forEach(r => {
+    data.recommendations.unshift({
+      priority: r.priority || 'med',
+      title: '🤖 ' + (r.title || 'AI-прогноз'),
+      text: `${r.text || ''}${r.deadline ? ' Срок: ' + r.deadline + '.' : ''}`,
+      source: `OpenRouter ${res.model}${r.category ? ' · ' + r.category : ''}`,
+      date: todayStr()
+    });
+  });
+  if (j.irrigation_forecast?.text) {
+    data.recommendations.unshift({ priority: j.irrigation_forecast.need === 'high' ? 'high' : 'med', title: '💧 AI-прогноз полива', text: j.irrigation_forecast.text + (j.irrigation_forecast.risk ? ' Риск: ' + j.irrigation_forecast.risk : ''), source: 'OpenRouter irrigation', date: todayStr() });
+  }
+  if (Array.isArray(j.disease_risk)) {
+    j.disease_risk.filter(x => x.risk === 'high').forEach(x => data.recommendations.unshift({ priority: 'high', title: '🦠 Риск: ' + x.name, text: x.reason || 'Высокий риск по AI-прогнозу', source: 'OpenRouter disease risk', date: todayStr() }));
+  }
+  data.recommendations = data.recommendations.slice(0, 80);
+  saveData();
+  renderRecommendations();
+  toast('✅ AI-прогноз добавлен в рекомендации', 'success');
+}

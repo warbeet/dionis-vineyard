@@ -262,6 +262,8 @@ async function init() {
   if (orKey) orKey.value = settings.openrouterKey || '';
   const orModel = document.getElementById('openrouter-model');
   if (orModel) orModel.value = settings.openrouterModel || 'openai/gpt-4o';
+  const orTextModel = document.getElementById('openrouter-text-model');
+  if (orTextModel) orTextModel.value = settings.openrouterTextModel || 'openai/gpt-4o-mini';
   const fbConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
   const fbInput = document.getElementById('firebase-config');
   if (fbConfig && fbInput) fbInput.value = fbConfig;
