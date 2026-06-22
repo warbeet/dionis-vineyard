@@ -80,25 +80,8 @@
     <div class="auth-divider">или</div>
     <button class="btn secondary full" onclick="signInGoogle()">🔐 Войти через Google</button>
 
-    <div class="auth-divider">Firebase</div>
-    <button class="btn secondary full" onclick="toggleAuthFirebaseSetup()">⚙️ Настроить Firebase</button>
-    <div id="auth-firebase-setup" style="display:none; margin-top:12px;">
-      <p style="font-size:12px; color:var(--text-soft); margin-bottom:8px; text-align:left;">
-        Вставьте Firebase Web config из Project settings → General → Your apps.
-      </p>
-      <textarea id="auth-firebase-config" rows="7" placeholder='{
-  "apiKey": "...",
-  "authDomain": "...firebaseapp.com",
-  "projectId": "...",
-  "storageBucket": "...appspot.com",
-  "messagingSenderId": "...",
-  "appId": "..."
-}'></textarea>
-      <button class="btn primary full" style="margin-top:8px;" onclick="saveFirebaseConfigFromAuth()">💾 Сохранить Firebase config</button>
-    </div>
-
     <p style="font-size:11px; color:var(--text-muted); margin-top:16px; text-align:center;">
-      <span style="display:block; color:var(--text-muted); font-size:10px; margin-bottom:8px;">Dionis vineyard v<span class="auth-version">0.6.5</span></span>⚠️ Без Firebase вход и синхронизация недоступны. Режим без регистрации отключён.
+      <span style="display:block; color:var(--text-muted); font-size:10px; margin-bottom:8px;">Dionis vineyard v<span class="auth-version">0.6.6</span></span>Вход только через зарегистрированный аккаунт. Данные синхронизируются в облаке.
     </p>
   </div>
 </div>
@@ -113,7 +96,7 @@
           <img src="assets/logo-mark-header.png" alt="Dionis" class="logo-mark"/>
           <span class="brand-text">
             <span class="brand-name">Dionis</span>
-            <span class="brand-sub">vineyard <span id="version-badge" class="version-badge">v0.6.5</span></span>
+            <span class="brand-sub">vineyard <span id="version-badge" class="version-badge">v0.6.6</span></span>
           </span>
         </h1>
         <div class="user-area">

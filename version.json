@@ -1,10 +1,21 @@
 {
-  "version": "0.6.5",
+  "version": "0.6.6",
   "release_date": "2026-06-22",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.6.6",
+      "date": "2026-06-22",
+      "type": "patch",
+      "title": "🧹 Убрана настройка Firebase со стартового экрана",
+      "changes": [
+        "Со стартового окна удалён блок настройки Firebase",
+        "На экране входа оставлены только Email/Password и Google",
+        "Сообщение об ошибке Firebase заменено на администраторскую настройку"
+      ]
+    },
     {
       "version": "0.6.5",
       "date": "2026-06-22",

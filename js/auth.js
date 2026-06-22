@@ -43,7 +43,7 @@ async function initFirebase() {
 async function signIn() {
   if (!auth) {
     const ok = await initFirebase();
-    if (!ok) { toast('Сначала настройте Firebase на экране входа', 'error'); return; }
+    if (!ok) { toast('Firebase не настроен. Обратитесь к администратору приложения', 'error'); return; }
   }
   try {
     const email = document.getElementById('signin-email').value;
@@ -55,7 +55,7 @@ async function signIn() {
 async function signUp() {
   if (!auth) {
     const ok = await initFirebase();
-    if (!ok) { toast('Сначала настройте Firebase на экране входа', 'error'); return; }
+    if (!ok) { toast('Firebase не настроен. Обратитесь к администратору приложения', 'error'); return; }
   }
   try {
     const name = document.getElementById('signup-name').value;
@@ -69,7 +69,7 @@ async function signUp() {
 async function signInGoogle() {
   if (!auth) {
     const ok = await initFirebase();
-    if (!ok) { toast('Сначала настройте Firebase', 'error'); return; }
+    if (!ok) { toast('Firebase не настроен. Обратитесь к администратору приложения', 'error'); return; }
   }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
