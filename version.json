@@ -1,10 +1,21 @@
 {
-  "version": "0.6.3",
+  "version": "0.6.4",
   "release_date": "2026-06-22",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.6.4",
+      "date": "2026-06-22",
+      "type": "patch",
+      "title": "👑 Первый владелец Firebase",
+      "changes": [
+        "Первый пользователь в пустом Firebase автоматически создаёт виноградник и становится владельцем",
+        "Если виноградник уже существует, новые пользователи по-прежнему попадают в заявки на доступ",
+        "Pending-заявка первого пользователя автоматически переводится в approved при bootstrap"
+      ]
+    },
     {
       "version": "0.6.3",
       "date": "2026-06-22",

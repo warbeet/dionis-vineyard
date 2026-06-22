@@ -101,6 +101,58 @@ function onAuthChanged(user) {
 // APPROVAL / ACCESS REQUESTS
 // ===========================================================================
 
+async function hasAnyVineyard() {
+  if (!db) return true;
+  const snap = await db.collection('vineyards').limit(1).get();
+  return !snap.empty;
+}
+
+async function createFirstOwnerVineyard() {
+  if (!db || !currentUser) throw new Error('Firebase не подключен');
+  const uid = currentUser.uid;
+  const email = (currentUser.email || '').toLowerCase();
+  const name = currentUser.displayName || email.split('@')[0] || 'Владелец';
+  const vineyardId = 'vyd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  const code = 'VYD-' + vineyardId.slice(-4).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const member = { uid, email, name, role: 'owner', status: 'approved' };
+
+  await db.collection('vineyards').doc(vineyardId).set({
+    ownerId: uid,
+    code,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    members: [member],
+    bootstrapOwner: true
+  });
+  await db.collection('users').doc(uid).set({
+    uid,
+    email,
+    name,
+    vineyardId,
+    role: 'owner',
+    status: 'approved',
+    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    bootstrapOwner: true
+  }, { merge: true });
+  await db.collection('accessRequests').doc(uid).set({
+    uid,
+    email,
+    name,
+    vineyardId,
+    role: 'owner',
+    status: 'approved',
+    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    bootstrapOwner: true
+  }, { merge: true });
+
+  settings.vineyardCode = code;
+  saveSettingsLocal();
+  currentRole = 'owner';
+  currentVineyardId = vineyardId;
+  toast('👑 Первый виноградник создан. Вы назначены владельцем.', 'success');
+  return vineyardId;
+}
+
 async function createOrRefreshAccessRequest() {
   if (!db || !currentUser) return;
   const uid = currentUser.uid;
@@ -174,9 +226,16 @@ async function loadUserVineyard() {
       vineyardId = u.vineyardId;
       currentRole = u.role || 'viewer';
     } else {
-      await createOrRefreshAccessRequest();
-      await showPendingApproval('pending');
-      return;
+      // Bootstrap: если это первый пользователь в пустом Firebase — он становится владельцем.
+      // Если виноградник уже есть — пользователь уходит в pending до одобрения владельцем.
+      const exists = await hasAnyVineyard();
+      if (!exists) {
+        vineyardId = await createFirstOwnerVineyard();
+      } else {
+        await createOrRefreshAccessRequest();
+        await showPendingApproval('pending');
+        return;
+      }
     }
     currentVineyardId = vineyardId;
 
