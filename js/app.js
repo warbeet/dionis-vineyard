@@ -66,6 +66,10 @@ function switchWeatherTab(event, tabId) {
 
 // =========== НАВИГАЦИЯ ===========
 function showTab(tabId) {
+  if (typeof canAccessTab === 'function' && !canAccessTab(tabId)) {
+    toast('⛔ Нет доступа к разделу', 'error');
+    tabId = 'dashboard';
+  }
   document.querySelectorAll('.tab-btn, .nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll(`.tab-btn[data-tab="${tabId}"], .nav-btn[data-tab="${tabId}"]`).forEach(b => b.classList.add('active'));
@@ -229,6 +233,8 @@ function renderAll() {
   if (typeof renderCostsSummary === 'function') renderCostsSummary();
   if (typeof renderRecommendations === 'function') renderRecommendations();
   if (typeof renderTeam === 'function') renderTeam();
+  if (typeof renderRoleSettings === 'function') renderRoleSettings();
+  if (typeof updateNavigationByPermissions === 'function') updateNavigationByPermissions();
   if (typeof renderStations === 'function') renderStations();
   if (typeof renderLocaleSettings === 'function') renderLocaleSettings();
   if (typeof renderYandexAuthSettings === 'function') renderYandexAuthSettings();
