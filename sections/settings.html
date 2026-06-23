@@ -45,8 +45,27 @@
       <div class="alert info" style="font-size:12px;">
         🤖 OpenRouter используется для: анализа фото, заполнения карточек препаратов/удобрений, AI-прогноза полива/болезней/работ на 7 дней.
       </div>
+      <h4 style="margin-top:14px;">🌐 Web-search инструкций препаратов</h4>
+      <div class="form-row">
+        <label>Провайдер поиска</label>
+        <select id="web-search-provider">
+          <option value="tavily">Tavily API (рекомендую)</option>
+          <option value="backend">Свой backend/proxy endpoint</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Tavily API key</label>
+        <input type="password" id="tavily-key" placeholder="tvly-...">
+        <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Ключ хранится локально в браузере. Получить: <a href="https://tavily.com" target="_blank">tavily.com</a></p>
+      </div>
+      <div class="form-row">
+        <label>Backend/proxy URL (опционально)</label>
+        <input type="url" id="search-backend-url" placeholder="https://.../api/search-instruction">
+        <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Endpoint должен принимать POST JSON { query, productName } и возвращать { results:[{title,url,content}] }.</p>
+      </div>
       <button class="btn" onclick="saveAPIKeys()">💾 Сохранить ключи</button>
-      <button class="btn secondary" onclick="testAIConnection()">🧪 Проверить подключение</button>
+      <button class="btn secondary" onclick="testAIConnection()">🧪 Проверить OpenRouter</button>
+      <button class="btn secondary" onclick="testWebSearchConnection()">🌐 Проверить web-search</button>
     </div>
 
     

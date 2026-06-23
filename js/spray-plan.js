@@ -84,6 +84,9 @@ function normalizeProduct(p) {
     precautions: p.precautions || '',
     crops_regulations: p.crops_regulations || '',
     source_urls: p.source_urls || '',
+    search_results: Array.isArray(p.search_results) ? p.search_results : [],
+    search_provider: p.search_provider || '',
+    search_updated_at: p.search_updated_at || '',
     instruction_url: p.instruction_url || '',
     notes: p.notes || '',
     tank_mix_notes: p.tank_mix_notes || '',
@@ -651,6 +654,7 @@ function renderProductEditForm() {
       <div class="toolbar" style="margin-bottom:10px;">
         <button type="button" class="btn small accent" id="pe-ai-find-btn" onclick="findProductWithAI()">🤖 1. Найти препарат</button>
         <button type="button" class="btn small secondary" onclick="searchProductInstruction()">🔎 2. Найти инструкцию</button>
+        <button type="button" class="btn small accent" id="pe-web-btn" onclick="findInstructionSourcesWeb()">🌐 2a. Web-search</button>
         <button type="button" class="btn small primary" id="pe-ai-from-instruction-btn" onclick="fillProductFromInstructionAI()">📄 3. Заполнить из инструкции</button>
       </div>
       <div class="alert info" style="font-size:12px; margin-bottom:12px;">
@@ -786,6 +790,7 @@ function renderProductEditForm() {
       ${p.ai_updated_at ? `🤖 AI: ${escapeHtml(p.ai_model || '')} · ${new Date(p.ai_updated_at).toLocaleString('ru-RU')} · уверенность: ${escapeHtml(p.confidence || '—')}` : ''}
       ${p.verify_required ? '<div class="alert warning" style="font-size:12px; margin-top:8px;">⚠️ Проверьте данные по официальной инструкции перед применением.</div>' : ''}
       ${p.search_links?.length ? `<div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">${p.search_links.map(l => `<a class="btn small secondary" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.title)}</a>`).join('')}</div>` : ''}
+      ${p.search_results?.length ? `<div style="margin-top:8px;"><b>Web-search источники (${escapeHtml(p.search_provider || '')}):</b><ol>${p.search_results.map(r => `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a></li>`).join('')}</ol></div>` : ''}
       ${p.usage_recommendations?.length ? `<div style="margin-top:8px;"><b>Рекомендации:</b><ul>${p.usage_recommendations.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>` : ''}
       ${p.risks?.length ? `<div style="margin-top:8px;"><b>Риски:</b><ul>${p.risks.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>` : ''}
     </div>
@@ -852,6 +857,30 @@ function selectProductCandidate(idx) {
   });
   renderProductEditForm();
   toast('✅ Препарат подтверждён. Теперь найдите/вставьте инструкцию.', 'success');
+}
+
+
+async function findInstructionSourcesWeb() {
+  if (!requirePermission('spray.edit', 'Нет прав на web-search инструкции')) return;
+  const name = document.getElementById('pe-name')?.value?.trim() || currentProductEdit?.name || '';
+  if (!name) { toast('Введите/подтвердите название препарата', 'error'); return; }
+  const btn = document.getElementById('pe-web-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Web-search...'; }
+  const res = await searchInstructionSources(name);
+  if (btn) { btn.disabled = false; btn.innerHTML = '🌐 2a. Web-search'; }
+  if (!res.success) {
+    toast('Web-search не удался: ' + res.error, 'error');
+    return;
+  }
+  const text = buildInstructionTextFromSearch(name, res);
+  const urls = (res.results || []).map(r => r.url).filter(Boolean).join('\n');
+  currentProductEdit.source_urls = urls;
+  currentProductEdit.instruction_text = text;
+  currentProductEdit.search_results = res.results;
+  currentProductEdit.search_provider = res.provider;
+  currentProductEdit.search_updated_at = new Date().toISOString();
+  renderProductEditForm();
+  toast(`✅ Найдено источников: ${res.results.length}. Теперь нажмите «Заполнить из инструкции».`, 'success');
 }
 
 function searchProductInstruction() {

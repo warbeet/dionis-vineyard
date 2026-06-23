@@ -264,6 +264,12 @@ async function init() {
   if (orModel) orModel.value = settings.openrouterModel || 'openai/gpt-4o';
   const orTextModel = document.getElementById('openrouter-text-model');
   if (orTextModel) orTextModel.value = settings.openrouterTextModel || 'openai/gpt-4o-mini';
+  const wsProvider = document.getElementById('web-search-provider');
+  if (wsProvider) wsProvider.value = settings.webSearchProvider || 'tavily';
+  const tavily = document.getElementById('tavily-key');
+  if (tavily) tavily.value = settings.tavilyKey || '';
+  const searchBackend = document.getElementById('search-backend-url');
+  if (searchBackend) searchBackend.value = settings.searchBackendUrl || '';
   const fbConfig = localStorage.getItem(FIREBASE_CONFIG_KEY);
   const fbInput = document.getElementById('firebase-config');
   if (fbConfig && fbInput) fbInput.value = fbConfig;

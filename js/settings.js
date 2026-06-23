@@ -7,8 +7,11 @@ function saveAPIKeys() {
   settings.openrouterKey = document.getElementById('openrouter-key').value.trim();
   settings.openrouterModel = document.getElementById('openrouter-model').value;
   settings.openrouterTextModel = document.getElementById('openrouter-text-model')?.value || 'openai/gpt-4o-mini';
+  settings.webSearchProvider = document.getElementById('web-search-provider')?.value || 'tavily';
+  settings.tavilyKey = document.getElementById('tavily-key')?.value?.trim() || '';
+  settings.searchBackendUrl = document.getElementById('search-backend-url')?.value?.trim() || '';
   saveSettingsLocal();
-  toast('✅ Ключи сохранены', 'success');
+  toast('✅ AI/Web-search настройки сохранены', 'success');
 }
 
 async function testAIConnection() {
@@ -26,3 +29,25 @@ async function testAIConnection() {
 // ===========================================================================
 // AI ANALYSIS
 // ===========================================================================
+
+async function testWebSearchConnection() {
+  const provider = document.getElementById('web-search-provider')?.value || settings.webSearchProvider || 'tavily';
+  const tavilyKey = document.getElementById('tavily-key')?.value?.trim() || settings.tavilyKey || '';
+  const backendUrl = document.getElementById('search-backend-url')?.value?.trim() || settings.searchBackendUrl || '';
+  if (provider === 'tavily' && !tavilyKey) { toast('Введите Tavily API key', 'error'); return; }
+  if (provider === 'backend' && !backendUrl) { toast('Введите URL backend/proxy', 'error'); return; }
+  toast('Проверяем web-search...');
+  const old = { ...settings };
+  settings.webSearchProvider = provider;
+  settings.tavilyKey = tavilyKey;
+  settings.searchBackendUrl = backendUrl;
+  try {
+    const res = await searchInstructionSources('Серкадис');
+    if (res.success) toast(`✅ Web-search работает: найдено ${res.results.length} источников`, 'success');
+    else toast('Ошибка: ' + res.error, 'error');
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  } finally {
+    Object.assign(settings, old);
+  }
+}

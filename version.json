@@ -1,10 +1,23 @@
 {
-  "version": "0.7.5",
-  "release_date": "2026-06-22",
+  "version": "0.7.6",
+  "release_date": "2026-06-23",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.6",
+      "date": "2026-06-23",
+      "type": "patch",
+      "title": "🌐 Web-search инструкций препаратов",
+      "changes": [
+        "Добавлен Web-search слой для поиска источников инструкций препаратов",
+        "Поддержан Tavily API и свой backend/proxy endpoint",
+        "Карточка препарата получила кнопку 🌐 Web-search, которая собирает источники и текст для AI",
+        "AI может заполнять карточку из найденных web-search источников после подтверждения пользователем",
+        "В настройках добавлены поля Tavily API key, provider и backend URL с тестом подключения"
+      ]
+    },
     {
       "version": "0.7.5",
       "date": "2026-06-22",

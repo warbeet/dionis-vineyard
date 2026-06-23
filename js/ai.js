@@ -445,3 +445,65 @@ async function findProductCandidatesAI(query) {
   const links = Array.isArray(j.search_links) && j.search_links.length ? j.search_links : buildOfficialSearchLinks(name);
   return { success: true, candidates: Array.isArray(j.candidates) ? j.candidates : [], search_links: links, raw: res.raw, model: res.model };
 }
+
+// =========== WEB-SEARCH BACKEND / TAVILY для инструкций ===========
+async function searchInstructionSources(productName) {
+  const name = (productName || '').trim();
+  if (!name) return { error: 'Введите название препарата' };
+  const query = `официальная инструкция препарат ${name} виноград регламент применения действующее вещество срок ожидания`;
+  const provider = settings.webSearchProvider || 'tavily';
+
+  try {
+    if (provider === 'backend') {
+      if (!settings.searchBackendUrl) return { error: 'Не настроен backend/proxy URL' };
+      const r = await fetch(settings.searchBackendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, productName: name, locale: 'ru-RU' })
+      });
+      if (!r.ok) return { error: `Backend ${r.status}: ${(await r.text()).slice(0, 250)}` };
+      const j = await r.json();
+      const results = Array.isArray(j.results) ? j.results : [];
+      return { success: true, provider: 'backend', results: normalizeSearchResults(results), answer: j.answer || '' };
+    }
+
+    // Tavily direct mode. Ключ хранится локально у пользователя.
+    if (!settings.tavilyKey) return { error: 'Не настроен Tavily API key' };
+    const r = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: settings.tavilyKey,
+        query,
+        search_depth: 'advanced',
+        include_answer: true,
+        include_raw_content: false,
+        max_results: 7,
+        include_domains: ['agro.basf.ru','agroxxi.ru','mcx.gov.ru','agromax.pro','avgust.com','syngenta.ru','cropscience.bayer.ru']
+      })
+    });
+    if (!r.ok) return { error: `Tavily ${r.status}: ${(await r.text()).slice(0, 250)}` };
+    const j = await r.json();
+    return { success: true, provider: 'tavily', results: normalizeSearchResults(j.results || []), answer: j.answer || '' };
+  } catch(e) {
+    return { error: 'Web-search: ' + e.message };
+  }
+}
+
+function normalizeSearchResults(results) {
+  return (results || []).map(r => ({
+    title: r.title || r.name || r.url || 'Источник',
+    url: r.url || r.link || '',
+    content: r.content || r.snippet || r.description || r.raw_content || ''
+  })).filter(r => r.url || r.content).slice(0, 10);
+}
+
+function buildInstructionTextFromSearch(productName, search) {
+  const parts = [];
+  parts.push(`ПРЕПАРАТ: ${productName}`);
+  if (search.answer) parts.push(`\n--- СВОДКА WEB-SEARCH ---\n${search.answer}`);
+  (search.results || []).forEach((r, i) => {
+    parts.push(`\n--- ИСТОЧНИК ${i + 1}: ${r.title} ---\nURL: ${r.url}\n${r.content || ''}`);
+  });
+  return parts.join('\n');
+}
