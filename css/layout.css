@@ -382,3 +382,48 @@ main {
   .bottom-nav-btn span { font-size: 20px; }
   .bottom-nav-btn small { font-size: 9px; }
 }
+
+/* UI Mode foundation */
+body.ui-desktop #bottom-nav {
+  display: none !important;
+}
+body.ui-desktop main {
+  padding-bottom: 32px;
+}
+body.ui-mobile #bottom-nav {
+  display: grid;
+}
+body.ui-mobile main {
+  padding-bottom: 112px;
+}
+body.ui-mobile .desktop-only {
+  display: none !important;
+}
+body.ui-desktop .mobile-only {
+  display: none !important;
+}
+body.ui-mobile #side-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: min(320px, 86vw);
+  transform: translateX(100%);
+  z-index: 80;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.18);
+  padding: 24px 16px;
+}
+body.ui-mobile #side-nav.open {
+  transform: translateX(0);
+}
+body.ui-mobile #side-nav:hover {
+  width: min(320px, 86vw);
+}
+body.ui-mobile #side-nav .nav-btn .nav-label {
+  opacity: 1;
+}
+body.ui-mobile .nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

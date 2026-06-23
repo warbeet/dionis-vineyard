@@ -51,3 +51,23 @@ async function testWebSearchConnection() {
     Object.assign(settings, old);
   }
 }
+
+function renderUISettings() {
+  const cont = document.getElementById('ui-settings');
+  if (!cont) return;
+  const mode = settings.uiMode || 'auto';
+  const resolved = typeof resolveUIMode === 'function' ? resolveUIMode() : 'desktop';
+  cont.innerHTML = `
+    <div class="form-row">
+      <label>Режим интерфейса</label>
+      <select id="ui-mode-select" onchange="setUIMode(this.value)">
+        <option value="auto" ${mode === 'auto' ? 'selected' : ''}>Авто — по устройству</option>
+        <option value="desktop" ${mode === 'desktop' ? 'selected' : ''}>Десктоп — полный кабинет</option>
+        <option value="mobile" ${mode === 'mobile' ? 'selected' : ''}>Мобильный — полевой режим</option>
+      </select>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+        Сейчас активен режим: <b>${resolved === 'mobile' ? 'мобильный' : 'десктоп'}</b>. В мобильном режиме интерфейс упрощается, используется нижнее меню и скрываются перегруженные элементы.
+      </p>
+    </div>
+  `;
+}

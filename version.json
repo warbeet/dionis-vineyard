@@ -1,10 +1,24 @@
 {
-  "version": "0.7.6",
+  "version": "0.7.7",
   "release_date": "2026-06-23",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.7",
+      "date": "2026-06-23",
+      "type": "patch",
+      "title": "🧭 Backend/proxy и UI Mode foundation",
+      "changes": [
+        "Добавлена основа режимов интерфейса: авто, десктоп, мобильный",
+        "В настройках появился переключатель UI Mode, применяются body.ui-mobile/body.ui-desktop",
+        "Мобильное нижнее меню переименовано под полевой сценарий: Сегодня, Участки, Фото, Работы, Ещё",
+        "Добавлен Vercel endpoint api/search-instruction.js для proxy web-search через Tavily",
+        "Добавлена заготовка Firebase Functions searchInstruction с secret TAVILY_API_KEY",
+        "Frontend может использовать свой backend/proxy через настройку searchBackendUrl"
+      ]
+    },
     {
       "version": "0.7.6",
       "date": "2026-06-23",

@@ -5,7 +5,7 @@
 // ============================================================================
 // VERSION — Текущая версия приложения (обновляется при каждом релизе)
 // ============================================================================
-const APP_VERSION = '0.7.6';
+const APP_VERSION = '0.7.7';
 const APP_VERSION_DATE = '2026-06-23';
 const APP_CODENAME = 'Geometry+';
 
@@ -75,11 +75,7 @@ function defaultData() {
   };
 }
 
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
+function defaultSettings() {
   return {
     openrouterKey: '',
     openrouterModel: 'openai/gpt-4o',
@@ -87,8 +83,18 @@ function loadSettings() {
     webSearchProvider: 'tavily',
     tavilyKey: '',
     searchBackendUrl: '',
+    uiMode: 'auto', // auto | desktop | mobile
     vineyardCode: ''
   };
+}
+
+function loadSettings() {
+  const defaults = defaultSettings();
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) return { ...defaults, ...JSON.parse(raw) };
+  } catch(e) {}
+  return defaults;
 }
 
 function saveData() {

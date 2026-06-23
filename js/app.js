@@ -171,6 +171,38 @@ function closeNav() {
   }
 }
 
+
+// =========== UI MODE (desktop / mobile) ===========
+function getUIModeSetting() {
+  return settings.uiMode || 'auto';
+}
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 820px), (pointer: coarse) and (max-width: 1024px)').matches;
+}
+function resolveUIMode() {
+  const mode = getUIModeSetting();
+  if (mode === 'desktop' || mode === 'mobile') return mode;
+  return isMobileViewport() ? 'mobile' : 'desktop';
+}
+function applyUIMode() {
+  const resolved = resolveUIMode();
+  document.body.classList.toggle('ui-mobile', resolved === 'mobile');
+  document.body.classList.toggle('ui-desktop', resolved === 'desktop');
+  document.documentElement.dataset.uiMode = resolved;
+  document.documentElement.dataset.uiModeSetting = getUIModeSetting();
+}
+function setUIMode(mode) {
+  settings.uiMode = mode || 'auto';
+  saveSettingsLocal();
+  applyUIMode();
+  if (typeof renderUISettings === 'function') renderUISettings();
+  toast('✅ Режим интерфейса: ' + (mode === 'mobile' ? 'мобильный' : mode === 'desktop' ? 'десктоп' : 'авто'), 'success');
+}
+window.addEventListener('resize', () => {
+  if (getUIModeSetting() === 'auto') applyUIMode();
+});
+applyUIMode();
+
 // =========== PWA INSTALL ===========
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
@@ -237,6 +269,7 @@ function renderAll() {
   if (typeof updateNavigationByPermissions === 'function') updateNavigationByPermissions();
   if (typeof renderStations === 'function') renderStations();
   if (typeof renderLocaleSettings === 'function') renderLocaleSettings();
+  if (typeof renderUISettings === 'function') renderUISettings();
   if (typeof renderYandexAuthSettings === 'function') renderYandexAuthSettings();
   if (typeof updateStorageHealthUI === 'function') updateStorageHealthUI();
   if (typeof updateDashboard === 'function') updateDashboard();
@@ -405,6 +438,8 @@ window.closeNav = closeNav;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.signOutAny = signOutAny;
+window.setUIMode = setUIMode;
+window.applyUIMode = applyUIMode;
 
 // Запуск
 if (document.readyState === 'loading') {
