@@ -464,7 +464,14 @@ async function searchInstructionSources(productName) {
       if (!r.ok) return { error: `Backend ${r.status}: ${(await r.text()).slice(0, 250)}` };
       const j = await r.json();
       const results = Array.isArray(j.results) ? j.results : [];
-      return { success: true, provider: 'backend', results: normalizeSearchResults(results), answer: j.answer || '' };
+      return {
+        success: true,
+        provider: j.provider || 'backend',
+        proxyVersion: j.proxyVersion || '',
+        results: normalizeSearchResults(results),
+        answer: j.answer || '',
+        source_quality: j.source_quality || null
+      };
     }
 
     // Tavily direct mode. Ключ хранится локально у пользователя.
@@ -494,7 +501,12 @@ function normalizeSearchResults(results) {
   return (results || []).map(r => ({
     title: r.title || r.name || r.url || 'Источник',
     url: r.url || r.link || '',
-    content: r.content || r.snippet || r.description || r.raw_content || ''
+    content: r.content || r.snippet || r.description || r.raw_content || '',
+    domain: r.domain || '',
+    source_type: r.source_type || '',
+    trusted: !!r.trusted,
+    score: typeof r.score === 'number' ? r.score : null,
+    reasons: Array.isArray(r.reasons) ? r.reasons : []
   })).filter(r => r.url || r.content).slice(0, 10);
 }
 
@@ -502,8 +514,19 @@ function buildInstructionTextFromSearch(productName, search) {
   const parts = [];
   parts.push(`ПРЕПАРАТ: ${productName}`);
   if (search.answer) parts.push(`\n--- СВОДКА WEB-SEARCH ---\n${search.answer}`);
+  if (search.source_quality) {
+    const q = search.source_quality;
+    parts.push(`\n--- КАЧЕСТВО ИСТОЧНИКОВ ---\nПроверенных доменов производителей: ${q.trusted || 0}. Всего источников: ${q.returned || (search.results || []).length}. Домены: ${(q.domains || []).join(', ') || '—'}.`);
+    if (Array.isArray(q.warnings) && q.warnings.length) parts.push(`Предупреждения: ${q.warnings.join(' ')}`);
+  }
   (search.results || []).forEach((r, i) => {
-    parts.push(`\n--- ИСТОЧНИК ${i + 1}: ${r.title} ---\nURL: ${r.url}\n${r.content || ''}`);
+    const meta = [
+      r.domain ? `domain=${r.domain}` : '',
+      r.trusted ? 'trusted=manufacturer' : '',
+      r.score !== null && r.score !== undefined ? `score=${r.score}` : '',
+      r.source_type ? `type=${r.source_type}` : ''
+    ].filter(Boolean).join('; ');
+    parts.push(`\n--- ИСТОЧНИК ${i + 1}: ${r.title} ---\nURL: ${r.url}\n${meta ? 'META: ' + meta + '\n' : ''}${r.content || ''}`);
   });
   return parts.join('\n');
 }

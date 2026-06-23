@@ -1,10 +1,22 @@
 {
-  "version": "0.7.7",
+  "version": "0.7.8",
   "release_date": "2026-06-23",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.8",
+      "date": "2026-06-23",
+      "type": "patch",
+      "title": "🛡 Улучшенный web-search proxy",
+      "changes": [
+        "Vercel/Firebase proxy получил строгий CORS по ALLOWED_ORIGIN и best-effort rate limit",
+        "Поиск инструкций теперь ранжирует источники по совпадению препарата, доверенным доменам производителей и терминам регламента",
+        "Ответ proxy содержит proxyVersion, score/trusted/domain/source_type и source_quality для карточки препарата",
+        "Frontend сохраняет метаданные качества источников и передаёт их в AI-парсер инструкции"
+      ]
+    },
     {
       "version": "0.7.7",
       "date": "2026-06-23",

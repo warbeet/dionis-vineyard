@@ -790,7 +790,7 @@ function renderProductEditForm() {
       ${p.ai_updated_at ? `🤖 AI: ${escapeHtml(p.ai_model || '')} · ${new Date(p.ai_updated_at).toLocaleString('ru-RU')} · уверенность: ${escapeHtml(p.confidence || '—')}` : ''}
       ${p.verify_required ? '<div class="alert warning" style="font-size:12px; margin-top:8px;">⚠️ Проверьте данные по официальной инструкции перед применением.</div>' : ''}
       ${p.search_links?.length ? `<div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">${p.search_links.map(l => `<a class="btn small secondary" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.title)}</a>`).join('')}</div>` : ''}
-      ${p.search_results?.length ? `<div style="margin-top:8px;"><b>Web-search источники (${escapeHtml(p.search_provider || '')}):</b><ol>${p.search_results.map(r => `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a></li>`).join('')}</ol></div>` : ''}
+      ${p.search_results?.length ? `<div style="margin-top:8px;"><b>Web-search источники (${escapeHtml(p.search_provider || '')}):</b><ol>${p.search_results.map(r => `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a>${r.trusted ? ' <span class="ai-badge">производитель</span>' : ''}${r.score !== null && r.score !== undefined ? ` <span style="font-size:11px; color:var(--text-muted);">score ${escapeHtml(String(r.score))}</span>` : ''}${r.domain ? `<div style="font-size:11px; color:var(--text-muted);">${escapeHtml(r.domain)}</div>` : ''}</li>`).join('')}</ol></div>` : ''}
       ${p.usage_recommendations?.length ? `<div style="margin-top:8px;"><b>Рекомендации:</b><ul>${p.usage_recommendations.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>` : ''}
       ${p.risks?.length ? `<div style="margin-top:8px;"><b>Риски:</b><ul>${p.risks.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>` : ''}
     </div>
@@ -877,10 +877,12 @@ async function findInstructionSourcesWeb() {
   currentProductEdit.source_urls = urls;
   currentProductEdit.instruction_text = text;
   currentProductEdit.search_results = res.results;
-  currentProductEdit.search_provider = res.provider;
+  currentProductEdit.search_provider = res.proxyVersion ? `${res.provider} ${res.proxyVersion}` : res.provider;
+  currentProductEdit.search_quality = res.source_quality || null;
   currentProductEdit.search_updated_at = new Date().toISOString();
   renderProductEditForm();
-  toast(`✅ Найдено источников: ${res.results.length}. Теперь нажмите «Заполнить из инструкции».`, 'success');
+  const trusted = res.source_quality?.trusted || 0;
+  toast(`✅ Найдено источников: ${res.results.length}, проверенных производителей: ${trusted}. Теперь нажмите «Заполнить из инструкции».`, 'success');
 }
 
 function searchProductInstruction() {
