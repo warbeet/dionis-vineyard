@@ -2,16 +2,49 @@
   <h2>🍷 Урожай и затраты</h2>
   <div class="grid grid-2">
     <div class="card">
-      <h3>Запись урожая</h3>
-      <div class="form-row"><label>Дата</label><input type="date" id="h-date"></div>
-      <div class="form-row"><label>Участок</label><select id="h-plot"></select></div>
+      <h3>Запись партии урожая</h3>
+      <div class="form-row"><label>Дата сбора</label><input type="date" id="h-date"></div>
       <div class="form-grid">
-        <div class="form-row"><label>Вес, кг</label><input type="number" id="h-weight" step="0.1"></div>
-        <div class="form-row"><label>Brix</label><input type="number" id="h-brix" step="0.1"></div>
-        <div class="form-row"><label>Кислотн., г/л</label><input type="number" id="h-acid" step="0.1"></div>
-        <div class="form-row"><label>pH</label><input type="number" id="h-ph" step="0.01"></div>
+        <div class="form-row"><label>Участок</label><select id="h-plot"></select></div>
+        <div class="form-row"><label>Сорт / Блок</label><select id="h-variety"></select></div>
       </div>
-      <button class="btn" onclick="saveHarvest()">💾 Сохранить</button>
+      <div class="form-grid">
+        <div class="form-row"><label>№ партии</label><input type="text" id="h-batch" placeholder="2026-Сира-01"></div>
+        <div class="form-row"><label>Вес, кг</label><input type="number" id="h-weight" step="0.1"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Brix (°)</label><input type="number" id="h-brix" step="0.1" placeholder="22.5"></div>
+        <div class="form-row"><label>Кислотн. (г/л)</label><input type="number" id="h-acid" step="0.1" placeholder="6.8"></div>
+        <div class="form-row"><label>pH</label><input type="number" id="h-ph" step="0.01" placeholder="3.45"></div>
+        <div class="form-row"><label>Температура ягод (°C)</label><input type="number" id="h-temp" step="0.1" placeholder="18.5"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Тара</label>
+          <select id="h-container">
+            <option value="box_20kg">Ящик 20 кг</option>
+            <option value="box_25kg">Ящик 25 кг</option>
+            <option value="bin_300kg">Бин 300 кг</option>
+            <option value="bin_500kg">Бин 500 кг</option>
+            <option value="trailer">Прицеп</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+        <div class="form-row"><label>Кол-во тары</label><input type="number" id="h-container-count" step="1" placeholder="15"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row"><label>Брак (%)</label><input type="number" id="h-botrytis" step="0.1" placeholder="2.5" title="Процент серой гнили и повреждённых ягод"></div>
+        <div class="form-row"><label>Фитосанитарное состояние</label>
+          <select id="h-health">
+            <option value="excellent">Отличное</option>
+            <option value="good">Хорошее</option>
+            <option value="fair">Удовлетворительное</option>
+            <option value="poor">Плохое</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row"><label>Заметки</label><textarea id="h-notes" rows="2" placeholder="Особенности партии, комментарии..."></textarea></div>
+      <button class="btn" onclick="saveHarvest()">💾 Сохранить партию</button>
     </div>
     <div class="card">
       <h3>Запись затрат</h3>
@@ -31,7 +64,15 @@
   </div>
 
   <div class="grid grid-2" style="margin-top:20px;">
-    <div class="card"><h3>Сводка по урожаю</h3><div id="harvest-summary" class="table-wrap"></div></div>
+    <div class="card">
+      <h3>Сводка по урожаю</h3>
+      <div style="margin-bottom:10px;">
+        <button class="btn small" onclick="renderHarvestByPlot()">По участкам</button>
+        <button class="btn small" onclick="renderHarvestByVariety()">По сортам</button>
+        <button class="btn small" onclick="exportHarvestCSV()">📥 Экспорт CSV</button>
+      </div>
+      <div id="harvest-summary" class="table-wrap"></div>
+    </div>
     <div class="card"><h3>Сводка по затратам</h3><div id="costs-summary" class="table-wrap"></div></div>
   </div>
 </section>
