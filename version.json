@@ -1,10 +1,22 @@
 {
-  "version": "0.7.13",
+  "version": "0.7.14",
   "release_date": "2026-10-25",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.14",
+      "date": "2026-10-25",
+      "type": "patch",
+      "title": "Пресет ООО Вертикаль",
+      "changes": [
+        "Кнопка загрузки демо-данных виноградника в один клик",
+        "4 клетки 414 рядов 40824 кустов с точной порядовой структурой",
+        "6 блоков сортов с клонами и подвоями",
+        "Интеграция со Sparse Seedlings v0.7.9"
+      ]
+    },
     {
       "version": "0.7.13",
       "date": "2026-10-25",

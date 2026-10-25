@@ -3,6 +3,8 @@
 
   <div class="toolbar">
     <button class="btn primary" onclick="openPlotModal()">+ Участок</button>
+    <button class="btn secondary" onclick="loadVertikalPreset()" title="Загрузить демо-данные виноградника">🍇 Пресет: ООО «Вертикаль»</button>
+    <button class="btn secondary" onclick="clearVertikalPreset()" title="Удалить данные пресета Вертикаль">🗑 Удалить пресет</button>
     <button class="btn secondary" onclick="exportData()">⬇ Бэкап</button>
     <button class="btn secondary" onclick="document.getElementById('import-file').click()">⬆ Импорт JSON</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
