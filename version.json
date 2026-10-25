@@ -1,10 +1,22 @@
 {
-  "version": "0.7.8",
-  "release_date": "2026-06-23",
+  "version": "0.7.9",
+  "release_date": "2026-10-25",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.9",
+      "date": "2026-10-25",
+      "type": "patch",
+      "title": "Sparse Seedlings",
+      "changes": [
+        "Разреженное хранение кустов — экономия localStorage в 50-100 раз",
+        "Виртуальная генерация здоровых кустов на лету",
+        "Автоматическая миграция существующих данных",
+        "Сохранение только исключений (больные, выпавшие, пересаженные)"
+      ]
+    },
     {
       "version": "0.7.8",
       "date": "2026-06-23",

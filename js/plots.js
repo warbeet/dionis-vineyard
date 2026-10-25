@@ -28,6 +28,26 @@ let leafletMaps = {};            // plot_id → Leaflet map instance
 let isDragSelecting = false;
 let dragStartCell = null;
 
+// v0.7.9.1: Sparse Seedlings — автоматическая миграция при загрузке модуля
+(function migrateToSparseSeedlings() {
+  if (typeof data === 'undefined' || !data.seedlings || !Array.isArray(data.seedlings)) return;
+  if (data.seedlings.length <= 1000) return; // мало кустов — миграция не нужна
+  
+  const normalCount = data.seedlings.filter(s => s.status === 'normal' && !s.is_replanted && 
+    (!s.inspections || s.inspections.length === 0) && (!s.ai_data || Object.keys(s.ai_data).length === 0)).length;
+  
+  if (normalCount / data.seedlings.length > 0.9) {
+    const before = data.seedlings.length;
+    data.seedlings = data.seedlings.filter(s => 
+      s.status !== 'normal' || 
+      s.is_replanted === true || 
+      (s.inspections && s.inspections.length > 0) ||
+      (s.ai_data && Object.keys(s.ai_data).length > 0)
+    );
+    console.log(`[Sparse Seedlings] Миграция: ${before} → ${data.seedlings.length} кустов (удалено ${before - data.seedlings.length} нормальных)`);
+  }
+})();
+
 // =========== МИГРАЦИЯ СТАРЫХ ДАННЫХ ===========
 function migratePlotsV2() {
   if (!data.plots) data.plots = [];
@@ -75,11 +95,57 @@ function migratePlotsV2() {
 }
 
 // =========== УТИЛИТЫ ===========
+// v0.7.9.1: Sparse Seedlings — возвращает виртуальные + реальные кусты
 function getPlotSeedlings(plotId) {
-  return (data.seedlings || []).filter(s => s.plot_id === plotId);
+  const plot = (data.plots || []).find(p => p.id === plotId);
+  if (!plot) return [];
+  
+  const result = [];
+  const realSeedlings = (data.seedlings || []).filter(s => s.plot_id === plotId);
+  const realMap = new Map();
+  realSeedlings.forEach(s => {
+    const key = `${s.row}_${s.position}`;
+    realMap.set(key, s);
+  });
+  
+  // Генерируем виртуальные кусты + подставляем реальные если есть
+  plot.rows.forEach(row => {
+    for (let pos = 1; pos <= (row.positions_count || 0); pos++) {
+      const key = `${row.number}_${pos}`;
+      const real = realMap.get(key);
+      if (real) {
+        result.push(real);
+      } else {
+        // Виртуальный куст
+        result.push({
+          id: `s_${plotId}_${row.number}_${pos}_v`,
+          plot_id: plotId,
+          block_id: null,
+          row: row.number,
+          position: pos,
+          status: 'normal',
+          is_replanted: false,
+          ai_data: null,
+          inspections: [],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          _virtual: true
+        });
+      }
+    }
+  });
+  
+  return result;
 }
+// v0.7.9.1: поддержка виртуальных кустов
 function getBlockSeedlings(plotId, blockId) {
-  return (data.seedlings || []).filter(s => s.plot_id === plotId && s.block_id === blockId);
+  const plot = (data.plots || []).find(p => p.id === plotId);
+  if (!plot || !plot.blocks) return [];
+  const block = plot.blocks.find(b => b.id === blockId);
+  if (!block) return [];
+  
+  // Получаем все кусты участка и фильтруем по блоку
+  return getPlotSeedlings(plotId).filter(s => s.block_id === blockId);
 }
 function parseZone(str) {
   // "1:1-30, 2:1-15" → [{row:1, from:1, to:30}, {row:2, from:1, to:15}]
@@ -205,26 +271,10 @@ function savePlot() {
 
   if (isNew) {
     data.plots.push(plot);
-    // Создадим саженцы по сетке
-    if (!data.seedlings) data.seedlings = [];
-    plot.rows.forEach(row => {
-      for (let pos = 1; pos <= row.positions_count; pos++) {
-        data.seedlings.push({
-          id: `s_${plot.id}_${row.number}_${pos}_${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}`,
-          plot_id: plot.id,
-          block_id: null,
-          row: row.number,
-          position: pos,
-          status: 'normal',
-          is_replanted: false,
-          ai_data: null,
-          inspections: [],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-      }
-    });
-    toast(`✅ Участок создан. ${rowsCount * posCount} кустов добавлено в реестр.`, 'success');
+    // v0.7.9.1: Sparse Seedlings — кусты генерируются виртуально на лету
+    // data.seedlings хранит только исключения (больные, выпавшие, пересаженные)
+    const totalSeedlings = plot.rows.reduce((sum, row) => sum + (row.positions_count || 0), 0);
+    toast(`✅ Участок создан. ${totalSeedlings} кустов (виртуально, экономия localStorage).`, 'success');
   } else {
     toast('✅ Участок обновлён', 'success');
   }
@@ -355,8 +405,32 @@ function deleteBlock() {
 
 // =========== SEEDLING MODAL (карточка куста) ===========
 function openSeedlingModal(seedlingId) {
-  const s = (data.seedlings || []).find(x => x.id === seedlingId);
-  if (!s) return;
+  // v0.7.9.1: поддержка виртуальных кустов
+  let s = (data.seedlings || []).find(x => x.id === seedlingId);
+  if (!s) {
+    // Попробуем найти виртуальный куст
+    if (seedlingId.endsWith('_v')) {
+      const parts = seedlingId.replace('_v', '').split('_');
+      if (parts.length >= 4) {
+        const plotId = parts[1];
+        const rowNum = parseInt(parts[2]);
+        const posNum = parseInt(parts[3]);
+        s = {
+          id: seedlingId,
+          plot_id: plotId,
+          block_id: null,
+          row: rowNum,
+          position: posNum,
+          status: 'normal',
+          is_replanted: false,
+          ai_data: null,
+          inspections: [],
+          _virtual: true
+        };
+      }
+    }
+    if (!s) return;
+  }
   const plot = data.plots.find(p => p.id === s.plot_id);
   const block = plot && plot.blocks && plot.blocks.find(b => b.id === s.block_id);
   const info = VINE_STATUS[s.status] || VINE_STATUS.normal;
@@ -445,12 +519,56 @@ function openSeedlingModal(seedlingId) {
 
 function saveSeedlingStatus(seedlingId) {
   if (!requirePermission('seedlings.edit', 'Нет прав на редактирование саженцев')) return;
-  const s = data.seedlings.find(x => x.id === seedlingId);
-  if (!s) return;
+  
+  // v0.7.9.1: Sparse Seedlings — поддержка виртуальных кустов
+  const isVirtual = seedlingId.endsWith('_v');
+  let s = data.seedlings ? data.seedlings.find(x => x.id === seedlingId) : null;
+  
+  // Если куст виртуальный — извлекаем plotId, row, position из ID
+  let plotId, rowNum, posNum;
+  if (isVirtual) {
+    const parts = seedlingId.replace('_v', '').split('_');
+    // s_{plotId}_{row}_{pos}
+    if (parts.length >= 4) {
+      plotId = parts[1];
+      rowNum = parseInt(parts[2]);
+      posNum = parseInt(parts[3]);
+    }
+  } else if (s) {
+    plotId = s.plot_id;
+    rowNum = s.row;
+    posNum = s.position;
+  }
+  
+  if (!s && !plotId) return;
+  
   const newStatus = document.getElementById('seedling-new-status').value;
   const replanted = document.getElementById('seedling-replanted').value === 'true';
   const note = document.getElementById('seedling-status-note').value.trim();
-  if (s.status !== newStatus || s.is_replanted !== replanted || note) {
+  
+  const statusChanged = !s || s.status !== newStatus || s.is_replanted !== replanted;
+  
+  if (statusChanged || note) {
+    if (!s) {
+      // Создаём реальный куст из виртуального
+      if (!data.seedlings) data.seedlings = [];
+      const plot = (data.plots || []).find(p => p.id === plotId);
+      s = {
+        id: seedlingId.replace('_v', '') + '_' + Date.now().toString(36),
+        plot_id: plotId,
+        block_id: plot ? (plot.block_id || null) : null,
+        row: rowNum,
+        position: posNum,
+        status: 'normal',
+        is_replanted: false,
+        ai_data: null,
+        inspections: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      data.seedlings.push(s);
+    }
+    
     if (!s.inspections) s.inspections = [];
     s.inspections.push({
       id: 'i_' + Date.now(),
@@ -1107,11 +1225,18 @@ function renderPlotStats(plotId) {
 // =========== CSV IMPORT/EXPORT ===========
 function exportSeedlingsCSV() {
   if (!requirePermission('data.export', 'Нет прав на экспорт данных')) return;
-  if (!data.seedlings || !data.seedlings.length) { toast('Нет саженцев для экспорта', 'error'); return; }
+  if (!data.plots || !data.plots.length) { toast('Нет участков для экспорта', 'error'); return; }
+  // v0.7.9.1: Sparse Seedlings — экспортируем все кусты (виртуальные + реальные)
+  const allSeedlings = [];
+  data.plots.forEach(p => {
+    allSeedlings.push(...getPlotSeedlings(p.id));
+  });
+  if (!allSeedlings.length) { toast('Нет саженцев для экспорта', 'error'); return; }
+  
   const headers = ['id','plot_id','plot_name','block_id','block_name','row','position','status','is_replanted','gps_lat','gps_lng','height_cm','shoots_count','clusters_count','health_score','updated_at'];
-  const rows = data.seedlings.map(s => {
+  const rows = allSeedlings.map(s => {
     const plot = data.plots.find(p => p.id === s.plot_id);
-    const block = plot && plot.blocks.find(b => b.id === s.block_id);
+    const block = plot && plot.blocks && plot.blocks.find(b => b.id === s.block_id);
     return [
       s.id, s.plot_id, plot ? plot.name : '', s.block_id || '', block ? block.name : '',
       s.row, s.position, s.status, s.is_replanted ? '1' : '0',

@@ -1169,20 +1169,22 @@ function recalcAffectedSeedlings() {
   // Сохраняем в plan
   currentSprayPlan.zones = { plot_ids: plotIds, block_ids: blockIds, statuses, age_min: ageMin, age_max: ageMax };
 
-  // Считаем кусты
+  // v0.7.9.1: Sparse Seedlings — считаем через getPlotSeedlings (виртуальные + реальные)
   let count = 0;
-  (data.seedlings || []).forEach(s => {
-    if (plotIds.length && !plotIds.includes(s.plot_id)) return;
-    if (blockIds.length && !blockIds.includes(s.block_id)) return;
-    if (statuses.length && !statuses.includes(s.status)) return;
-    if (ageMin != null || ageMax != null) {
-      const plot = data.plots?.find(p => p.id === s.plot_id);
-      const block = plot?.blocks?.find(b => b.id === s.block_id);
-      const age = block?.planting_year ? new Date().getFullYear() - block.planting_year : 0;
-      if (ageMin != null && age < ageMin) return;
-      if (ageMax != null && age > ageMax) return;
-    }
-    count++;
+  const plotsToCheck = plotIds.length ? data.plots.filter(p => plotIds.includes(p.id)) : (data.plots || []);
+  plotsToCheck.forEach(plot => {
+    const seedlings = getPlotSeedlings(plot.id);
+    seedlings.forEach(s => {
+      if (blockIds.length && !blockIds.includes(s.block_id)) return;
+      if (statuses.length && !statuses.includes(s.status)) return;
+      if (ageMin != null || ageMax != null) {
+        const block = plot.blocks?.find(b => b.id === s.block_id);
+        const age = block?.planting_year ? new Date().getFullYear() - block.planting_year : 0;
+        if (ageMin != null && age < ageMin) return;
+        if (ageMax != null && age > ageMax) return;
+      }
+      count++;
+    });
   });
 
   const cont = document.getElementById('zone-affected-count');

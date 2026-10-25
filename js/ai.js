@@ -375,12 +375,18 @@ async function generateAIAgroForecast() {
     recentDiseases: (data.diseases || []).slice(-10),
     recentTreatments: (data.treatments || []).slice(-10),
     sprayPlans: (data.spray_plans || []).slice(-10),
-    seedlingsSummary: {
-      total: (data.seedlings || []).length,
-      dead: (data.seedlings || []).filter(s => s.status === 'dead').length,
-      sick: (data.seedlings || []).filter(s => s.status === 'sick').length,
-      attention: (data.seedlings || []).filter(s => s.status === 'attention').length
-    }
+    seedlingsSummary: (() => {
+      // v0.7.9.1: Sparse Seedlings — подсчитываем через виртуальные кусты
+      let total = 0, dead = 0, sick = 0, attention = 0;
+      (data.plots || []).forEach(p => {
+        const seedlings = getPlotSeedlings(p.id);
+        total += seedlings.length;
+        dead += seedlings.filter(s => s.status === 'dead').length;
+        sick += seedlings.filter(s => s.status === 'sick').length;
+        attention += seedlings.filter(s => s.status === 'attention').length;
+      });
+      return { total, dead, sick, attention };
+    })()
   };
   const system = `Ты опытный агроном-виноградарь и консультант по орошению/защите растений. Дай практичный прогноз работ по винограднику. Ответ строго JSON.`;
   const prompt = `Проанализируй данные Dionis vineyard и составь рекомендации на 7-10 дней.
