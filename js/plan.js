@@ -89,7 +89,111 @@ function generateWeekPlan() {
   if (!requirePermission('plan.edit', 'Нет прав на генерацию плана')) return;
   if (!data.currentPheno) { toast('Сначала укажите фенофазу', 'error'); return; }
   const today = todayStr();
+  
+  // v0.7.15: Полная поддержка 18 стадий BBCH + обратная совместимость
   const tasksByPhase = {
+    // === ПОКОЙ (BBCH 00-09) ===
+    'bbch-00': [
+      { title: 'Зимняя обрезка лоз', priority: 'high', desc: 'Сформировать плодовые звенья' },
+      { title: 'Очистка штамбов от старой коры', priority: 'med', desc: 'Профилактика вредителей' },
+      { title: 'Ремонт шпалеры и опор', priority: 'med', desc: 'Подготовка к вегетации' }
+    ],
+    'bbch-09': [
+      { title: 'Завершить обрезку до распускания', priority: 'high', desc: '' },
+      { title: 'Профилактическая медная обработка', priority: 'high', desc: 'Бордоская смесь 3%' },
+      { title: 'Влагозарядковый полив (если сухо)', priority: 'med', desc: '' },
+      { title: 'Подвязка лоз к шпалере', priority: 'med', desc: '' }
+    ],
+    
+    // === РАСПУСКАНИЕ ПОЧЕК (BBCH 11-15) ===
+    'bbch-11': [
+      { title: '🥶 Контроль заморозков', priority: 'high', desc: 'Дымление, дождевание, обогрев' },
+      { title: 'Первая обработка от милдью', priority: 'high', desc: 'Медьсодержащий препарат (Бордоская 1%, Косайд)' },
+      { title: 'Подвязка прошлогодних лоз', priority: 'med', desc: '' }
+    ],
+    'bbch-15': [
+      { title: '🥶 Продолжить защиту от заморозков', priority: 'high', desc: 'Массовое распускание — критичная фаза' },
+      { title: 'Обломка двойников и волчков', priority: 'med', desc: '' },
+      { title: 'Подкормка азотом 40-60 кг/га', priority: 'med', desc: '' }
+    ],
+    
+    // === РАЗВИТИЕ СОЦВЕТИЙ (BBCH 51-57) ===
+    'bbch-51': [
+      { title: 'Системная обработка милдью+оидиум', priority: 'high', desc: 'Ридомил Голд + Топаз' },
+      { title: 'Обломка бесплодных побегов', priority: 'high', desc: '' },
+      { title: 'Подвязка зелёных побегов', priority: 'med', desc: '' }
+    ],
+    'bbch-53': [
+      { title: 'Обработка милдью+оидиум (системная)', priority: 'high', desc: 'Интервал 10-14 дней' },
+      { title: 'Пасынкование', priority: 'med', desc: '' },
+      { title: 'Проверка фосфорного питания', priority: 'med', desc: '' }
+    ],
+    'bbch-55': [
+      { title: 'Комбинированная обработка', priority: 'high', desc: 'Милдью + оидиум. НЕ сера при t>28°C!' },
+      { title: 'Прогноз риска милдью по погоде', priority: 'med', desc: '' }
+    ],
+    'bbch-57': [
+      { title: 'Последняя обработка ПЕРЕД цветением', priority: 'high', desc: 'Системные фунгициды от Botrytis (Хорус)' },
+      { title: 'Нормировка соцветий', priority: 'med', desc: '' }
+    ],
+    
+    // === ЦВЕТЕНИЕ (BBCH 61-69) ===
+    'bbch-61': [
+      { title: '🍇 Обработка от Botrytis и оидиума', priority: 'high', desc: 'Системные: Свитч, Хорус, Топаз. ⚠️ БЕЗ инсектицидов!' },
+      { title: '⚠️ ЗАПРЕЩЕНЫ инсектициды и контактная сера', priority: 'high', desc: 'Гибель пчёл и ожог цветков' },
+      { title: 'Контроль влажности в кроне', priority: 'med', desc: 'Проветривание' }
+    ],
+    'bbch-65': [
+      { title: '🍇 Полное цветение — защита от Botrytis', priority: 'high', desc: 'Свитч/Хорус. Без инсектицидов!' },
+      { title: 'Контроль завязывания', priority: 'med', desc: '' },
+      { title: 'Ограничение обработок — лёт пчёл', priority: 'high', desc: '' }
+    ],
+    'bbch-69': [
+      { title: '🍇 ОБЯЗАТЕЛЬНАЯ обработка от Botrytis', priority: 'high', desc: 'Опадение колпачков — ворота инфекции' },
+      { title: 'Начало контроля оидиума', priority: 'med', desc: '' },
+      { title: 'Приём пищи после цветения (азот+калий)', priority: 'med', desc: '' }
+    ],
+    
+    // === РОСТ ЯГОД (BBCH 71-77) ===
+    'bbch-71': [
+      { title: 'Системная обработка милдью+оидиум', priority: 'high', desc: 'Ридомил + Топаз' },
+      { title: 'Нормировка урожая (green harvest)', priority: 'med', desc: '' },
+      { title: 'Чеканка побегов', priority: 'med', desc: '' }
+    ],
+    'bbch-73': [
+      { title: 'Защита от оидиума', priority: 'high', desc: 'Сера или Топаз' },
+      { title: 'Удаление листьев в зоне гроздей', priority: 'med', desc: 'Вентиляция' },
+      { title: 'Полив при засухе', priority: 'med', desc: '' }
+    ],
+    'bbch-75': [
+      { title: 'Контроль оидиума', priority: 'high', desc: '' },
+      { title: 'Профилактика серой гнили', priority: 'med', desc: '' },
+      { title: 'Проверка калийного питания', priority: 'med', desc: '' }
+    ],
+    'bbch-77': [
+      { title: 'Профилактика серой гнили', priority: 'high', desc: 'Хорус/Свитч' },
+      { title: 'Дефлиация зоны гроздей', priority: 'med', desc: 'Удаление листьев' },
+      { title: 'Подготовка к верейзону', priority: 'med', desc: '' }
+    ],
+    
+    // === СОЗРЕВАНИЕ (BBCH 81-89) ===
+    'bbch-81': [
+      { title: 'Прекращение поливов', priority: 'high', desc: 'Для концентрации сахаров' },
+      { title: '⏰ Контроль сроков ожидания препаратов', priority: 'high', desc: 'Минимум 30 дней до сбора!' },
+      { title: 'Защита от серой гнили', priority: 'med', desc: 'С учётом PHI' }
+    ],
+    'bbch-85': [
+      { title: '📊 Замеры Brix еженедельно', priority: 'high', desc: 'Контроль зрелости' },
+      { title: 'Контроль ос и птиц', priority: 'med', desc: 'Ловушки, сетки' },
+      { title: 'Подготовка тары для сбора', priority: 'med', desc: '' }
+    ],
+    'bbch-89': [
+      { title: '🍇 ГОТОВНОСТЬ К СБОРУ', priority: 'high', desc: 'Brix/pH/TA в норме' },
+      { title: 'Организация сбора', priority: 'high', desc: 'Быстрая переработка' },
+      { title: 'Фиксация температуры ягод', priority: 'med', desc: 'Охлаждение перед дроблением' }
+    ],
+    
+    // === ОБРАТНАЯ СОВМЕСТИМОСТЬ СО СТАРЫМИ ID ===
     dormancy: [
       { title: 'Зимняя обрезка лоз', priority: 'high', desc: 'Сформировать плодовые звенья' },
       { title: 'Очистка штамбов', priority: 'med', desc: 'Удалить отмершую кору' },
@@ -106,7 +210,7 @@ function generateWeekPlan() {
       { title: 'Подкормка азотом 40-60 кг/га', priority: 'med', desc: '' }
     ],
     flowering: [
-      { title: '⚠️ НЕ обрабатывать в цветение', priority: 'high', desc: 'Только до или после' },
+      { title: '🍇 Обработка от Botrytis/оидиума (системная)', priority: 'high', desc: 'Свитч/Хорус в BBCH 61-69. ⚠️ БЕЗ инсектицидов!' },
       { title: 'Контроль завязывания', priority: 'med', desc: '' }
     ],
     fruitset: [
@@ -139,6 +243,7 @@ function generateWeekPlan() {
       { title: 'Влагозарядковый полив', priority: 'med', desc: '' }
     ]
   };
+  
   const tasks = tasksByPhase[data.currentPheno] || [];
   let added = 0;
   tasks.forEach(t => {
@@ -149,7 +254,7 @@ function generateWeekPlan() {
     });
   });
   saveData(); renderAll();
-  toast(`✅ Добавлено ${added} задач`, 'success');
+  toast(`✅ Добавлено ${added} задач для текущей фенофазы`, 'success');
 }
 
 // ===========================================================================

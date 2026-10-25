@@ -1450,15 +1450,13 @@ function readTextFile(file) {
 }
 
 async function extractTextFromPDFFile(file) {
-  if (!window.pdfjsLib) {
-    throw new Error('PDF.js не загрузился. Проверьте интернет или вставьте текст инструкции вручную.');
-  }
-  // Worker с CDN; если не задавать, pdf.js часто ругается в браузере.
-  if (!window.pdfjsLib.GlobalWorkerOptions.workerSrc) {
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  // v0.7.15: Lazy-load pdf.js при первом использовании
+  const pdfjsLib = await LazyLibs.loadPdfJs();
+  if (!pdfjsLib) {
+    throw new Error('PDF.js не удалось загрузить. Проверьте интернет или вставьте текст инструкции вручную.');
   }
   const buffer = await file.arrayBuffer();
-  const pdf = await window.pdfjsLib.getDocument({ data: buffer }).promise;
+  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
   const maxPages = Math.min(pdf.numPages, 40); // защита от огромных PDF
   const pages = [];
   for (let pageNo = 1; pageNo <= maxPages; pageNo++) {

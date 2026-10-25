@@ -1,10 +1,22 @@
 {
-  "version": "0.7.14",
+  "version": "0.7.15",
   "release_date": "2026-10-25",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.15",
+      "date": "2026-10-25",
+      "type": "patch",
+      "title": "Fix plan.js + Lazy-load",
+      "changes": [
+        "Генератор работ поддерживает все 18 стадий BBCH",
+        "Правильные задачи для каждой фенофазы",
+        "pdf.js и jspdf загружаются по требованию",
+        "Экономия 3 МБ при холодном старте PWA"
+      ]
+    },
     {
       "version": "0.7.14",
       "date": "2026-10-25",
