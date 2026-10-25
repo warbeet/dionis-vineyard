@@ -270,6 +270,7 @@ function renderAll() {
   if (typeof renderStations === 'function') renderStations();
   if (typeof renderLocaleSettings === 'function') renderLocaleSettings();
   if (typeof renderUISettings === 'function') renderUISettings();
+  if (typeof renderYandexDiskSettings === 'function') renderYandexDiskSettings();
   if (typeof renderYandexAuthSettings === 'function') renderYandexAuthSettings();
   if (typeof updateStorageHealthUI === 'function') updateStorageHealthUI();
   if (typeof updateDashboard === 'function') updateDashboard();

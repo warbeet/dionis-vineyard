@@ -10,8 +10,13 @@ function saveAPIKeys() {
   settings.webSearchProvider = document.getElementById('web-search-provider')?.value || 'tavily';
   settings.tavilyKey = document.getElementById('tavily-key')?.value?.trim() || '';
   settings.searchBackendUrl = document.getElementById('search-backend-url')?.value?.trim() || '';
+  
+  // v0.7.18: Яндекс.Диск
+  settings.yandexDiskEnabled = document.getElementById('yandex-disk-enabled')?.checked || false;
+  settings.yandexDiskToken = document.getElementById('yandex-disk-token')?.value?.trim() || '';
+  
   saveSettingsLocal();
-  toast('✅ AI/Web-search настройки сохранены', 'success');
+  toast('✅ AI/Web-search/Cloud настройки сохранены', 'success');
 }
 
 async function testAIConnection() {
@@ -70,4 +75,74 @@ function renderUISettings() {
       </p>
     </div>
   `;
+}
+
+// ===== YANDEX DISK SETTINGS (v0.7.18) =====
+
+function toggleYandexDisk() {
+  const enabled = document.getElementById('yandex-disk-enabled').checked;
+  settings.yandexDiskEnabled = enabled;
+  saveSettingsLocal();
+  
+  if (enabled) {
+    toast('☁️ Яндекс.Диск включён. Укажите OAuth-токен.', 'info');
+  } else {
+    toast('☁️ Яндекс.Диск отключён.', 'info');
+  }
+}
+
+async function saveYandexDiskSettings() {
+  if (!requirePermission('settings.edit', 'Нет прав на изменение настроек')) return;
+  
+  settings.yandexDiskEnabled = document.getElementById('yandex-disk-enabled').checked;
+  settings.yandexDiskToken = document.getElementById('yandex-disk-token').value.trim();
+  
+  saveSettingsLocal();
+  toast('✅ Настройки Яндекс.Диска сохранены', 'success');
+}
+
+async function testYandexDisk() {
+  const token = document.getElementById('yandex-disk-token').value.trim();
+  
+  if (!token) {
+    toast('Укажите OAuth-токен Яндекс.Диска', 'error');
+    return;
+  }
+  
+  const statusEl = document.getElementById('yandex-disk-status');
+  statusEl.innerHTML = '<span style="color:#8a7a6a;">🔍 Проверяю подключение...</span>';
+  
+  try {
+    const isValid = await YandexDisk.validateToken(token);
+    
+    if (isValid) {
+      statusEl.innerHTML = '<span style="color:#4CAF50;">✅ Подключение успешно! Токен действителен.</span>';
+      toast('✅ Яндекс.Диск подключён', 'success');
+      
+      // Сохранить настройки
+      settings.yandexDiskToken = token;
+      settings.yandexDiskEnabled = true;
+      document.getElementById('yandex-disk-enabled').checked = true;
+      saveSettingsLocal();
+    } else {
+      statusEl.innerHTML = '<span style="color:#f44336;">❌ Неверный токен или нет доступа к API.</span>';
+      toast('❌ Ошибка подключения к Яндекс.Диску', 'error');
+    }
+  } catch (error) {
+    statusEl.innerHTML = `<span style="color:#f44336;">❌ Ошибка: ${error.message}</span>`;
+    toast('❌ Ошибка сети', 'error');
+  }
+}
+
+function renderYandexDiskSettings() {
+  const enabledCheckbox = document.getElementById('yandex-disk-enabled');
+  const tokenInput = document.getElementById('yandex-disk-token');
+  
+  if (enabledCheckbox) {
+    enabledCheckbox.checked = settings.yandexDiskEnabled || false;
+  }
+  
+  if (tokenInput && settings.yandexDiskToken) {
+    tokenInput.value = settings.yandexDiskToken;
+  }
 }

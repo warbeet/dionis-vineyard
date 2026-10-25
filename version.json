@@ -1,10 +1,22 @@
 {
-  "version": "0.7.16",
+  "version": "0.8.0",
   "release_date": "2026-10-25",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.8.0",
+      "date": "2026-10-25",
+      "type": "minor",
+      "title": "Яндекс.Диск интеграция",
+      "changes": [
+        "Загрузка фотоотчётов в облако",
+        "Оффлайн-очередь через IndexedDB",
+        "Настройки OAuth-токена в UI",
+        "Автоматическая обработка при восстановлении связи"
+      ]
+    },
     {
       "version": "0.7.16",
       "date": "2026-10-25",
