@@ -1,10 +1,22 @@
 {
-  "version": "0.7.11",
+  "version": "0.7.12",
   "release_date": "2026-10-25",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.7.12",
+      "date": "2026-10-25",
+      "type": "patch",
+      "title": "Mobile Field Mode",
+      "changes": [
+        "Новый полевой режим для обхода виноградника",
+        "Крупные кнопки статусов (Милдью, Оидиум, Хлороз, Выпад, Здоров)",
+        "Автоматическая GPS-метка при обновлении статуса",
+        "Быстрый ввод заметок к кустам"
+      ]
+    },
     {
       "version": "0.7.11",
       "date": "2026-10-25",
