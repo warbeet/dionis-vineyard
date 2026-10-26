@@ -274,6 +274,7 @@ function renderAll() {
   if (typeof renderYandexAuthSettings === 'function') renderYandexAuthSettings();
   if (typeof updateStorageHealthUI === 'function') updateStorageHealthUI();
   if (typeof updateDashboard === 'function') updateDashboard();
+  if (typeof autoLoadWeather === 'function') autoLoadWeather();
 }
 
 // =========== INIT ===========

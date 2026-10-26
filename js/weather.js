@@ -281,3 +281,18 @@ function calcGDD() {
   });
   return sum;
 }
+
+// Автозагрузка погоды при старте приложения
+function autoLoadWeather() {
+  if (data.location && data.location.lat && data.location.lon) {
+    // Загружаем погоду только если она не загружена или устарела (больше 1 часа)
+    const lastUpdate = data.currentWeather?.updated_at ? new Date(data.currentWeather.updated_at).getTime() : 0;
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+    
+    if (!data.currentWeather || (now - lastUpdate > oneHour)) {
+      console.log('[Dionis] Auto-loading weather...');
+      fetchWeather();
+    }
+  }
+}
