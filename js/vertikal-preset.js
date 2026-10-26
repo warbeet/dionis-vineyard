@@ -91,7 +91,7 @@ function _vertikal_kletka4_rows() {
  * Загружает пресет ООО «Вертикаль» в базу приложения
  */
 function loadVertikalPreset() {
-  if (!confirm('🍇 Загрузить демо-данные ООО «Вертикаль» (Геленджик)?\n\n4 клетки, 414 рядов, 40 824 кустов.\n\n⚠️ Существующие участки НЕ будут удалены — новые добавятся поверх.\n\nПродолжить?')) return;
+  if (!confirm('🍇 Загрузить демо-данные ООО «Вертикаль» (Геленджик)?\n\n4 клетки, 414 рядов, 40 824 кустов.\n\n⚠️ Существующие участки НЕ будут удалены — новые добавятся поверх.\n⚠️ Координаты виноградника будут установлены для прогноза погоды.\n\nПродолжить?')) return;
   
   toast('⏳ Загрузка пресета...', 'info');
   
@@ -105,13 +105,23 @@ function loadVertikalPreset() {
       data.plots = data.plots.filter(p => !p.id.startsWith('plot_kletka_'));
       data.seedlings = data.seedlings.filter(s => !s.plot_id.startsWith('plot_kletka_'));
       
-      // Клетка 1 — Сира
+      // Устанавливаем координаты виноградника для прогноза погоды
+      // х. Виноградный, Геленджик, Краснодарский край
+      data.location = {
+        lat: 44.6167,
+        lon: 38.0833,
+        name: 'ООО «Вертикаль», х. Виноградный, Геленджик'
+      };
+      console.log('[Dionis] Координаты виноградника установлены:', data.location);
+      
+      // Клетка 1 — Сира (северная часть виноградника)
       data.plots.push({
         id: 'plot_kletka_1_sirah',
         name: 'Клетка 1 (ЗУ2) — Сира',
         area_ha: 1.87,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        center: { lat: 44.6175, lng: 38.0830 },
         notes: 'Посадка 2024 г. ЗУ2, кадастр 23:40:0301002:276. Сира клон 524 + 747 на 140R.',
         blocks: [
           { id: 'b_sirah_524', name: 'Сира клон 524 / 140R', scion: 'Сира', scion_clone: '524', rootstock: '140 R', planting_year: 2024 },
@@ -121,13 +131,14 @@ function loadVertikalPreset() {
         created_at: new Date().toISOString()
       });
       
-      // Клетка 2 — Каберне Совиньон
+      // Клетка 2 — Каберне Совиньон (восточная часть)
       data.plots.push({
         id: 'plot_kletka_2_cabernet_sauvignon',
         name: 'Клетка 2 (ЗУ3) — Каберне Совиньон',
         area_ha: 2.89,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        center: { lat: 44.6165, lng: 38.0845 },
         notes: 'Посадка 2024 г. ЗУ3. КС клоны 169 (RSB1) + 338 (RSB1/Fercal).',
         blocks: [
           { id: 'b_cs_169', name: 'КС 169 / RSB1', scion: 'Каберне Совиньон', scion_clone: '169', rootstock: 'RSB1', planting_year: 2024 },
@@ -138,13 +149,14 @@ function loadVertikalPreset() {
         created_at: new Date().toISOString()
       });
       
-      // Клетка 3 — Мерло + Каберне Фран
+      // Клетка 3 — Мерло + Каберне Фран (южная часть)
       data.plots.push({
         id: 'plot_kletka_3_merlot_cf',
         name: 'Клетка 3 (ЗУ4) — Мерло + Каберне Фран',
         area_ha: 3.30,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        center: { lat: 44.6155, lng: 38.0825 },
         notes: 'Посадка 2024 г. ЗУ4. Мерло клоны 346/181 (RSB1) + Каберне Фран 685 (Fercal).',
         blocks: [
           { id: 'b_merlot_346', name: 'Мерло 346 / RSB1', scion: 'Мерло', scion_clone: '346', rootstock: 'RSB1', planting_year: 2024 },
@@ -155,13 +167,14 @@ function loadVertikalPreset() {
         created_at: new Date().toISOString()
       });
       
-      // Клетка 4 — Пти Вердо + Каберне Фран (+ КС остаток)
+      // Клетка 4 — Пти Вердо + Каберне Фран (+ КС остаток) (западная часть)
       data.plots.push({
         id: 'plot_kletka_4_pv_cf',
         name: 'Клетка 4 (ЗУ5) — Пти Вердо + Каберне Фран',
         area_ha: 1.27,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        center: { lat: 44.6170, lng: 38.0815 },
         notes: 'Посадка 2024 г. ЗУ5. Верх: Пти Вердо 1058 (Fercal). Низ: КФ 678 (140R). Крайний ряд: КС 338 (Fercal) 65 кустов.',
         blocks: [
           { id: 'b_pv_1058', name: 'Пти Вердо 1058 / Fercal', scion: 'Пти Вердо', scion_clone: '1058', rootstock: 'Fercal', planting_year: 2024 },
@@ -180,6 +193,12 @@ function loadVertikalPreset() {
       
       saveData();
       renderAll();
+      
+      // Автоматически загружаем погоду после установки координат
+      if (typeof fetchWeather === 'function') {
+        console.log('[Dionis] Загружаем погоду для виноградника...');
+        fetchWeather();
+      }
       
       toast(`✅ Пресет ООО «Вертикаль» загружен: 4 клетки, ${totalSeedlings.toLocaleString('ru-RU')} кустов`, 'success');
       
