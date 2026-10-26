@@ -27,8 +27,21 @@ function updateDashboard() {
   const desc = document.getElementById('pheno-desc');
   if (phase && badge && desc) {
     badge.textContent = phase.name;
+    badge.className = 'badge primary';
     desc.textContent = phase.desc + (data.phenoDate ? ` · с ${data.phenoDate}` : '');
+  } else if (badge && desc) {
+    badge.textContent = 'Не указана';
+    badge.className = 'badge';
+    desc.textContent = 'Перейдите в «Погода», чтобы установить стадию.';
   }
+
+  // Season progress (approximate based on current month)
+  const currentMonth = new Date().getMonth(); // 0-11
+  const seasonProgress = Math.max(0, Math.min(100, ((currentMonth - 2) / 9) * 100)); // March (2) to November (10)
+  const progressBar = document.getElementById('season-progress-bar');
+  const progressText = document.getElementById('season-progress-text');
+  if (progressBar) progressBar.style.width = seasonProgress + '%';
+  if (progressText) progressText.textContent = Math.round(seasonProgress) + '%';
 
   // Risks
   const risksDiv = document.getElementById('active-risks');

@@ -137,20 +137,30 @@ document.addEventListener('click', (e) => {
 
 // =========== ТЕМА ===========
 function getTheme() {
-  return localStorage.getItem('vineyard_theme') || 'light';
+  return settings.theme || 'classic';
 }
 function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
+  document.body.setAttribute('data-theme', theme);
   const btn = document.getElementById('theme-toggle-btn');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (btn) {
+    const icons = { 'classic': '🌙', 'deep-dark': '☀️', 'deep-light': '🌙' };
+    btn.textContent = icons[theme] || '🌙';
+  }
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = theme === 'dark' ? '#1f2820' : '#e8ebe2';
+  if (meta) {
+    const colors = { 'classic': '#e8ebe2', 'deep-dark': '#1a1f2e', 'deep-light': '#f0f2f5' };
+    meta.content = colors[theme] || '#e8ebe2';
+  }
+  settings.theme = theme;
+  if (typeof saveSettingsLocal === 'function') saveSettingsLocal();
 }
 function toggleTheme() {
   const cur = getTheme();
-  const next = cur === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('vineyard_theme', next);
+  const themes = ['classic', 'deep-dark', 'deep-light'];
+  const idx = themes.indexOf(cur);
+  const next = themes[(idx + 1) % themes.length];
   applyTheme(next);
+  if (typeof renderUISettings === 'function') renderUISettings();
 }
 // Применяем тему сразу
 applyTheme(getTheme());

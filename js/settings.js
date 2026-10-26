@@ -61,8 +61,29 @@ function renderUISettings() {
   const cont = document.getElementById('ui-settings');
   if (!cont) return;
   const mode = settings.uiMode || 'auto';
+  const theme = settings.theme || 'classic';
   const resolved = typeof resolveUIMode === 'function' ? resolveUIMode() : 'desktop';
   cont.innerHTML = `
+    <div class="form-row">
+      <label> Тема оформления</label>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+        <label style="flex: 1; min-width: 120px; padding: 12px; background: var(--bg-input); border-radius: 8px; cursor: pointer; border: 2px solid ${theme === 'classic' ? 'var(--primary)' : 'transparent'};">
+          <input type="radio" name="theme" value="classic" ${theme === 'classic' ? 'checked' : ''} onchange="applyTheme('classic')" style="margin-right: 6px;">
+          <strong> Классика</strong>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Мягкий неоморфизм</div>
+        </label>
+        <label style="flex: 1; min-width: 120px; padding: 12px; background: #1a1f2e; color: #f0f0f0; border-radius: 8px; cursor: pointer; border: 2px solid ${theme === 'deep-dark' ? 'var(--primary)' : 'transparent'};">
+          <input type="radio" name="theme" value="deep-dark" ${theme === 'deep-dark' ? 'checked' : ''} onchange="applyTheme('deep-dark')" style="margin-right: 6px;">
+          <strong> Deep Dark</strong>
+          <div style="font-size: 11px; color: #8a90a0; margin-top: 4px;">Глубокий с glow</div>
+        </label>
+        <label style="flex: 1; min-width: 120px; padding: 12px; background: #f0f2f5; border-radius: 8px; cursor: pointer; border: 2px solid ${theme === 'deep-light' ? 'var(--primary)' : 'transparent'};">
+          <input type="radio" name="theme" value="deep-light" ${theme === 'deep-light' ? 'checked' : ''} onchange="applyTheme('deep-light')" style="margin-right: 6px;">
+          <strong>☀️ Deep Light</strong>
+          <div style="font-size: 11px; color: #7a8090; margin-top: 4px;">Глубокий светлый</div>
+        </label>
+      </div>
+    </div>
     <div class="form-row">
       <label>Режим интерфейса</label>
       <select id="ui-mode-select" onchange="setUIMode(this.value)">

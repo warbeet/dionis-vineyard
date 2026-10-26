@@ -5,7 +5,7 @@
 // ============================================================================
 // VERSION — Текущая версия приложения (обновляется при каждом релизе)
 // ============================================================================
-const APP_VERSION = '0.7.20';
+const APP_VERSION = '0.8.0';
 const APP_VERSION_DATE = '2026-10-26';
 const APP_CODENAME = 'Geometry+';
 
@@ -96,6 +96,7 @@ function defaultSettings() {
     yandexDiskEnabled: false,
     yandexDiskToken: '',
     uiMode: 'auto', // auto | desktop | mobile
+    theme: 'classic', // classic | deep-dark | deep-light
     vineyardCode: ''
   };
 }

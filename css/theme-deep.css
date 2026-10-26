@@ -1,0 +1,663 @@
+/* ============================================================================
+   DEEP NEUMORPHISM UI COMPONENTS v0.8.0
+   Кнопки, карточки, инпуты, модалки, toggle, slider, progress, toast
+   ============================================================================ */
+
+/* ========================================
+   БАЗОВЫЙ ФОН И ТЕКСТУРА
+   ======================================== */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color var(--duration-slow) var(--ease-out),
+              color var(--duration-slow) var(--ease-out);
+}
+
+/* Тонкая текстура для глубоких тем */
+[data-theme="deep-dark"] body::before,
+[data-theme="deep-light"] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255,255,255,0.02) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.02) 0%, transparent 50%);
+}
+
+/* ========================================
+   КАРТОЧКИ
+   ======================================== */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-elevated);
+  border: var(--border-subtle) solid var(--border-color, transparent);
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+  transition: transform var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    12px 12px 30px var(--shadow-dark),
+    -6px -6px 16px var(--shadow-light),
+    inset 0 1px 0 var(--shadow-inset-light);
+}
+
+.card:active {
+  transform: translateY(0);
+}
+
+/* ========================================
+   КНОПКИ
+   ======================================== */
+.btn {
+  background: var(--bg-card);
+  color: var(--text);
+  border: var(--border-standard) solid var(--border-color, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  box-shadow: var(--shadow-flat);
+  transition: all var(--duration-fast) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    var(--shadow-elevated),
+    0 0 0 3px var(--primary-glow);
+  color: var(--primary);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-pressed);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  border: none;
+}
+
+.btn.primary:hover {
+  background: linear-gradient(135deg, var(--primary-hover), var(--primary-active));
+  box-shadow: 
+    0 4px 12px var(--primary-glow),
+    0 0 0 3px var(--primary-glow);
+  color: white;
+}
+
+.btn.primary:active {
+  box-shadow: 
+    inset 2px 2px 4px var(--shadow-inset-dark),
+    0 0 0 3px var(--primary-glow);
+}
+
+.btn.secondary {
+  background: var(--bg-input);
+}
+
+.btn.danger {
+  background: linear-gradient(135deg, var(--danger), #d32f2f);
+  color: white;
+  border: none;
+}
+
+.btn.danger:hover {
+  box-shadow: 
+    0 4px 12px var(--danger-glow),
+    0 0 0 3px var(--danger-glow);
+  color: white;
+}
+
+.btn.small {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* Ripple эффект для кнопок */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.btn:active::after {
+  animation: ripple var(--duration-slow) var(--ease-out);
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
+
+/* Loading состояние */
+.btn.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn.loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   ИНПУТЫ
+   ======================================== */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+textarea,
+select {
+  background: var(--bg-input);
+  color: var(--text);
+  border: var(--border-standard) solid var(--border-color, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+  font-family: inherit;
+  box-shadow: var(--shadow-pressed);
+  transition: all var(--duration-fast) var(--ease-out);
+  width: 100%;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 
+    var(--shadow-pressed),
+    0 0 0 3px var(--primary-glow);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* ========================================
+   МОДАЛКИ
+   ======================================== */
+.modal-bg {
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    0 20px 60px var(--shadow-dark),
+    0 0 0 1px var(--border-color, transparent);
+  border: var(--border-subtle) solid var(--border-color, transparent);
+  animation: modalSlideIn var(--duration-normal) var(--ease-out);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--border-subtle) solid var(--border-color, transparent);
+}
+
+.modal-body {
+  padding: var(--space-6);
+}
+
+.modal-actions {
+  padding: var(--space-5) var(--space-6);
+  border-top: var(--border-subtle) solid var(--border-color, transparent);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.modal-close:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+/* ========================================
+   TOGGLE SWITCH
+   ======================================== */
+.toggle {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-pressed);
+  transition: background var(--duration-normal) var(--ease-out);
+}
+
+.toggle::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  box-shadow: var(--shadow-flat);
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.toggle.active {
+  background: var(--primary);
+}
+
+.toggle.active::before {
+  transform: translateX(24px);
+  background: white;
+  box-shadow: 
+    var(--shadow-flat),
+    0 0 10px var(--primary-glow);
+}
+
+.toggle:active::before {
+  width: 26px;
+}
+
+.toggle.active:active::before {
+  transform: translateX(20px);
+}
+
+/* ========================================
+   SLIDER
+   ======================================== */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-pressed);
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 
+    var(--shadow-flat),
+    0 0 0 2px var(--primary),
+    0 0 10px var(--primary-glow);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 
+    var(--shadow-flat),
+    0 0 0 3px var(--primary),
+    0 0 15px var(--primary-glow);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--bg-card);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--primary);
+  box-shadow: var(--shadow-flat), 0 0 10px var(--primary-glow);
+}
+
+/* ========================================
+   PROGRESS BAR
+   ======================================== */
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-pressed);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  border-radius: var(--radius-full);
+  box-shadow: 
+    0 0 10px var(--primary-glow),
+    inset 0 1px 0 var(--shadow-inset-light);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* ========================================
+   TOAST NOTIFICATIONS
+   ======================================== */
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-card);
+  color: var(--text);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: 
+    0 10px 40px var(--shadow-dark),
+    0 0 0 1px var(--border-color, transparent),
+    inset 0 1px 0 var(--shadow-inset-light);
+  opacity: 0;
+  transition: all var(--duration-slow) var(--ease-out);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 250px;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast.success {
+  border-left: 4px solid var(--success);
+}
+
+.toast.success::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--success);
+  color: white;
+  border-radius: 50%;
+  font-weight: var(--font-bold);
+  box-shadow: 0 0 10px var(--success-glow);
+}
+
+.toast.error {
+  border-left: 4px solid var(--danger);
+}
+
+.toast.error::before {
+  content: '✕';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--danger);
+  color: white;
+  border-radius: 50%;
+  font-weight: var(--font-bold);
+  box-shadow: 0 0 10px var(--danger-glow);
+}
+
+.toast.info {
+  border-left: 4px solid var(--info);
+}
+
+.toast.warning {
+  border-left: 4px solid var(--warning);
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+.empty-state {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow-elevated);
+  border: var(--border-subtle) dashed var(--border-color, transparent);
+}
+
+.empty-state-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  background: var(--bg-input);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-pressed);
+  font-size: 32px;
+}
+
+.empty-state-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 300px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ========================================
+   TABLE ROW
+   ======================================== */
+.table-row {
+  background: var(--bg-card);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-flat);
+  margin-bottom: var(--space-2);
+  transition: all var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background: var(--bg-hover);
+  box-shadow: var(--shadow-elevated);
+  transform: translateX(4px);
+}
+
+.table-row.selected {
+  background: var(--primary);
+  color: white;
+  box-shadow: 
+    var(--shadow-flat),
+    0 0 0 3px var(--primary-glow);
+}
+
+.table-row.selected .table-cell {
+  color: white;
+}
+
+.table-row:active {
+  transform: translateX(2px);
+  box-shadow: var(--shadow-pressed);
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  background: var(--bg-input);
+  color: var(--text-soft);
+  box-shadow: var(--shadow-flat);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.badge.primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.badge.success {
+  background: var(--success);
+  color: white;
+  box-shadow: 0 0 10px var(--success-glow);
+}
+
+.badge.warning {
+  background: var(--warning);
+  color: white;
+  box-shadow: 0 0 10px var(--warning-glow);
+}
+
+.badge.danger {
+  background: var(--danger);
+  color: white;
+  box-shadow: 0 0 10px var(--danger-glow);
+}
+
+/* ========================================
+   АНИМАЦИИ
+   ======================================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--primary-glow);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-normal) var(--ease-out);
+}
+
+.animate-slide-in-up {
+  animation: slideInUp var(--duration-normal) var(--ease-out);
+}
+
+.animate-slide-in-down {
+  animation: slideInDown var(--duration-normal) var(--ease-out);
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}

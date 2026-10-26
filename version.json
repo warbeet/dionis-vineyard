@@ -1,10 +1,25 @@
 {
-  "version": "0.7.20",
+  "version": "0.8.0",
   "release_date": "2026-10-26",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.8.0",
+      "date": "2026-10-26",
+      "type": "minor",
+      "title": "v0.8.0: Deep Neumorphism UI System",
+      "changes": [
+        "Новая система дизайн-токенов (tokens.css)",
+        "Глубокий неоморфизм с glow-эффектами (theme-deep.css)",
+        "Три темы: Classic, Deep Dark, Deep Light",
+        "Полный набор компонентов: кнопки, карточки, инпуты, модалки",
+        "Новые компоненты: toggle, slider, progress bar, toast, empty state",
+        "Анимации: ripple, fade-in, slide, pulse, glow",
+        "Пилот на Дашборде: summary-cards, quick-actions, progress-season"
+      ]
+    },
     {
       "version": "0.7.20",
       "date": "2026-10-26",

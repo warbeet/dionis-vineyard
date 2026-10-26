@@ -1,0 +1,273 @@
+/* ============================================================================
+   DESIGN TOKENS v0.8.0 — Design System для Dionis Vineyard
+   Две темы: Classic (существующий неоморфизм) и Deep Neumorph (новый стиль)
+   ============================================================================ */
+
+:root {
+  /* ========================================
+     RADIUS TOKENS
+     ======================================== */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ========================================
+     SPACING TOKENS
+     ======================================== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ========================================
+     BORDER TOKENS
+     ======================================== */
+  --border-subtle: 0.5px;
+  --border-standard: 1px;
+  --border-prominent: 1.5px;
+
+  /* ========================================
+     ICON SIZES
+     ======================================== */
+  --icon-sm: 14px;
+  --icon-md: 18px;
+  --icon-lg: 22px;
+  --icon-xl: 28px;
+
+  /* ========================================
+     FONT SIZES
+     ======================================== */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+
+  /* ========================================
+     FONT WEIGHTS
+     ======================================== */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ========================================
+     ANIMATION TOKENS
+     ======================================== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 400ms;
+}
+
+/* ============================================================================
+   CLASSIC THEME (существующий неоморфизм)
+   ============================================================================ */
+[data-theme="classic"] {
+  --bg: #e8ebe2;
+  --bg-card: #e8ebe2;
+  --bg-input: #e0e3da;
+  --bg-hover: #e2e5dd;
+  
+  --primary: #6b8e5a;
+  --primary-hover: #5a7a4d;
+  --primary-active: #4a6a3f;
+  --primary-glow: rgba(107, 142, 90, 0.3);
+  
+  --accent: #8b3a5c;
+  --accent-hover: #7a2f4f;
+  
+  --text: #2c2c2c;
+  --text-soft: #5a5a5a;
+  --text-muted: #8a8a8a;
+  
+  --shadow-light: #ffffff;
+  --shadow-dark: #c5c7c0;
+  --shadow-inset-light: #f0f2ec;
+  --shadow-inset-dark: #d0d3cb;
+  
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --danger: #f44336;
+  --info: #2196F3;
+  
+  --shadow-elevated: 
+    6px 6px 14px var(--shadow-dark),
+    -6px -6px 14px var(--shadow-light);
+  
+  --shadow-pressed:
+    inset 3px 3px 6px var(--shadow-inset-dark),
+    inset -3px -3px 6px var(--shadow-inset-light);
+  
+  --shadow-flat:
+    2px 2px 5px var(--shadow-dark),
+    -2px -2px 5px var(--shadow-light);
+}
+
+/* ============================================================================
+   DEEP NEUMORPH — DARK THEME
+   ============================================================================ */
+[data-theme="deep-dark"] {
+  /* Основной фон — тёмная текстура */
+  --bg: #1a1f2e;
+  --bg-card: #242938;
+  --bg-input: #1e2330;
+  --bg-hover: #2a3042;
+  
+  /* Акценты — синие + золотые */
+  --primary: #5a8fd4;
+  --primary-hover: #6ea3e8;
+  --primary-active: #4a7fc4;
+  --primary-glow: rgba(90, 143, 212, 0.4);
+  
+  --accent: #d4af37;
+  --accent-hover: #e6c149;
+  --accent-glow: rgba(212, 175, 55, 0.3);
+  
+  /* Текст — светлый на тёмном */
+  --text: #f0f0f0;
+  --text-soft: #c0c5d0;
+  --text-muted: #8a90a0;
+  
+  /* Тени для тёмной темы */
+  --shadow-light: rgba(255, 255, 255, 0.05);
+  --shadow-dark: rgba(0, 0, 0, 0.5);
+  --shadow-inset-light: rgba(255, 255, 255, 0.03);
+  --shadow-inset-dark: rgba(0, 0, 0, 0.6);
+  
+  /* Усиленные тени для глубины */
+  --shadow-elevated: 
+    8px 8px 20px var(--shadow-dark),
+    -4px -4px 12px var(--shadow-light),
+    inset 0 1px 0 var(--shadow-inset-light);
+  
+  --shadow-pressed:
+    inset 4px 4px 10px var(--shadow-inset-dark),
+    inset -2px -2px 6px var(--shadow-inset-light);
+  
+  --shadow-flat:
+    4px 4px 10px var(--shadow-dark),
+    -2px -2px 6px var(--shadow-light);
+  
+  --shadow-glow: 0 0 20px var(--primary-glow);
+  
+  /* Статусы */
+  --success: #4ade80;
+  --success-glow: rgba(74, 222, 128, 0.3);
+  --warning: #fbbf24;
+  --warning-glow: rgba(251, 191, 36, 0.3);
+  --danger: #f87171;
+  --danger-glow: rgba(248, 113, 113, 0.3);
+  --info: #60a5fa;
+  --info-glow: rgba(96, 165, 250, 0.3);
+  
+  /* Границы */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: var(--primary);
+  
+  /* Overlay для модалок */
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================================
+   DEEP NEUMORPH — LIGHT THEME
+   ============================================================================ */
+[data-theme="deep-light"] {
+  --bg: #f0f2f5;
+  --bg-card: #f8f9fa;
+  --bg-input: #e9ecef;
+  --bg-hover: #e2e6ea;
+  
+  --primary: #4a7fc4;
+  --primary-hover: #3a6fb4;
+  --primary-active: #2a5fa4;
+  --primary-glow: rgba(74, 127, 196, 0.25);
+  
+  --accent: #c49a3c;
+  --accent-hover: #b48a2c;
+  
+  --text: #1a1f2e;
+  --text-soft: #4a5060;
+  --text-muted: #7a8090;
+  
+  --shadow-light: rgba(255, 255, 255, 0.8);
+  --shadow-dark: rgba(0, 0, 0, 0.12);
+  --shadow-inset-light: rgba(255, 255, 255, 0.5);
+  --shadow-inset-dark: rgba(0, 0, 0, 0.08);
+  
+  --shadow-elevated: 
+    6px 6px 16px var(--shadow-dark),
+    -4px -4px 12px var(--shadow-light),
+    inset 0 1px 0 var(--shadow-inset-light);
+  
+  --shadow-pressed:
+    inset 3px 3px 8px var(--shadow-inset-dark),
+    inset -2px -2px 6px var(--shadow-inset-light);
+  
+  --shadow-flat:
+    3px 3px 8px var(--shadow-dark),
+    -2px -2px 6px var(--shadow-light);
+  
+  --shadow-glow: 0 0 15px var(--primary-glow);
+  
+  --success: #4CAF50;
+  --success-glow: rgba(76, 175, 80, 0.3);
+  --warning: #FF9800;
+  --warning-glow: rgba(255, 152, 0, 0.3);
+  --danger: #f44336;
+  --danger-glow: rgba(244, 67, 54, 0.3);
+  --info: #2196F3;
+  --info-glow: rgba(33, 150, 243, 0.3);
+  
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-focus: var(--primary);
+  
+  --overlay-bg: rgba(240, 242, 245, 0.8);
+}
+
+/* ============================================================================
+   DEFAULT THEME (если data-theme не установлен)
+   ============================================================================ */
+body:not([data-theme]) {
+  --bg: #e8ebe2;
+  --bg-card: #e8ebe2;
+  --bg-input: #e0e3da;
+  --bg-hover: #e2e5dd;
+  --primary: #6b8e5a;
+  --primary-hover: #5a7a4d;
+  --primary-active: #4a6a3f;
+  --primary-glow: rgba(107, 142, 90, 0.3);
+  --accent: #8b3a5c;
+  --text: #2c2c2c;
+  --text-soft: #5a5a5a;
+  --text-muted: #8a8a8a;
+  --shadow-light: #ffffff;
+  --shadow-dark: #c5c7c0;
+  --shadow-inset-light: #f0f2ec;
+  --shadow-inset-dark: #d0d3cb;
+  --shadow-elevated: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+  --shadow-pressed: inset 3px 3px 6px var(--shadow-inset-dark), inset -3px -3px 6px var(--shadow-inset-light);
+  --shadow-flat: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+  --success: #4CAF50;
+  --warning: #FF9800;
+  --danger: #f44336;
+  --info: #2196F3;
+}

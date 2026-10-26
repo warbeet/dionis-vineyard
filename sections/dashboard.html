@@ -1,77 +1,151 @@
 <section id="dashboard" class="section active">
   <h2>📊 Дашборд</h2>
 
-  <!-- Компактный summary-блок (объединил участки/площадь/фото в одну строку) -->
-  <div class="summary-strip">
-    <div class="summary-item">
-      <div class="num" id="sum-plots">0</div>
-      <div class="lbl">Участков</div>
+  <!-- Summary Strip с новыми карточками -->
+  <div class="summary-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 20px;">
+    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
+      <div class="num" id="sum-plots" style="font-size: 28px; font-weight: 700; color: var(--primary);">0</div>
+      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Участков</div>
     </div>
-    <div class="summary-divider"></div>
-    <div class="summary-item">
-      <div class="num" id="sum-area">0<span class="unit">га</span></div>
-      <div class="lbl">Площадь</div>
+    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
+      <div class="num" id="sum-area" style="font-size: 28px; font-weight: 700; color: var(--primary);">0<span class="unit" style="font-size: 16px;"> га</span></div>
+      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Площадь</div>
     </div>
-    <div class="summary-divider"></div>
-    <div class="summary-item">
-      <div class="num" id="sum-blocks">0</div>
-      <div class="lbl">Блоков-сортов</div>
+    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
+      <div class="num" id="sum-seedlings" style="font-size: 28px; font-weight: 700; color: var(--primary);">0</div>
+      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Кустов</div>
     </div>
-    <div class="summary-divider"></div>
-    <div class="summary-item">
-      <div class="num" id="sum-seedlings">0</div>
-      <div class="lbl">Кустов</div>
+    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
+      <div class="num" id="sum-photos" style="font-size: 28px; font-weight: 700; color: var(--accent);">0</div>
+      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Фотоотчётов</div>
     </div>
-    <div class="summary-divider"></div>
-    <div class="summary-item">
-      <div class="num" id="sum-photos">0</div>
-      <div class="lbl">Фотоотчётов</div>
-    </div>
-    <div class="summary-divider"></div>
-    <div class="summary-item">
-      <div class="num" id="sum-stations">0</div>
-      <div class="lbl">Метеостанций</div>
-    </div>
-    <div class="summary-divider"></div>
-    <div class="summary-item">
-      <div class="num" id="sum-tasks" style="color:var(--accent-2);">0</div>
-      <div class="lbl">Активных задач</div>
+    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
+      <div class="num" id="sum-tasks" style="font-size: 28px; font-weight: 700; color: var(--warning);">0</div>
+      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Задач</div>
     </div>
   </div>
 
-  <div style="margin: 15px 0;">
-    <button class="btn" onclick="openCalculator()" style="background: #6b8e5a; color: white; padding: 10px 20px;">
-      🧮 Калькулятор нормы вылива
-    </button>
+  <!-- Быстрые действия -->
+  <div class="card" style="padding: 16px; margin-bottom: 20px;">
+    <h3 style="margin: 0 0 12px 0; font-size: 16px;">⚡ Быстрые действия</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <button class="btn primary" onclick="showTab('plan')">
+        <span></span> Новая задача
+      </button>
+      <button class="btn primary" onclick="showTab('photos')">
+        <span>📸</span> Фотоотчёт
+      </button>
+      <button class="btn secondary" onclick="openCalculator()">
+        <span>🧮</span> Калькулятор
+      </button>
+      <button class="btn secondary" onclick="toggleFieldMode()">
+        <span>🌱</span> Полевой режим
+      </button>
+    </div>
   </div>
 
-  <div class="grid grid-2">
+  <!-- Основная сетка -->
+  <div class="grid grid-2" style="gap: 16px;">
+    <!-- Фенофаза с прогресс-баром -->
     <div class="card">
-      <h3>🌿 Текущая фенофаза</h3>
-      <div id="current-pheno" style="padding:8px 0;">
-        <span class="badge purple" id="pheno-badge">Не указана</span>
-        <p style="margin-top:10px; color:var(--text-soft); font-size:13px;" id="pheno-desc">Перейдите в «Погода», чтобы установить стадию.</p>
+      <h3 style="margin: 0 0 12px 0; font-size: 16px;">🌿 Текущая фенофаза</h3>
+      <div id="current-pheno" style="padding: 12px 0;">
+        <span class="badge primary" id="pheno-badge" style="font-size: 14px; padding: 6px 12px;">Не указана</span>
+        <p style="margin-top: 12px; color: var(--text-soft); font-size: 13px; line-height: 1.5;" id="pheno-desc">Перейдите в «Погода», чтобы установить стадию.</p>
+      </div>
+      <!-- Прогресс сезона -->
+      <div style="margin-top: 16px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+          <span>Прогресс сезона</span>
+          <span id="season-progress-text">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="season-progress-bar" style="width: 0%;"></div>
+        </div>
       </div>
     </div>
 
+    <!-- Погода с иконкой -->
     <div class="card">
-      <h3>🌦 Погода сейчас</h3>
-      <div id="today-weather"><p style="color:var(--text-muted); font-size:13px;">Не настроено. Откройте раздел «Погода» и укажите координаты.</p></div>
+      <h3 style="margin: 0 0 12px 0; font-size: 16px;">🌦 Погода сейчас</h3>
+      <div id="today-weather">
+        <div class="empty-state" style="padding: 20px;">
+          <div class="empty-state-icon">🌤</div>
+          <div class="empty-state-text">Не настроено. Откройте раздел «Погода».</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:18px;">
-    <h3>🗺 Карта здоровья участков</h3>
+  <!-- Активные риски с toggle -->
+  <div class="card" style="margin-top: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0; font-size: 16px;">⚠️ Активные риски</h3>
+      <label class="toggle" id="risks-toggle" onclick="toggleRisksView()">
+        <input type="checkbox" id="risks-filter" style="display: none;" checked onchange="filterRisks()">
+        <div class="toggle-slider"></div>
+      </label>
+    </div>
+    <div id="active-risks">
+      <div class="empty-state" style="padding: 20px;">
+        <div class="empty-state-icon">✅</div>
+        <div class="empty-state-text">Нет активных рисков</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Последние события -->
+  <div class="card" style="margin-top: 16px;">
+    <h3 style="margin: 0 0 12px 0; font-size: 16px;">📅 Последние события</h3>
+    <div id="recent-events">
+      <div class="empty-state" style="padding: 20px;">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">События появятся по мере добавления данных</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Карта здоровья участков -->
+  <div class="card" style="margin-top: 16px;">
+    <h3 style="margin: 0 0 12px 0; font-size: 16px;">🗺 Здоровье участков</h3>
     <div id="dashboard-plots-mini"></div>
   </div>
-
-  <div class="card" style="margin-top:18px;">
-    <h3>⚠️ Активные риски</h3>
-    <div id="active-risks"><p style="color:var(--text-muted); font-size:13px;">Нет активных рисков.</p></div>
-  </div>
-
-  <div class="card" style="margin-top:18px;">
-    <h3>📅 Последние события</h3>
-    <div id="recent-events" class="timeline"><p style="color:var(--text-muted); font-size:13px; padding:14px;">События появятся по мере добавления данных.</p></div>
-  </div>
 </section>
+
+<script>
+function toggleRisksView() {
+  const toggle = document.getElementById('risks-toggle');
+  const checkbox = document.getElementById('risks-filter');
+  checkbox.checked = !checkbox.checked;
+  toggle.classList.toggle('active', checkbox.checked);
+  filterRisks();
+}
+
+function filterRisks() {
+  const showAll = document.getElementById('risks-filter').checked;
+  const risksDiv = document.getElementById('active-risks');
+  const risks = (data.recommendations || []).filter(r => r.priority === 'high');
+  
+  if (risks.length === 0) {
+    risksDiv.innerHTML = `
+      <div class="empty-state" style="padding: 20px;">
+        <div class="empty-state-icon">✅</div>
+        <div class="empty-state-text">Нет активных рисков</div>
+      </div>
+    `;
+    return;
+  }
+  
+  risksDiv.innerHTML = risks.map((r, i) => `
+    <div class="table-row" style="margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 20px;">🔴</span>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; color: var(--text);">${escapeHtml(r.title)}</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${escapeHtml(r.text || '')}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+</script>
