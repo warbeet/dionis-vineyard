@@ -80,7 +80,7 @@
     <button class="btn secondary full" onclick="signInGoogle()">🔐 Войти через Google</button>
 
     <p style="font-size:11px; color:var(--text-muted); margin-top:16px; text-align:center;">
-      <span style="display:block; color:var(--text-muted); font-size:10px; margin-bottom:8px;">Dionis vineyard v<span class="auth-version">0.8.0</span></span>Вход только через зарегистрированный аккаунт. Данные синхронизируются в облаке.
+      <span style="display:block; color:var(--text-muted); font-size:10px; margin-bottom:8px;">Dionis vineyard v<span class="auth-version">0.7.18</span></span>Вход только через зарегистрированный аккаунт. Данные синхронизируются в облаке.
     </p>
   </div>
 </div>
@@ -95,7 +95,7 @@
           <img src="assets/logo-mark-header.png" alt="Dionis" class="logo-mark"/>
           <span class="brand-text">
             <span class="brand-name">Dionis</span>
-            <span class="brand-sub">vineyard <span id="version-badge" class="version-badge">v0.8.0</span></span>
+            <span class="brand-sub">vineyard <span id="version-badge" class="version-badge">v0.7.18</span></span>
           </span>
         </h1>
         <div class="user-area">
@@ -117,61 +117,84 @@
     </main>
   </div>
 
-  <!-- ПРАВОЕ ВЕРТИКАЛЬНОЕ МЕНЮ -->
+<!-- ПРАВОЕ ВЕРТИКАЛЬНОЕ МЕНЮ — 5 ХАБОВ -->
   <aside id="side-nav">
-    <button class="nav-btn active" data-tab="dashboard" onclick="showTab('dashboard'); closeNav()">
-      <span class="nav-icon">📊</span><span class="nav-label">Дашборд</span>
-    </button>
-    <button class="nav-btn" data-tab="plots" onclick="showTab('plots'); closeNav()">
-      <span class="nav-icon">🗺</span><span class="nav-label">Участки</span>
-    </button>
-    <button class="nav-btn" data-tab="photos" onclick="showTab('photos'); closeNav()">
-      <span class="nav-icon">📸</span><span class="nav-label">Фото</span>
-    </button>
-    <button class="nav-btn" data-tab="journal" onclick="showTab('journal'); closeNav()">
-      <span class="nav-icon">📔</span><span class="nav-label">Журнал</span>
-    </button>
-    <button class="nav-btn" data-tab="weather" onclick="showTab('weather'); closeNav()">
-      <span class="nav-icon">🌦</span><span class="nav-label">Погода</span>
-    </button>
-    <button class="nav-btn" data-tab="treatments" onclick="showTab('treatments'); closeNav()">
-      <span class="nav-icon">💊</span><span class="nav-label">Обработки</span>
-    </button>
-    <button class="nav-btn" data-tab="plan" onclick="showTab('plan'); closeNav()">
-      <span class="nav-icon">📋</span><span class="nav-label">План</span>
-    </button>
-    <button class="nav-btn" data-tab="recommendations" onclick="showTab('recommendations'); closeNav()">
-      <span class="nav-icon">🤖</span><span class="nav-label">Рекомендации</span>
-    </button>
-    <button class="nav-btn" data-tab="harvest" onclick="showTab('harvest'); closeNav()">
-      <span class="nav-icon">🍷</span><span class="nav-label">Урожай</span>
-    </button>
-    <button class="nav-btn" data-tab="reports" onclick="showTab('reports'); closeNav()">
-      <span class="nav-icon">📄</span><span class="nav-label">Отчёты</span>
-    </button>
-    <button class="nav-btn" data-tab="team" onclick="showTab('team'); closeNav()">
-      <span class="nav-icon">👥</span><span class="nav-label">Команда</span>
-    </button>
-    <button class="nav-btn" data-tab="settings" onclick="showTab('settings'); closeNav()">
-      <span class="nav-icon">⚙️</span><span class="nav-label">Настройки</span>
-    </button>
+    <div class="nav-group">
+      <div class="nav-group-title">📊 Обзор</div>
+      <button class="nav-btn active" data-tab="dashboard" onclick="showTab('dashboard'); closeNav()">
+        <span class="nav-icon">📊</span><span class="nav-label">Дашборд</span>
+      </button>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">🍇 Виноградник</div>
+      <button class="nav-btn" data-tab="plots" onclick="showTab('plots'); closeNav()">
+        <span class="nav-icon">🗺</span><span class="nav-label">Участки</span>
+      </button>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">🛠 Агротехника</div>
+      <button class="nav-btn" data-tab="plan" onclick="showTab('plan'); closeNav()">
+        <span class="nav-icon">📋</span><span class="nav-label">Календарь работ</span>
+      </button>
+      <button class="nav-btn" data-tab="treatments" onclick="showTab('treatments'); closeNav()">
+        <span class="nav-icon">💊</span><span class="nav-label">Опрыскивания</span>
+      </button>
+      <button class="nav-btn" data-tab="journal" onclick="showTab('journal'); closeNav()">
+        <span class="nav-icon">📔</span><span class="nav-label">Журнал работ</span>
+      </button>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">🍷 Урожай</div>
+      <button class="nav-btn" data-tab="harvest" onclick="showTab('harvest'); closeNav()">
+        <span class="nav-icon">🍇</span><span class="nav-label">Сбор и Винодельня</span>
+      </button>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">📊 Мониторинг</div>
+      <button class="nav-btn" data-tab="weather" onclick="showTab('weather'); closeNav()">
+        <span class="nav-icon">🌦</span><span class="nav-label">Погода</span>
+      </button>
+      <button class="nav-btn" data-tab="photos" onclick="showTab('photos'); closeNav()">
+        <span class="nav-icon">📸</span><span class="nav-label">Фотоотчёты</span>
+      </button>
+      <button class="nav-btn" data-tab="recommendations" onclick="showTab('recommendations'); closeNav()">
+        <span class="nav-icon">🤖</span><span class="nav-label">AI-прогноз</span>
+      </button>
+    </div>
+    
+    <div class="nav-group">
+      <div class="nav-group-title">⚙️ Управление</div>
+      <button class="nav-btn" data-tab="reports" onclick="showTab('reports'); closeNav()">
+        <span class="nav-icon">📄</span><span class="nav-label">Отчёты</span>
+      </button>
+      <button class="nav-btn" data-tab="team" onclick="showTab('team'); closeNav()">
+        <span class="nav-icon">👥</span><span class="nav-label">Команда</span>
+      </button>
+      <button class="nav-btn" data-tab="settings" onclick="showTab('settings'); closeNav()">
+        <span class="nav-icon">⚙️</span><span class="nav-label">Настройки</span>
+      </button>
+    </div>
   </aside>
   <div class="nav-overlay" id="nav-overlay" onclick="closeNav()"></div>
 </div>
 
-<!-- НИЖНЕЕ МОБИЛЬНОЕ МЕНЮ -->
+<!-- НИЖНЕЕ МОБИЛЬНОЕ МЕНЮ — 5 ХАБОВ -->
 <nav id="bottom-nav" aria-label="Мобильная навигация">
   <button class="bottom-nav-btn active" data-tab="dashboard" onclick="showTab('dashboard')">
     <span>📊</span><small>Сегодня</small>
   </button>
   <button class="bottom-nav-btn" data-tab="plots" onclick="showTab('plots')">
-    <span>🗺</span><small>Участки</small>
+    <span>🍇</span><small>Виноградник</small>
   </button>
-  <button class="bottom-nav-btn" onclick="toggleFieldMode()" style="background: #6b8e5a; color: white;">
-    <span>🌱</span><small>Поле</small>
+  <button class="bottom-nav-btn" data-tab="plan" onclick="showTab('plan')">
+    <span>🛠</span><small>Работы</small>
   </button>
-  <button class="bottom-nav-btn" data-tab="photos" onclick="showTab('photos')">
-    <span>📸</span><small>Фото</small>
+  <button class="bottom-nav-btn" data-tab="harvest" onclick="showTab('harvest')">
+    <span>🍷</span><small>Винодельня</small>
   </button>
   <button class="bottom-nav-btn bottom-more" onclick="toggleNav()">
     <span>☰</span><small>Ещё</small>
