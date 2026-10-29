@@ -430,6 +430,245 @@ ${JSON.stringify(context, null, 2)}
   toast('✅ AI-прогноз добавлен в рекомендации', 'success');
 }
 
+// ============================================================================
+// ГОДОВОЙ ПЛАН РАБОТ (AI)
+// ============================================================================
+
+async function generateYearPlan() {
+  if (!requirePermission('plan.edit', 'Нет прав на генерацию плана')) return;
+  if (!settings.openrouterKey) { toast('Настройте OpenRouter API', 'error'); showTab('settings'); return; }
+  
+  const btn = document.getElementById('ai-year-plan-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '🤖 AI генерирует годовой план...'; }
+  
+  const phase = PHENO_STAGES.find(p => p.id === data.currentPheno);
+  const year = new Date().getFullYear();
+  
+  const context = {
+    year: year,
+    location: data.location,
+    region: 'Краснодарский край, Геленджик',
+    pheno: phase ? { id: phase.id, name: phase.name } : null,
+    plots: (data.plots || []).map(p => ({ 
+      id: p.id, 
+      name: p.name, 
+      area_ha: p.area_ha || p.area,
+      blocks: (p.blocks || []).map(b => ({ 
+        scion: b.scion, 
+        scion_clone: b.scion_clone,
+        rootstock: b.rootstock, 
+        planting_year: b.planting_year 
+      }))
+    })).slice(0, 20),
+    seedlingsSummary: (() => {
+      let total = 0, dead = 0;
+      (data.plots || []).forEach(p => {
+        const seedlings = getPlotSeedlings(p.id);
+        total += seedlings.length;
+        dead += seedlings.filter(s => s.status === 'dead').length;
+      });
+      return { total, dead };
+    })(),
+    recentTreatments: (data.treatments || []).slice(-20),
+    currentTasks: (data.tasks || []).filter(t => !t.done).length
+  };
+  
+  const system = `Ты опытный агроном-виноградарь с 20-летним стажем работы в Краснодарском крае. Специализация — промышленные виноградники для производства тихих сухих вин. Ты знаешь климат региона, фенофазы BBCH, сроки обработок, нормы полива, обрезки, подкормок. Отвечай строго в формате JSON.`;
+  
+  const prompt = `Составь детальный план агротехнических работ на винограднике на ${year} год.
+
+ДАННЫЕ ХОЗЯЙСТВА:
+${JSON.stringify(context, null, 2)}
+
+РЕГИОН: Краснодарский край, Геленджик (умеренно-континентальный климат, мягкая зима, жаркое лето)
+
+ТРЕБОВАНИЯ:
+1. Разбей план по МЕСЯЦАМ (январь — декабрь)
+2. Для каждого месяца укажи:
+   - Основные работы (обрезка, подвязка, обработки, полив, сбор урожая и т.д.)
+   - Привязку к фенофазам BBCH (где применимо)
+   - Примерные сроки (начало/середина/конец месяца или конкретные даты ±1-2 недели)
+   - Приоритет (high/med/low)
+   - Категорию работы (pruning/spray/fertilizer/irrigation/canopy/harvest/monitoring/soil)
+3. Учти:
+   - Возраст насаждений (посадка 2024 г. = 2-й вегетационный сезон)
+   - Сорта: Мерло, Сира, Каберне Фран, Каберне Совиньон, Пти Вердо
+   - Схема посадки 2.5×0.9 м (густота ~4444 куста/га)
+   - Цель — производство тихого сухого красного вина
+   - Стандартные обработки от милдью/оидиума/серой гнили
+   - Нормы полива по фенофазам
+   - Подкормки (азот весной, калий/фосфор летом)
+   - Обрезка (декабрь-февраль)
+   - Сбор урожая (сентябрь-октябрь по сортам)
+
+ВЕРНИ JSON СТРОГО В ФОРМАТЕ:
+{
+  "year": ${year},
+  "summary": "краткое описание плана на год",
+  "months": [
+    {
+      "month": 1,
+      "month_name": "Январь",
+      "tasks": [
+        {
+          "title": "Название работы",
+          "description": "Детальное описание что делать",
+          "priority": "high|med|low",
+          "category": "pruning|spray|fertilizer|irrigation|canopy|harvest|monitoring|soil",
+          "bbch_phase": "bbch-00 или null",
+          "deadline": "2026-01-31",
+          "estimated_hours": 8,
+          "notes": "Дополнительные заметки"
+        }
+      ]
+    }
+  ],
+  "key_dates": [
+    {"event": "Начало вегетации", "date": "2026-04-15", "bbch": "bbch-11"},
+    {"event": "Сбор Мерло", "date": "2026-09-20", "bbch": "bbch-89"}
+  ],
+  "warnings": ["Важные предупреждения на год"]
+}`;
+
+  const res = await openRouterJSONTask({ system, prompt, max_tokens: 4000, temperature: 0.3 });
+  
+  if (btn) { btn.disabled = false; btn.innerHTML = '🤖 AI годовой план'; }
+  
+  if (!res.success || !res.json) { 
+    toast('AI не смог сгенерировать план: ' + (res.error || 'нет JSON'), 'error'); 
+    return; 
+  }
+  
+  const j = res.json;
+  
+  if (!j.months || !Array.isArray(j.months)) {
+    toast('AI вернул некорректный формат', 'error');
+    return;
+  }
+  
+  // Конвертируем в задачи
+  let addedCount = 0;
+  const yearTasks = [];
+  
+  j.months.forEach(m => {
+    if (!m.tasks || !Array.isArray(m.tasks)) return;
+    m.tasks.forEach(t => {
+      yearTasks.push({
+        id: 'tk_year_' + Date.now() + '_' + addedCount,
+        date: t.deadline || `${year}-${String(m.month).padStart(2, '0')}-01`,
+        priority: t.priority || 'med',
+        plotId: '',
+        title: `[${m.month_name}] ${t.title}`,
+        desc: `${t.description || ''}${t.bbch_phase ? '\nФенофаза: ' + t.bbch_phase : ''}${t.notes ? '\n' + t.notes : ''}`,
+        category: t.category || 'monitoring',
+        estimated_hours: t.estimated_hours || 0,
+        done: false,
+        source: 'AI-year-plan',
+        created_at: new Date().toISOString()
+      });
+      addedCount++;
+    });
+  });
+  
+  // Показываем превью перед сохранением
+  const previewHtml = `
+    <div style="max-height: 60vh; overflow-y: auto; padding: 10px;">
+      <h3 style="margin-top: 0;">📅 Годовой план на ${year} год</h3>
+      <p style="color: var(--text-muted); font-size: 13px;">${j.summary || ''}</p>
+      <p style="font-size: 14px; margin: 15px 0;"><b>Всего задач:</b> ${addedCount}</p>
+      
+      ${j.months.filter(m => m.tasks && m.tasks.length).map(m => `
+        <div style="margin-bottom: 15px;">
+          <h4 style="margin: 10px 0 5px 0; color: var(--primary);">${m.month_name}</h4>
+          <div style="font-size: 13px;">
+            ${m.tasks.map(t => `
+              <div style="padding: 6px; margin: 4px 0; background: var(--bg-input); border-radius: 6px; border-left: 3px solid ${t.priority === 'high' ? 'var(--danger)' : t.priority === 'med' ? 'var(--warning)' : 'var(--success)'};">
+                <b>${t.title}</b><br>
+                <span style="color: var(--text-muted); font-size: 11px;">${t.deadline || ''} ${t.bbch_phase ? '· ' + t.bbch_phase : ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+      
+      ${j.key_dates && j.key_dates.length ? `
+        <h4 style="margin-top: 20px;">🔑 Ключевые даты</h4>
+        <div style="font-size: 13px;">
+          ${j.key_dates.map(k => `<div style="padding: 4px;">📍 ${k.event}: <b>${k.date}</b> ${k.bbch ? '(' + k.bbch + ')' : ''}</div>`).join('')}
+        </div>
+      ` : ''}
+      
+      ${j.warnings && j.warnings.length ? `
+        <h4 style="margin-top: 20px; color: var(--warning);">⚠️ Предупреждения</h4>
+        <ul style="font-size: 13px;">
+          ${j.warnings.map(w => `<li>${w}</li>`).join('')}
+        </ul>
+      ` : ''}
+    </div>
+  `;
+  
+  // Модалка подтверждения
+  const modalId = 'year-plan-preview-modal';
+  const existing = document.getElementById(modalId);
+  if (existing) existing.remove();
+  
+  const modal = document.createElement('div');
+  modal.id = modalId;
+  modal.className = 'modal-bg';
+  modal.innerHTML = `
+    <div class="modal wide" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3>Предварительный просмотр годового плана</h3>
+        <button class="modal-close" onclick="closeModal('${modalId}')">×</button>
+      </div>
+      <div class="modal-body">${previewHtml}</div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal('${modalId}')">Отмена</button>
+        <button class="btn primary" onclick="saveYearPlan(${yearTasks.length})">💾 Сохранить ${addedCount} задач</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  openModal(modalId);
+  
+  // Сохраняем задачи во временной переменной
+  window._pendingYearTasks = yearTasks;
+  window._yearPlanMeta = { summary: j.summary, key_dates: j.key_dates, warnings: j.warnings };
+}
+
+function saveYearPlan(count) {
+  if (!window._pendingYearTasks || !window._pendingYearTasks.length) {
+    toast('Нет задач для сохранения', 'error');
+    return;
+  }
+  
+  // Добавляем задачи
+  if (!data.tasks) data.tasks = [];
+  data.tasks.push(...window._pendingYearTasks);
+  
+  // Сохраняем метаданные плана
+  if (!data.yearPlans) data.yearPlans = [];
+  data.yearPlans.push({
+    year: new Date().getFullYear(),
+    created_at: new Date().toISOString(),
+    summary: window._yearPlanMeta?.summary || '',
+    key_dates: window._yearPlanMeta?.key_dates || [],
+    warnings: window._yearPlanMeta?.warnings || [],
+    tasks_count: count
+  });
+  
+  saveData();
+  closeModal('year-plan-preview-modal');
+  
+  // Очищаем временные данные
+  window._pendingYearTasks = null;
+  window._yearPlanMeta = null;
+  
+  renderPlan();
+  toast(`✅ Добавлено ${count} задач на год`, 'success');
+}
+
+
 async function findProductCandidatesAI(query) {
   const name = (query || '').trim();
   if (!name) return { error: 'Введите название препарата' };

@@ -1,10 +1,22 @@
 {
-  "version": "0.8.1",
+  "version": "0.8.2",
   "release_date": "2026-10-29",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.8.2",
+      "date": "2026-10-29",
+      "type": "patch",
+      "title": "AI годовой план работ",
+      "changes": [
+        "Генерация плана на год по BBCH-фенофазам",
+        "Превью с подтверждением перед сохранением",
+        "Ключевые даты и предупреждения",
+        "Интеграция с существующими задачами"
+      ]
+    },
     {
       "version": "0.8.1",
       "date": "2026-10-29",
