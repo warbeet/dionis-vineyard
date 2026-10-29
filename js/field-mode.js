@@ -1,8 +1,5 @@
 // ============================================================================
-// FIELD MODE module v0.8.3 — Полевой режим обхода (табличная сетка)
-// ============================================================================
-// Ориентация: ряды по горизонтали (строки), кусты по вертикали (столбцы)
-// Категории: Здоровый / Выпад / Больной / Угнетённый / Подвой
+// FIELD MODE module v0.8.4 — Полевой режим (таблица: ряды=колонки, кусты=строки)
 // ============================================================================
 
 let fieldMode = {
@@ -11,16 +8,16 @@ let fieldMode = {
   plot: null,
   selectedCell: null, // {row, position}
   gpsPosition: null,
-  scrollRow: 1 // для "перейти к ряду"
+  maxVisiblePositions: 30 // ограничение для производительности
 };
 
 // ===== СТАТУСЫ КУСТА =====
 const FIELD_STATUSES = {
-  healthy:   { label: 'Здоровый',   icon: '🟢', color: '#4CAF50', textColor: '#fff' },
-  dead:      { label: 'Выпад',      icon: '', color: '#5D4037', textColor: '#fff' },
-  sick:      { label: 'Больной',    icon: '', color: '#E53935', textColor: '#fff' },
+  healthy:   { label: 'Здоровый',   icon: '', color: '#4CAF50', textColor: '#fff' },
+  dead:      { label: 'Выпад',      icon: '⚫', color: '#5D4037', textColor: '#fff' },
+  sick:      { label: 'Больной',    icon: '🔴', color: '#E53935', textColor: '#fff' },
   stunted:   { label: 'Угнетённый', icon: '🟡', color: '#FDD835', textColor: '#333' },
-  rootstock: { label: 'Подвой',     icon: '', color: '#8E24AA', textColor: '#fff' }
+  rootstock: { label: 'Подвой',     icon: '🟣', color: '#8E24AA', textColor: '#fff' }
 };
 
 function toggleFieldMode() {
@@ -37,7 +34,6 @@ function toggleFieldMode() {
 }
 
 function initFieldMode() {
-  // GPS
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => {
@@ -51,7 +47,6 @@ function initFieldMode() {
     );
   }
   
-  // Заполнить список участков
   const plotSelect = document.getElementById('field-plot-select');
   if (plotSelect && data.plots && data.plots.length) {
     plotSelect.innerHTML = data.plots.map(p => 
@@ -59,6 +54,7 @@ function initFieldMode() {
     ).join('');
     fieldMode.plotId = data.plots[0].id;
     fieldMode.plot = data.plots[0];
+    fieldMode.selectedCell = null;
     renderFieldGrid();
   }
 }
@@ -88,7 +84,9 @@ function getSeedling(plotId, row, position) {
   };
 }
 
-// ===== РЕНДЕР СЕТКИ (ТАБЛИЧНЫЙ ВИД) =====
+// ===== РЕНДЕР СЕТКИ =====
+// Ось X (колонки) = ряды
+// Ось Y (строки) = позиции кустов
 function renderFieldGrid() {
   if (!fieldMode.plot) return;
   
@@ -96,102 +94,84 @@ function renderFieldGrid() {
   const rows = plot.rows || [];
   const totalRows = rows.length;
   const maxPositions = Math.max(...rows.map(r => r.positions_count || 0));
+  const totalSeedlings = rows.reduce((sum, r) => sum + (r.positions_count || 0), 0);
   
-  // Обновить инфо
+  // Инфо
   const infoEl = document.getElementById('field-plot-info');
   if (infoEl) {
-    const totalSeedlings = rows.reduce((sum, r) => sum + (r.positions_count || 0), 0);
     infoEl.textContent = `${totalRows} рядов · ${totalSeedlings} кустов · макс. ${maxPositions} кустов/ряд`;
   }
   
-  // Построить таблицу
+  // Ограничение видимых позиций для производительности
+  const visiblePositions = Math.min(maxPositions, fieldMode.maxVisiblePositions);
+  const hasMore = maxPositions > fieldMode.maxVisiblePositions;
+  
   const container = document.getElementById('field-seedlings-grid');
   if (!container) return;
   
-  // Заголовок таблицы (номера кустов)
   let html = '<div class="field-table-container">';
-  
-  // Фиксированная колонка "Ряд" + горизонтальный скролл кустов
   html += '<table class="field-table">';
   
-  // Шапка: "Ряд" + номера кустов 1..maxPositions (с шагом для больших рядов)
-  const step = maxPositions > 40 ? 5 : 1;
-  html += '<thead><tr><th class="row-header">Ряд</th>';
-  for (let p = 1; p <= maxPositions; p += step) {
-    html += `<th class="pos-header">${p}</th>`;
-  }
+  // ШАПКА: первая ячейка "Куст/Ряд" + колонки рядов
+  html += '<thead><tr><th class="corner-header">Куст \\ Ряд</th>';
+  rows.forEach(row => {
+    html += `<th class="row-header-col" title="Ряд ${row.number} (${row.positions_count} кустов)">${row.number}</th>`;
+  });
   html += '</tr></thead><tbody>';
   
-  // Тело: каждый ряд = строка
-  rows.forEach(row => {
-    const rowNum = row.number;
-    const posCount = row.positions_count || 0;
+  // СТРОКИ: каждая строка = позиция куста
+  for (let pos = 1; pos <= visiblePositions; pos++) {
     html += `<tr class="field-row">`;
-    html += `<td class="row-header" onclick="scrollToRow(${rowNum})" style="cursor:pointer;">${rowNum}</td>`;
+    // Первая ячейка — номер позиции
+    html += `<td class="pos-header">${pos}</td>`;
     
-    for (let p = 1; p <= maxPositions; p += step) {
-      if (p > posCount) {
-        // Пустая ячейка (ряд короче)
+    // Ячейки по рядам
+    rows.forEach(row => {
+      const rowNum = row.number;
+      const posCount = row.positions_count || 0;
+      
+      if (pos > posCount) {
+        // Пусто (ряд короче)
         html += `<td class="field-cell empty"></td>`;
-      } else if (step === 1) {
-        // Одиночный куст
-        const seedling = getSeedling(fieldMode.plotId, rowNum, p);
+      } else {
+        const seedling = getSeedling(fieldMode.plotId, rowNum, pos);
         const status = FIELD_STATUSES[seedling.status] || FIELD_STATUSES.healthy;
         const isSelected = fieldMode.selectedCell && 
                           fieldMode.selectedCell.row === rowNum && 
-                          fieldMode.selectedCell.position === p;
+                          fieldMode.selectedCell.position === pos;
         const selectedStyle = isSelected 
-          ? 'box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--primary, #5a8fd4); transform: scale(1.2); z-index: 2;' 
+          ? 'box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--primary, #5a8fd4); transform: scale(1.25); z-index: 2;' 
           : '';
         
         html += `<td class="field-cell" 
           data-row="${rowNum}" 
-          data-position="${p}" 
-          onclick="selectFieldSeedling(${rowNum}, ${p})"
+          data-position="${pos}" 
+          onclick="selectFieldSeedling(${rowNum}, ${pos})"
           style="background: ${status.color}; color: ${status.textColor}; cursor: pointer; ${selectedStyle}"
-          title="Р${rowNum} К${p}: ${status.label}">
-        </td>`;
-      } else {
-        // Группа кустов (step > 1) — показываем как блок
-        const endP = Math.min(p + step - 1, posCount);
-        const statuses = [];
-        for (let gp = p; gp <= endP; gp++) {
-          const s = getSeedling(fieldMode.plotId, rowNum, gp);
-          statuses.push(s.status);
-        }
-        // Цвет — по худшему статусу
-        const priority = ['dead', 'sick', 'stunted', 'rootstock', 'healthy'];
-        const worstStatus = priority.find(st => statuses.includes(st)) || 'healthy';
-        const status = FIELD_STATUSES[worstStatus] || FIELD_STATUSES.healthy;
-        const count = statuses.filter(s => s === worstStatus).length;
-        
-        const isSelected = fieldMode.selectedCell && 
-                          fieldMode.selectedCell.row === rowNum && 
-                          fieldMode.selectedCell.position >= p && 
-                          fieldMode.selectedCell.position <= endP;
-        const selectedStyle = isSelected 
-          ? 'box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--primary, #5a8fd4);' 
-          : '';
-        
-        html += `<td class="field-cell group-cell" 
-          data-row="${rowNum}" 
-          data-position-start="${p}"
-          data-position-end="${endP}"
-          onclick="selectFieldSeedlingGroup(${rowNum}, ${p}, ${endP})"
-          style="background: ${status.color}; color: ${status.textColor}; cursor: pointer; ${selectedStyle}"
-          title="Р${rowNum} К${p}-${endP}: ${status.label} (${count}/${step})">
-          <span style="font-size: 10px;">${p}-${endP}</span>
+          title="Р${rowNum} К${pos}: ${status.label}">
         </td>`;
       }
-    }
+    });
+    
     html += '</tr>';
-  });
+  }
   
   html += '</tbody></table></div>';
-  container.innerHTML = html;
   
-  // Информация о выборе
+  if (hasMore) {
+    html += `<div style="text-align: center; padding: 8px; font-size: 12px; color: var(--text-muted, #888);">
+      Показаны первые ${visiblePositions} из ${maxPositions} кустов. 
+      <button class="btn small" onclick="showMorePositions()" style="margin-left: 6px; padding: 4px 10px;">Показать все</button>
+    </div>`;
+  }
+  
+  container.innerHTML = html;
   renderFieldSelectionInfo();
+}
+
+function showMorePositions() {
+  fieldMode.maxVisiblePositions = 999;
+  renderFieldGrid();
 }
 
 // ===== ВЫБОР КУСТА =====
@@ -201,19 +181,12 @@ function selectFieldSeedling(row, position) {
   if (navigator.vibrate) navigator.vibrate(15);
 }
 
-function selectFieldSeedlingGroup(row, startPos, endPos) {
-  // Выбираем первый куст в группе
-  fieldMode.selectedCell = { row, position: startPos };
-  renderFieldGrid();
-  if (navigator.vibrate) navigator.vibrate(15);
-}
-
 function renderFieldSelectionInfo() {
   const infoEl = document.getElementById('field-selection-info');
   if (!infoEl) return;
   
   if (!fieldMode.selectedCell) {
-    infoEl.innerHTML = '<span style="color: var(--text-muted, #8a8a8a);">Тапните на куст, чтобы выбрать</span>';
+    infoEl.innerHTML = '<span style="color: var(--text-muted, #888);">Тапните на куст, чтобы выбрать</span>';
     return;
   }
   
@@ -238,7 +211,6 @@ function applyFieldStatus(status) {
   
   const { row, position } = fieldMode.selectedCell;
   
-  // Найти или создать seedling
   let seedling = null;
   if (data.seedlings) {
     seedling = data.seedlings.find(s => 
@@ -293,53 +265,53 @@ function applyFieldStatus(status) {
   const statusInfo = FIELD_STATUSES[status];
   toast(`✅ Р${row} К${position}: ${statusInfo.icon} ${statusInfo.label}`, 'success');
   
-  // Авто-переход на следующий куст в ряду
+  // Авто-переход: сначала вниз по кустам (в следующий ряд), потом вправо
+  const rowIdx = fieldMode.plot.rows.findIndex(r => r.number === row);
+  if (rowIdx >= 0 && rowIdx < fieldMode.plot.rows.length - 1) {
+    const nextRow = fieldMode.plot.rows[rowIdx + 1];
+    if (position <= nextRow.positions_count) {
+      setTimeout(() => {
+        selectFieldSeedling(nextRow.number, position);
+        scrollToRow(nextRow.number);
+      }, 150);
+      return;
+    }
+  }
+  
+  // Если конец — переход на следующий куст в том же ряду
   const row_data = fieldMode.plot.rows.find(r => r.number === row);
   if (row_data && position < row_data.positions_count) {
-    setTimeout(() => {
-      selectFieldSeedling(row, position + 1);
-    }, 150);
+    setTimeout(() => selectFieldSeedling(row, position + 1), 150);
   } else {
-    // Перейти на следующий ряд
-    const rowIndex = fieldMode.plot.rows.findIndex(r => r.number === row);
-    if (rowIndex >= 0 && rowIndex < fieldMode.plot.rows.length - 1) {
-      const nextRow = fieldMode.plot.rows[rowIndex + 1];
-      setTimeout(() => {
-        selectFieldSeedling(nextRow.number, 1);
-        // Прокрутить к этому ряду
-        scrollToRow(nextRow.number);
-      }, 200);
-    } else {
-      fieldMode.selectedCell = null;
-      renderFieldGrid();
-    }
+    fieldMode.selectedCell = null;
+    renderFieldGrid();
   }
 }
 
-// ===== НАВИГАЦИЯ: ПЕРЕХОД К РЯДУ =====
-function scrollToRow(rowNumber) {
+// ===== НАВИГАЦИЯ =====
+function scrollToRowCol(rowNumber) {
   const table = document.querySelector('.field-table-container');
   if (!table) return;
   
-  const rowEl = document.querySelector(`tr[data-row="${rowNumber}"]`) || 
-                document.querySelector(`td[onclick*="${rowNumber}"]`);
-  if (rowEl) {
-    rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  const colIdx = fieldMode.plot.rows.findIndex(r => r.number === rowNumber);
+  if (colIdx < 0) return;
   
-  //也可以通过 input
-  const input = document.getElementById('field-jump-row');
-  if (input) input.value = rowNumber;
+  // Прокрутить по горизонтали к нужной колонке
+  const cellWidth = 34; // ширина ячейки + отступ
+  const headerWidth = 50; // ширина первой колонки
+  const scrollPos = headerWidth + colIdx * cellWidth - table.clientWidth / 2;
+  table.scrollTo({ left: Math.max(0, scrollPos), behavior: 'smooth' });
 }
 
 function jumpToRow() {
   const input = document.getElementById('field-jump-row');
   if (!input) return;
   const rowNumber = parseInt(input.value);
-  if (rowNumber && rowNumber >= 1 && rowNumber <= fieldMode.plot.rows.length) {
-    scrollToRow(rowNumber);
+  const totalRows = fieldMode.plot.rows.length;
+  if (rowNumber && rowNumber >= 1 && rowNumber <= totalRows) {
+    scrollToRowCol(rowNumber);
   } else {
-    toast(`Ряд должен быть от 1 до ${fieldMode.plot.rows.length}`, 'error');
+    toast(`Ряд должен быть от 1 до ${totalRows}`, 'error');
   }
 }
 
@@ -404,21 +376,6 @@ function closeFieldNote() {
   document.getElementById('field-note-modal').style.display = 'none';
 }
 
-// ===== СТАТИСТИКА ПО РЯДУ =====
-function getRowStats(rowNumber) {
-  const row = fieldMode.plot.rows.find(r => r.number === rowNumber);
-  if (!row) return null;
-  
-  const stats = { healthy: 0, dead: 0, sick: 0, stunted: 0, rootstock: 0, total: 0 };
-  for (let p = 1; p <= row.positions_count; p++) {
-    const s = getSeedling(fieldMode.plotId, rowNumber, p);
-    const status = s.status || 'healthy';
-    if (stats[status] !== undefined) stats[status]++;
-    stats.total++;
-  }
-  return stats;
-}
-
 // ===== ИНИЦИАЛИЗАЦИЯ OVERLAY =====
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.createElement('div');
@@ -433,21 +390,20 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="btn" onclick="toggleFieldMode()" style="padding: 6px 12px; font-size: 14px;">✖ Закрыть</button>
         </div>
         
-        <!-- Выбор участка -->
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <select id="field-plot-select" onchange="selectFieldPlot(this.value)" 
-                  style="flex: 1; padding: 10px; font-size: 15px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd);">
+                  style="flex: 1; min-width: 150px; padding: 10px; font-size: 15px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd);">
           </select>
-          <input type="number" id="field-jump-row" placeholder="Ряд №" min="1" 
-                 style="width: 70px; padding: 10px; font-size: 14px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd);"
+          <input type="number" id="field-jump-row" placeholder="Перейти к ряду" min="1" 
+                 style="width: 140px; padding: 10px; font-size: 14px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd);"
                  onkeypress="if(event.key==='Enter') jumpToRow()">
           <button class="btn" onclick="jumpToRow()" style="padding: 10px 12px; font-size: 13px;">→</button>
         </div>
         <div id="field-plot-info" style="font-size: 11px; color: var(--text-muted, #888); margin-top: 6px;">—</div>
       </div>
       
-      <!-- ТАБЛИЦА КУСТОВ (скроллируемая) -->
-      <div style="flex: 1; overflow: auto; padding: 8px;">
+      <!-- ТАБЛИЦА -->
+      <div style="flex: 1; overflow: auto; padding: 4px;">
         <div id="field-seedlings-grid"></div>
       </div>
       
@@ -459,29 +415,29 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- КНОПКИ СТАТУСОВ -->
       <div style="padding: 10px 16px; background: var(--bg-card, #fff); border-top: 1px solid var(--border-color, #ddd); flex-shrink: 0;">
         <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
-          <button class="btn field-btn" onclick="applyFieldStatus('healthy')" 
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.healthy.color}; color: ${FIELD_STATUSES.healthy.textColor}; border: none; font-weight: 600;">
+          <button onclick="applyFieldStatus('healthy')" 
+                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.healthy.color}; color: ${FIELD_STATUSES.healthy.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
             ${FIELD_STATUSES.healthy.icon}<br>Здоровый
           </button>
-          <button class="btn field-btn" onclick="applyFieldStatus('dead')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.dead.color}; color: ${FIELD_STATUSES.dead.textColor}; border: none; font-weight: 600;">
+          <button onclick="applyFieldStatus('dead')"
+                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.dead.color}; color: ${FIELD_STATUSES.dead.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
             ${FIELD_STATUSES.dead.icon}<br>Выпад
           </button>
-          <button class="btn field-btn" onclick="applyFieldStatus('sick')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.sick.color}; color: ${FIELD_STATUSES.sick.textColor}; border: none; font-weight: 600;">
+          <button onclick="applyFieldStatus('sick')"
+                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.sick.color}; color: ${FIELD_STATUSES.sick.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
             ${FIELD_STATUSES.sick.icon}<br>Больной
           </button>
-          <button class="btn field-btn" onclick="applyFieldStatus('stunted')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.stunted.color}; color: ${FIELD_STATUSES.stunted.textColor}; border: none; font-weight: 600;">
+          <button onclick="applyFieldStatus('stunted')"
+                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.stunted.color}; color: ${FIELD_STATUSES.stunted.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
             ${FIELD_STATUSES.stunted.icon}<br>Угнетён.
           </button>
-          <button class="btn field-btn" onclick="applyFieldStatus('rootstock')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.rootstock.color}; color: ${FIELD_STATUSES.rootstock.textColor}; border: none; font-weight: 600;">
+          <button onclick="applyFieldStatus('rootstock')"
+                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.rootstock.color}; color: ${FIELD_STATUSES.rootstock.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
             ${FIELD_STATUSES.rootstock.icon}<br>Подвой
           </button>
         </div>
-        <button class="btn" onclick="openFieldNote()" 
-                style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px;">
+        <button onclick="openFieldNote()" 
+                style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd); border-radius: 8px; cursor: pointer; font-weight: 600;">
           📝 Заметка к кусту
         </button>
       </div>
@@ -495,8 +451,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <textarea id="field-note-text" rows="5" style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd); box-sizing: border-box;" 
                   placeholder="Симптомы, наблюдения..."></textarea>
         <div style="display: flex; gap: 10px; margin-top: 15px;">
-          <button class="btn primary" onclick="saveFieldNote()" style="flex: 1; padding: 12px; font-size: 16px;">💾 Сохранить</button>
-          <button class="btn secondary" onclick="closeFieldNote()" style="flex: 1; padding: 12px; font-size: 16px;">Отмена</button>
+          <button onclick="saveFieldNote()" style="flex: 1; padding: 12px; font-size: 16px; background: var(--primary, #6b8e5a); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">💾 Сохранить</button>
+          <button onclick="closeFieldNote()" style="flex: 1; padding: 12px; font-size: 16px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd); border-radius: 8px; cursor: pointer; font-weight: 600;">Отмена</button>
         </div>
       </div>
     </div>
