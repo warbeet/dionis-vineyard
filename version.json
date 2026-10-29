@@ -1,10 +1,22 @@
 {
-  "version": "0.8.0",
-  "release_date": "2026-10-26",
+  "version": "0.8.1",
+  "release_date": "2026-10-29",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.8.1",
+      "date": "2026-10-29",
+      "type": "patch",
+      "title": "Полевой режим с выбором куста",
+      "changes": [
+        "Сетка кустов с навигацией по рядам",
+        "Тап на куст — выделение",
+        "Авто-переход на следующий куст после отметки",
+        "GPS-метка при изменении статуса"
+      ]
+    },
     {
       "version": "0.8.0",
       "date": "2026-10-26",
