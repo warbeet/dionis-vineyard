@@ -1,113 +1,108 @@
 <section id="dashboard" class="section active">
   <h2>📊 Дашборд</h2>
 
-  <!-- Summary Strip с новыми карточками -->
-  <div class="summary-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 20px;">
-    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
-      <div class="num" id="sum-plots" style="font-size: 28px; font-weight: 700; color: var(--primary);">0</div>
-      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Участков</div>
+  <!-- Summary Strip -->
+  <div class="summary-strip" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 16px;">
+    <div class="card stat-card">
+      <div class="num" id="sum-plots">0</div>
+      <div class="lbl">Участков</div>
     </div>
-    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
-      <div class="num" id="sum-area" style="font-size: 28px; font-weight: 700; color: var(--primary);">0<span class="unit" style="font-size: 16px;"> га</span></div>
-      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Площадь</div>
+    <div class="card stat-card">
+      <div class="num" id="sum-area">0<span class="unit"> га</span></div>
+      <div class="lbl">Площадь</div>
     </div>
-    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
-      <div class="num" id="sum-seedlings" style="font-size: 28px; font-weight: 700; color: var(--primary);">0</div>
-      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Кустов</div>
+    <div class="card stat-card">
+      <div class="num" id="sum-seedlings">0</div>
+      <div class="lbl">Кустов</div>
     </div>
-    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
-      <div class="num" id="sum-photos" style="font-size: 28px; font-weight: 700; color: var(--accent);">0</div>
-      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Фотоотчётов</div>
+    <div class="card stat-card">
+      <div class="num" id="sum-photos">0</div>
+      <div class="lbl">Фото</div>
     </div>
-    <div class="card" style="padding: 16px; text-align: center; margin: 0;">
-      <div class="num" id="sum-tasks" style="font-size: 28px; font-weight: 700; color: var(--warning);">0</div>
-      <div class="lbl" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Задач</div>
-    </div>
-  </div>
-
-  <!-- Быстрые действия -->
-  <div class="card" style="padding: 16px; margin-bottom: 20px;">
-    <h3 style="margin: 0 0 12px 0; font-size: 16px;">⚡ Быстрые действия</h3>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-      <button class="btn primary" onclick="showTab('plan')">
-        <span></span> Новая задача
-      </button>
-      <button class="btn primary" onclick="showTab('photos')">
-        <span>📸</span> Фотоотчёт
-      </button>
-      <button class="btn secondary" onclick="openCalculator()">
-        <span>🧮</span> Калькулятор
-      </button>
-      <button class="btn secondary" onclick="toggleFieldMode()">
-        <span>🌱</span> Полевой режим
-      </button>
+    <div class="card stat-card">
+      <div class="num" id="sum-tasks">0</div>
+      <div class="lbl">Задач</div>
     </div>
   </div>
 
-  <!-- Основная сетка -->
-  <div class="grid grid-2" style="gap: 16px;">
-    <!-- Фенофаза с прогресс-баром -->
-    <div class="card">
-      <h3 style="margin: 0 0 12px 0; font-size: 16px;">🌿 Текущая фенофаза</h3>
-      <div id="current-pheno" style="padding: 12px 0;">
-        <span class="badge primary" id="pheno-badge" style="font-size: 14px; padding: 6px 12px;">Не указана</span>
-        <p style="margin-top: 12px; color: var(--text-soft); font-size: 13px; line-height: 1.5;" id="pheno-desc">Перейдите в «Погода», чтобы установить стадию.</p>
+  <!-- Основная сетка: Погода + Фенофаза сверху -->
+  <div class="grid grid-2" style="gap: 14px; margin-bottom: 14px;">
+    <!-- Погода (поднята наверх) -->
+    <div class="card weather-card">
+      <h3>🌦 Погода сейчас</h3>
+      <div id="today-weather">
+        <div class="empty-state" style="padding: 16px;">
+          <div class="empty-state-icon">🌤</div>
+          <div class="empty-state-text">Откройте «Погода» для настройки</div>
+        </div>
       </div>
-      <!-- Прогресс сезона -->
-      <div style="margin-top: 16px;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+    </div>
+
+    <!-- Фенофаза -->
+    <div class="card">
+      <h3>🌿 Фенофаза</h3>
+      <div id="current-pheno">
+        <span class="badge primary" id="pheno-badge">Не указана</span>
+        <p id="pheno-desc" style="margin-top: 10px; color: var(--text-soft); font-size: 13px; line-height: 1.4;">Перейдите в «Погода»</p>
+      </div>
+      <div style="margin-top: 12px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">
           <span>Прогресс сезона</span>
           <span id="season-progress-text">0%</span>
         </div>
-        <div class="progress-bar">
-          <div class="progress-bar-fill" id="season-progress-bar" style="width: 0%;"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Погода с иконкой -->
-    <div class="card">
-      <h3 style="margin: 0 0 12px 0; font-size: 16px;">🌦 Погода сейчас</h3>
-      <div id="today-weather">
-        <div class="empty-state" style="padding: 20px;">
-          <div class="empty-state-icon">🌤</div>
-          <div class="empty-state-text">Не настроено. Откройте раздел «Погода».</div>
-        </div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="season-progress-bar" style="width: 0%;"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- Активные риски с toggle -->
-  <div class="card" style="margin-top: 16px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h3 style="margin: 0; font-size: 16px;">⚠️ Активные риски</h3>
-      <label class="toggle" id="risks-toggle" onclick="toggleRisksView()">
-        <input type="checkbox" id="risks-filter" style="display: none;" checked onchange="filterRisks()">
-        <div class="toggle-slider"></div>
-      </label>
+  <!-- Быстрые действия — pill-кнопки в едином стиле -->
+  <div class="card quick-actions-card">
+    <h3>⚡ Быстрые действия</h3>
+    <div class="quick-actions-grid">
+      <button class="qa-btn qa-primary" onclick="showTab('plan')">
+        <span class="qa-icon">📋</span>
+        <span class="qa-label">Новая задача</span>
+      </button>
+      <button class="qa-btn qa-primary" onclick="showTab('photos')">
+        <span class="qa-icon">📸</span>
+        <span class="qa-label">Фотоотчёт</span>
+      </button>
+      <button class="qa-btn qa-accent" onclick="openCalculator()">
+        <span class="qa-icon">🧮</span>
+        <span class="qa-label">Калькулятор</span>
+      </button>
+      <button class="qa-btn qa-accent" onclick="toggleFieldMode()">
+        <span class="qa-icon">🌱</span>
+        <span class="qa-label">Поле</span>
+      </button>
     </div>
+  </div>
+
+  <!-- Активные риски -->
+  <div class="card" style="margin-top: 14px;">
+    <h3>⚠️ Активные риски</h3>
     <div id="active-risks">
-      <div class="empty-state" style="padding: 20px;">
+      <div class="empty-state" style="padding: 16px;">
         <div class="empty-state-icon">✅</div>
-        <div class="empty-state-text">Нет активных рисков</div>
+        <div class="empty-state-text">Нет рисков</div>
       </div>
     </div>
   </div>
 
   <!-- Последние события -->
-  <div class="card" style="margin-top: 16px;">
-    <h3 style="margin: 0 0 12px 0; font-size: 16px;">📅 Последние события</h3>
+  <div class="card" style="margin-top: 14px;">
+    <h3>📅 Последние события</h3>
     <div id="recent-events">
-      <div class="empty-state" style="padding: 20px;">
+      <div class="empty-state" style="padding: 16px;">
         <div class="empty-state-icon">📭</div>
         <div class="empty-state-text">События появятся по мере добавления данных</div>
       </div>
     </div>
   </div>
 
-  <!-- Карта здоровья участков -->
-  <div class="card" style="margin-top: 16px;">
-    <h3 style="margin: 0 0 12px 0; font-size: 16px;">🗺 Здоровье участков</h3>
+  <!-- Здоровье участков -->
+  <div class="card" style="margin-top: 14px;">
+    <h3>🗺 Здоровье участков</h3>
     <div id="dashboard-plots-mini"></div>
   </div>
 </section>

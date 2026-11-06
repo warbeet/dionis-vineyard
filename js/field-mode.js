@@ -1,457 +1,335 @@
 // ============================================================================
-// FIELD MODE module v0.8.4 — Полевой режим (таблица: ряды=колонки, кусты=строки)
+// FIELD MODE v0.8.6 — Полевой режим (горизонтальная полоса кустов в ряду)
+// ============================================================================
+// Один ряд на экране, кусты листаются горизонтально.
+// Категории: Здоровый / Выпад / Больной / Угнетённый / Подвой
 // ============================================================================
 
 let fieldMode = {
   active: false,
   plotId: null,
   plot: null,
-  selectedCell: null, // {row, position}
-  gpsPosition: null,
-  maxVisiblePositions: 30 // ограничение для производительности
+  currentRow: 1,
+  selectedPos: null,
+  gpsPosition: null
 };
 
-// ===== СТАТУСЫ КУСТА =====
 const FIELD_STATUSES = {
-  healthy:   { label: 'Здоровый',   icon: '', color: '#4CAF50', textColor: '#fff' },
-  dead:      { label: 'Выпад',      icon: '⚫', color: '#5D4037', textColor: '#fff' },
-  sick:      { label: 'Больной',    icon: '🔴', color: '#E53935', textColor: '#fff' },
-  stunted:   { label: 'Угнетённый', icon: '🟡', color: '#FDD835', textColor: '#333' },
-  rootstock: { label: 'Подвой',     icon: '🟣', color: '#8E24AA', textColor: '#fff' }
+  healthy:   { label: 'Здоровый',   icon: '🟢', color: '#4CAF50' },
+  dead:      { label: 'Выпад',      icon: '⚫', color: '#6D4C41' },
+  sick:      { label: 'Больной',    icon: '🔴', color: '#E53935' },
+  stunted:   { label: 'Угнетённый', icon: '🟡', color: '#F9A825' },
+  rootstock: { label: 'Подвой',     icon: '🟣', color: '#8E24AA' }
 };
 
 function toggleFieldMode() {
   fieldMode.active = !fieldMode.active;
   const overlay = document.getElementById('field-mode-overlay');
-  
   if (fieldMode.active) {
-    overlay.style.display = 'block';
+    overlay.classList.add('fm-visible');
     initFieldMode();
   } else {
-    overlay.style.display = 'none';
-    fieldMode.selectedCell = null;
+    overlay.classList.remove('fm-visible');
+    fieldMode.selectedPos = null;
   }
 }
 
 function initFieldMode() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      pos => {
-        fieldMode.gpsPosition = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          accuracy: pos.coords.accuracy
-        };
-      },
-      err => console.warn('GPS ошибка:', err)
+      pos => { fieldMode.gpsPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+      err => console.warn('GPS:', err)
     );
   }
-  
   const plotSelect = document.getElementById('field-plot-select');
   if (plotSelect && data.plots && data.plots.length) {
-    plotSelect.innerHTML = data.plots.map(p => 
-      `<option value="${p.id}">${escapeHtml(p.name)}</option>`
-    ).join('');
+    plotSelect.innerHTML = data.plots.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
     fieldMode.plotId = data.plots[0].id;
     fieldMode.plot = data.plots[0];
-    fieldMode.selectedCell = null;
-    renderFieldGrid();
+    fieldMode.currentRow = 1;
+    fieldMode.selectedPos = null;
+    renderFieldView();
   }
 }
 
 function selectFieldPlot(plotId) {
   fieldMode.plotId = plotId;
   fieldMode.plot = data.plots.find(p => p.id === plotId);
-  fieldMode.selectedCell = null;
-  renderFieldGrid();
+  fieldMode.currentRow = 1;
+  fieldMode.selectedPos = null;
+  renderFieldView();
 }
 
-// ===== ПОЛУЧИТЬ КУСТ =====
 function getSeedling(plotId, row, position) {
   if (data.seedlings) {
-    const real = data.seedlings.find(s => 
-      s.plot_id === plotId && s.row === row && s.position === position
-    );
+    const real = data.seedlings.find(s => s.plot_id === plotId && s.row === row && s.position === position);
     if (real) return real;
   }
-  return {
-    id: `s_${plotId}_${row}_${position}_v`,
-    plot_id: plotId,
-    row: row,
-    position: position,
-    status: 'healthy',
-    _virtual: true
-  };
+  return { status: 'healthy', _virtual: true };
 }
 
-// ===== РЕНДЕР СЕТКИ =====
-// Ось X (колонки) = ряды
-// Ось Y (строки) = позиции кустов
-function renderFieldGrid() {
+// ===== НАВИГАЦИЯ ПО РЯДАМ =====
+function prevRow() {
+  if (fieldMode.currentRow > 1) {
+    fieldMode.currentRow--;
+    fieldMode.selectedPos = null;
+    renderFieldView();
+  }
+}
+function nextRow() {
+  if (fieldMode.plot && fieldMode.currentRow < fieldMode.plot.rows.length) {
+    fieldMode.currentRow++;
+    fieldMode.selectedPos = null;
+    renderFieldView();
+  }
+}
+function jumpToRow() {
+  const input = document.getElementById('field-jump-row');
+  if (!input) return;
+  const n = parseInt(input.value);
+  if (n && n >= 1 && fieldMode.plot && n <= fieldMode.plot.rows.length) {
+    fieldMode.currentRow = n;
+    fieldMode.selectedPos = null;
+    renderFieldView();
+    input.value = '';
+  }
+}
+
+// ===== РЕНДЕР =====
+function renderFieldView() {
   if (!fieldMode.plot) return;
   
   const plot = fieldMode.plot;
-  const rows = plot.rows || [];
-  const totalRows = rows.length;
-  const maxPositions = Math.max(...rows.map(r => r.positions_count || 0));
-  const totalSeedlings = rows.reduce((sum, r) => sum + (r.positions_count || 0), 0);
+  const rows = plot.rows;
+  const row = rows.find(r => r.number === fieldMode.currentRow);
+  if (!row) return;
   
-  // Инфо
+  const posCount = row.positions_count || 0;
+  
+  // Header info
   const infoEl = document.getElementById('field-plot-info');
   if (infoEl) {
-    infoEl.textContent = `${totalRows} рядов · ${totalSeedlings} кустов · макс. ${maxPositions} кустов/ряд`;
+    const total = rows.reduce((s, r) => s + (r.positions_count || 0), 0);
+    infoEl.textContent = `${rows.length} рядов · ${total} кустов · сейчас ряд ${fieldMode.currentRow} (${posCount} кустов)`;
   }
   
-  // Ограничение видимых позиций для производительности
-  const visiblePositions = Math.min(maxPositions, fieldMode.maxVisiblePositions);
-  const hasMore = maxPositions > fieldMode.maxVisiblePositions;
+  // Row number
+  const rowNumEl = document.getElementById('field-row-number');
+  if (rowNumEl) rowNumEl.textContent = fieldMode.currentRow;
+  const rowTotalEl = document.getElementById('field-row-total');
+  if (rowTotalEl) rowTotalEl.textContent = rows.length;
   
-  const container = document.getElementById('field-seedlings-grid');
-  if (!container) return;
+  // Buttons
+  const prevBtn = document.getElementById('fm-prev-row');
+  const nextBtn = document.getElementById('fm-next-row');
+  if (prevBtn) prevBtn.disabled = fieldMode.currentRow <= 1;
+  if (nextBtn) nextBtn.disabled = fieldMode.currentRow >= rows.length;
   
-  let html = '<div class="field-table-container">';
-  html += '<table class="field-table">';
-  
-  // ШАПКА: первая ячейка "Куст/Ряд" + колонки рядов
-  html += '<thead><tr><th class="corner-header">Куст \\ Ряд</th>';
-  rows.forEach(row => {
-    html += `<th class="row-header-col" title="Ряд ${row.number} (${row.positions_count} кустов)">${row.number}</th>`;
-  });
-  html += '</tr></thead><tbody>';
-  
-  // СТРОКИ: каждая строка = позиция куста
-  for (let pos = 1; pos <= visiblePositions; pos++) {
-    html += `<tr class="field-row">`;
-    // Первая ячейка — номер позиции
-    html += `<td class="pos-header">${pos}</td>`;
+  // Seedling strip (горизонтальная прокрутка)
+  const strip = document.getElementById('field-seedling-strip');
+  if (strip) {
+    let html = '';
+    for (let p = 1; p <= posCount; p++) {
+      const seedling = getSeedling(fieldMode.plotId, fieldMode.currentRow, p);
+      const st = FIELD_STATUSES[seedling.status] || FIELD_STATUSES.healthy;
+      const isSel = fieldMode.selectedPos === p;
+      html += `<div class="fm-seedling${isSel ? ' fm-sel' : ''}" 
+        data-pos="${p}" onclick="selectFieldPos(${p})"
+        style="--cell-bg:${st.color}"
+        title="К${p}: ${st.label}">
+        <span class="fm-seedling-num">${p}</span>
+      </div>`;
+    }
+    strip.innerHTML = html;
     
-    // Ячейки по рядам
-    rows.forEach(row => {
-      const rowNum = row.number;
-      const posCount = row.positions_count || 0;
-      
-      if (pos > posCount) {
-        // Пусто (ряд короче)
-        html += `<td class="field-cell empty"></td>`;
-      } else {
-        const seedling = getSeedling(fieldMode.plotId, rowNum, pos);
-        const status = FIELD_STATUSES[seedling.status] || FIELD_STATUSES.healthy;
-        const isSelected = fieldMode.selectedCell && 
-                          fieldMode.selectedCell.row === rowNum && 
-                          fieldMode.selectedCell.position === pos;
-        const selectedStyle = isSelected 
-          ? 'box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--primary, #5a8fd4); transform: scale(1.25); z-index: 2;' 
-          : '';
-        
-        html += `<td class="field-cell" 
-          data-row="${rowNum}" 
-          data-position="${pos}" 
-          onclick="selectFieldSeedling(${rowNum}, ${pos})"
-          style="background: ${status.color}; color: ${status.textColor}; cursor: pointer; ${selectedStyle}"
-          title="Р${rowNum} К${pos}: ${status.label}">
-        </td>`;
-      }
-    });
-    
-    html += '</tr>';
+    // Прокрутить к выбранному
+    if (fieldMode.selectedPos) {
+      const selEl = strip.querySelector(`[data-pos="${fieldMode.selectedPos}"]`);
+      if (selEl) selEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   }
   
-  html += '</tbody></table></div>';
-  
-  if (hasMore) {
-    html += `<div style="text-align: center; padding: 8px; font-size: 12px; color: var(--text-muted, #888);">
-      Показаны первые ${visiblePositions} из ${maxPositions} кустов. 
-      <button class="btn small" onclick="showMorePositions()" style="margin-left: 6px; padding: 4px 10px;">Показать все</button>
-    </div>`;
-  }
-  
-  container.innerHTML = html;
   renderFieldSelectionInfo();
 }
 
-function showMorePositions() {
-  fieldMode.maxVisiblePositions = 999;
-  renderFieldGrid();
-}
-
-// ===== ВЫБОР КУСТА =====
-function selectFieldSeedling(row, position) {
-  fieldMode.selectedCell = { row, position };
-  renderFieldGrid();
+function selectFieldPos(position) {
+  fieldMode.selectedPos = position;
+  renderFieldView();
   if (navigator.vibrate) navigator.vibrate(15);
 }
 
 function renderFieldSelectionInfo() {
-  const infoEl = document.getElementById('field-selection-info');
-  if (!infoEl) return;
-  
-  if (!fieldMode.selectedCell) {
-    infoEl.innerHTML = '<span style="color: var(--text-muted, #888);">Тапните на куст, чтобы выбрать</span>';
+  const el = document.getElementById('field-selection-info');
+  if (!el) return;
+  if (!fieldMode.selectedPos) {
+    el.innerHTML = '<span class="fm-hint">Тапните на куст в полосе</span>';
     return;
   }
-  
-  const { row, position } = fieldMode.selectedCell;
-  const seedling = getSeedling(fieldMode.plotId, row, position);
-  const status = FIELD_STATUSES[seedling.status] || FIELD_STATUSES.healthy;
-  
-  infoEl.innerHTML = `
-    <strong>Ряд ${row}, куст ${position}</strong>
-    <span style="margin-left: 10px; padding: 2px 8px; border-radius: 4px; background: ${status.color}; color: ${status.textColor}; font-size: 12px;">
-      ${status.icon} ${status.label}
-    </span>
-  `;
+  const p = fieldMode.selectedPos;
+  const st = FIELD_STATUSES[getSeedling(fieldMode.plotId, fieldMode.currentRow, p).status] || FIELD_STATUSES.healthy;
+  el.innerHTML = `<strong>Р${fieldMode.currentRow} К${p}</strong> <span class="fm-status-badge" style="background:${st.color}">${st.label}</span>`;
 }
 
 // ===== ПРИМЕНЕНИЕ СТАТУСА =====
 function applyFieldStatus(status) {
-  if (!fieldMode.selectedCell) {
-    toast('Сначала выберите куст (тапните на него)', 'error');
+  if (!fieldMode.selectedPos) {
+    toast('Сначала выберите куст', 'error');
     return;
   }
   
-  const { row, position } = fieldMode.selectedCell;
+  const row = fieldMode.currentRow;
+  const pos = fieldMode.selectedPos;
   
   let seedling = null;
-  if (data.seedlings) {
-    seedling = data.seedlings.find(s => 
-      s.plot_id === fieldMode.plotId && s.row === row && s.position === position
-    );
-  }
+  if (data.seedlings) seedling = data.seedlings.find(s => s.plot_id === fieldMode.plotId && s.row === row && s.position === pos);
   
   const oldStatus = seedling ? seedling.status : 'healthy';
   
   if (!seedling) {
     if (!data.seedlings) data.seedlings = [];
     seedling = {
-      id: 's_' + fieldMode.plotId + '_' + row + '_' + position + '_' + Date.now().toString(36),
-      plot_id: fieldMode.plotId,
-      row: row,
-      position: position,
-      status: oldStatus,
-      is_replanted: false,
-      ai_data: null,
-      inspections: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      id: 's_' + fieldMode.plotId + '_' + row + '_' + pos + '_' + Date.now().toString(36),
+      plot_id: fieldMode.plotId, row, position: pos,
+      status: oldStatus, is_replanted: false,
+      ai_data: null, inspections: [],
+      created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     };
     data.seedlings.push(seedling);
   }
   
   if (seedling.status === status) {
-    toast('Этот статус уже установлен', 'info');
+    toast('Уже установлен', 'info');
     return;
   }
   
   seedling.status = status;
   seedling.updated_at = new Date().toISOString();
-  
-  if (fieldMode.gpsPosition && !seedling.gps) {
-    seedling.gps = { ...fieldMode.gpsPosition };
-  }
-  
+  if (fieldMode.gpsPosition && !seedling.gps) seedling.gps = { ...fieldMode.gpsPosition };
   if (!seedling.inspections) seedling.inspections = [];
   seedling.inspections.push({
-    id: 'i_' + Date.now(),
-    date: new Date().toISOString().slice(0, 10),
-    type: 'field-mode',
-    inspector: 'Полевой режим',
-    status_before: oldStatus,
-    status_after: status,
-    notes: ''
+    id: 'i_' + Date.now(), date: new Date().toISOString().slice(0, 10),
+    type: 'field-mode', inspector: 'Полевой режим',
+    status_before: oldStatus, status_after: status, notes: ''
   });
   
   saveData();
+  toast(`Р${row} К${pos}: ${FIELD_STATUSES[status].label}`, 'success');
   
-  const statusInfo = FIELD_STATUSES[status];
-  toast(`✅ Р${row} К${position}: ${statusInfo.icon} ${statusInfo.label}`, 'success');
-  
-  // Авто-переход: сначала вправо по кустам (position+1), если конец ряда — на следующий ряд
-  const row_data = fieldMode.plot.rows.find(r => r.number === row);
-  if (row_data && position < row_data.positions_count) {
-    // Следующий куст в том же ряду
-    setTimeout(() => selectFieldSeedling(row, position + 1), 150);
+  // Авто-переход на следующий куст
+  const rowData = fieldMode.plot.rows.find(r => r.number === row);
+  if (rowData && pos < rowData.positions_count) {
+    setTimeout(() => selectFieldPos(pos + 1), 120);
   } else {
-    // Конец ряда — переход на следующий ряд, куст 1
+    // Конец ряда — следующий ряд
     const rowIdx = fieldMode.plot.rows.findIndex(r => r.number === row);
     if (rowIdx >= 0 && rowIdx < fieldMode.plot.rows.length - 1) {
-      const nextRow = fieldMode.plot.rows[rowIdx + 1];
-      setTimeout(() => {
-        selectFieldSeedling(nextRow.number, 1);
-        scrollToRowCol(nextRow.number);
-      }, 150);
+      fieldMode.currentRow = fieldMode.plot.rows[rowIdx + 1].number;
+      fieldMode.selectedPos = 1;
+      renderFieldView();
     } else {
-      // Последний куст последнего ряда
-      fieldMode.selectedCell = null;
-      renderFieldGrid();
-      toast('✅ Обход завершён', 'success');
+      fieldMode.selectedPos = null;
+      renderFieldView();
+      toast('Обход завершён', 'success');
     }
-  }
-}
-
-// ===== НАВИГАЦИЯ =====
-function scrollToRowCol(rowNumber) {
-  const table = document.querySelector('.field-table-container');
-  if (!table) return;
-  
-  const colIdx = fieldMode.plot.rows.findIndex(r => r.number === rowNumber);
-  if (colIdx < 0) return;
-  
-  // Прокрутить по горизонтали к нужной колонке
-  const cellWidth = 34; // ширина ячейки + отступ
-  const headerWidth = 50; // ширина первой колонки
-  const scrollPos = headerWidth + colIdx * cellWidth - table.clientWidth / 2;
-  table.scrollTo({ left: Math.max(0, scrollPos), behavior: 'smooth' });
-}
-
-function jumpToRow() {
-  const input = document.getElementById('field-jump-row');
-  if (!input) return;
-  const rowNumber = parseInt(input.value);
-  const totalRows = fieldMode.plot.rows.length;
-  if (rowNumber && rowNumber >= 1 && rowNumber <= totalRows) {
-    scrollToRowCol(rowNumber);
-  } else {
-    toast(`Ряд должен быть от 1 до ${totalRows}`, 'error');
   }
 }
 
 // ===== ЗАМЕТКИ =====
 function openFieldNote() {
-  if (!fieldMode.selectedCell) {
-    toast('Сначала выберите куст', 'error');
-    return;
-  }
-  const { row, position } = fieldMode.selectedCell;
-  const contextEl = document.getElementById('field-note-context');
-  if (contextEl) contextEl.textContent = `Ряд ${row}, куст ${position}`;
-  const modal = document.getElementById('field-note-modal');
-  if (modal) modal.style.display = 'flex';
+  if (!fieldMode.selectedPos) { toast('Выберите куст', 'error'); return; }
+  const c = document.getElementById('field-note-context');
+  if (c) c.textContent = `Ряд ${fieldMode.currentRow}, куст ${fieldMode.selectedPos}`;
+  const m = document.getElementById('field-note-modal');
+  if (m) m.classList.add('fm-modal-open');
 }
 
 function saveFieldNote() {
   const note = document.getElementById('field-note-text').value.trim();
   if (!note) return;
-  
-  const { row, position } = fieldMode.selectedCell;
+  const row = fieldMode.currentRow, pos = fieldMode.selectedPos;
   let seedling = null;
-  if (data.seedlings) {
-    seedling = data.seedlings.find(s => 
-      s.plot_id === fieldMode.plotId && s.row === row && s.position === position
-    );
-  }
-  
+  if (data.seedlings) seedling = data.seedlings.find(s => s.plot_id === fieldMode.plotId && s.row === row && s.position === pos);
   if (!seedling) {
     if (!data.seedlings) data.seedlings = [];
     seedling = {
-      id: 's_' + fieldMode.plotId + '_' + row + '_' + position + '_' + Date.now().toString(36),
-      plot_id: fieldMode.plotId,
-      row: row,
-      position: position,
-      status: 'healthy',
-      inspections: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      id: 's_' + fieldMode.plotId + '_' + row + '_' + pos + '_' + Date.now().toString(36),
+      plot_id: fieldMode.plotId, row, position: pos, status: 'healthy',
+      inspections: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     };
     data.seedlings.push(seedling);
   }
-  
   if (!seedling.inspections) seedling.inspections = [];
   seedling.inspections.push({
-    id: 'i_' + Date.now(),
-    date: new Date().toISOString().slice(0, 10),
-    type: 'field-mode',
-    inspector: 'Полевой режим',
-    status_before: seedling.status,
-    status_after: seedling.status,
-    notes: note
+    id: 'i_' + Date.now(), date: new Date().toISOString().slice(0, 10),
+    type: 'field-mode', inspector: 'Полевой режим',
+    status_before: seedling.status, status_after: seedling.status, notes: note
   });
-  
   seedling.updated_at = new Date().toISOString();
   saveData();
-  toast('✅ Заметка сохранена', 'success');
-  const modal = document.getElementById('field-note-modal');
-  if (modal) modal.style.display = 'none';
-  const textarea = document.getElementById('field-note-text');
-  if (textarea) textarea.value = '';
+  toast('Заметка сохранена', 'success');
+  closeFieldNote();
 }
 
 function closeFieldNote() {
-  const modal = document.getElementById('field-note-modal');
-  if (modal) modal.style.display = 'none';
+  const m = document.getElementById('field-note-modal');
+  if (m) m.classList.remove('fm-modal-open');
+  const t = document.getElementById('field-note-text');
+  if (t) t.value = '';
 }
 
-// ===== ИНИЦИАЛИЗАЦИЯ OVERLAY =====
+// ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.createElement('div');
   overlay.id = 'field-mode-overlay';
-  overlay.style.display = 'none';
   overlay.innerHTML = `
     <div class="fm-shell">
       <!-- HEADER -->
       <div class="fm-header">
         <div class="fm-title-row">
-          <h2 class="fm-title">🌱 Полевой режим</h2>
-          <button class="fm-close-btn" onclick="toggleFieldMode()">✖ Закрыть</button>
+          <h2 class="fm-title">🌱 Поле</h2>
+          <button class="fm-close-btn" onclick="toggleFieldMode()">✖</button>
         </div>
-        
-        <div class="fm-controls-row">
-          <select id="field-plot-select" onchange="selectFieldPlot(this.value)" class="fm-select"></select>
-          <input type="number" id="field-jump-row" placeholder="Перейти к ряду" min="1" 
-                 class="fm-jump-input"
-                 onkeypress="if(event.key==='Enter') jumpToRow()">
-          <button class="fm-jump-btn" onclick="jumpToRow()">→</button>
+        <select id="field-plot-select" onchange="selectFieldPlot(this.value)" class="fm-select"></select>
+        <div class="fm-row-nav">
+          <button class="fm-row-btn" id="fm-prev-row" onclick="prevRow()">◀</button>
+          <div class="fm-row-display">
+            <span class="fm-row-label-text">Ряд</span>
+            <span id="field-row-number" class="fm-row-num">—</span>
+            <span class="fm-row-total">/ <span id="field-row-total">—</span></span>
+          </div>
+          <button class="fm-row-btn" id="fm-next-row" onclick="nextRow()">▶</button>
+          <input type="number" id="field-jump-row" placeholder="№" min="1" class="fm-jump-input" onkeypress="if(event.key==='Enter')jumpToRow()">
         </div>
         <div id="field-plot-info" class="fm-info">—</div>
       </div>
       
-      <!-- ТАБЛИЦА КУСТОВ -->
-      <div class="fm-grid-area">
-        <div id="field-seedlings-grid"></div>
+      <!-- ПОЛОСА КУСТОВ (горизонтальный скролл) -->
+      <div class="fm-strip-area">
+        <div class="fm-strip-label">Кусты в ряду →</div>
+        <div class="fm-strip-scroll" id="field-seedling-strip"></div>
       </div>
       
-      <!-- ИНФОРМАЦИЯ О ВЫБОРЕ -->
-      <div class="fm-selection-panel">
+      <!-- ВЫБОР + СТАТУСЫ -->
+      <div class="fm-bottom-bar">
         <div id="field-selection-info" class="fm-selection-text">
-          <span style="color: rgba(232, 224, 208, 0.5);">Тапните на куст, чтобы выбрать</span>
+          <span class="fm-hint">Тапните на куст в полосе</span>
         </div>
-      </div>
-      
-      <!-- КНОПКИ СТАТУСОВ -->
-      <div class="fm-status-panel">
         <div class="fm-status-grid">
-          <button class="fm-status-btn fm-healthy" onclick="applyFieldStatus('healthy')">
-            <span class="fm-status-icon">🟢</span>
-            <span class="fm-status-label">Здоровый</span>
-          </button>
-          <button class="fm-status-btn fm-dead" onclick="applyFieldStatus('dead')">
-            <span class="fm-status-icon">⚫</span>
-            <span class="fm-status-label">Выпад</span>
-          </button>
-          <button class="fm-status-btn fm-sick" onclick="applyFieldStatus('sick')">
-            <span class="fm-status-icon">🔴</span>
-            <span class="fm-status-label">Больной</span>
-          </button>
-          <button class="fm-status-btn fm-stunted" onclick="applyFieldStatus('stunted')">
-            <span class="fm-status-icon">🟡</span>
-            <span class="fm-status-label">Угнетён.</span>
-          </button>
-          <button class="fm-status-btn fm-rootstock" onclick="applyFieldStatus('rootstock')">
-            <span class="fm-status-icon">🟣</span>
-            <span class="fm-status-label">Подвой</span>
-          </button>
+          <button class="fm-status-btn fm-healthy" onclick="applyFieldStatus('healthy')"><span class="fm-s-icon">🟢</span><span class="fm-s-label">Здоровый</span></button>
+          <button class="fm-status-btn fm-dead" onclick="applyFieldStatus('dead')"><span class="fm-s-icon">⚫</span><span class="fm-s-label">Выпад</span></button>
+          <button class="fm-status-btn fm-sick" onclick="applyFieldStatus('sick')"><span class="fm-s-icon">🔴</span><span class="fm-s-label">Больной</span></button>
+          <button class="fm-status-btn fm-stunted" onclick="applyFieldStatus('stunted')"><span class="fm-s-icon">🟡</span><span class="fm-s-label">Угнет.</span></button>
+          <button class="fm-status-btn fm-rootstock" onclick="applyFieldStatus('rootstock')"><span class="fm-s-icon">🟣</span><span class="fm-s-label">Подвой</span></button>
         </div>
-        <button class="fm-note-btn" onclick="openFieldNote()">
-          📝 Заметка к кусту
-        </button>
+        <button class="fm-note-btn" onclick="openFieldNote()">📝 Заметка</button>
       </div>
     </div>
     
-    <!-- МОДАЛКА ЗАМЕТКИ -->
     <div class="fm-note-modal" id="field-note-modal">
       <div class="fm-note-modal-content">
-        <h3>📝 Заметка к кусту</h3>
+        <h3>📝 Заметка</h3>
         <div id="field-note-context" class="fm-note-context"></div>
-        <textarea id="field-note-text" rows="5" placeholder="Симптомы, наблюдения..."></textarea>
+        <textarea id="field-note-text" rows="4" placeholder="Симптомы, наблюдения..."></textarea>
         <div class="fm-note-actions">
           <button class="fm-save-btn" onclick="saveFieldNote()">💾 Сохранить</button>
           <button class="fm-cancel-btn" onclick="closeFieldNote()">Отмена</button>

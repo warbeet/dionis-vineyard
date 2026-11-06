@@ -246,538 +246,520 @@ section h2 {
   z-index: 100;
 }
 
-/* ============================================================================
-   FIELD MODE — табличная сетка кустов
-   ============================================================================ */
-
-.field-table-container {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  border-radius: var(--radius-md);
-}
-
-.field-table {
-  border-collapse: separate;
-  border-spacing: 2px;
-  width: 100%;
-}
-
-.field-table thead th {
-  position: sticky;
-  top: 0;
-  background: var(--bg-card, #fff);
-  padding: 6px 4px;
-  font-size: 10px;
-  font-weight: var(--font-semibold, 600);
-  color: var(--text-muted, #888);
-  text-align: center;
-  z-index: 10;
-  border-bottom: 2px solid var(--border-color, #ddd);
-}
-
-.field-table thead th.row-header {
-  position: sticky;
-  left: 0;
-  background: var(--bg-card, #fff);
-  z-index: 11;
-  min-width: 50px;
-  text-align: center;
-  padding: 6px 8px;
-}
-
-.field-table tbody tr.field-row {
-  transition: background var(--duration-fast) var(--ease-out);
-}
-
-.field-table tbody tr.field-row:hover {
-  background: var(--bg-hover, rgba(0,0,0,0.03));
-}
-
-.field-table td.row-header {
-  position: sticky;
-  left: 0;
-  background: var(--bg-card, #fff);
-  font-weight: var(--font-semibold, 600);
-  font-size: 12px;
-  color: var(--text-soft, #555);
-  text-align: center;
-  padding: 4px 8px;
-  border-right: 2px solid var(--border-color, #ddd);
-  z-index: 5;
-}
-
-.field-table td.field-cell {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  border-radius: var(--radius-xs);
-  text-align: center;
-  vertical-align: middle;
-  font-size: 9px;
-  font-weight: var(--font-medium, 500);
-  transition: all var(--duration-fast) var(--ease-out);
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.field-table td.field-cell:hover {
-  transform: scale(1.15);
-  z-index: 3;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.field-table td.field-cell.empty {
-  background: transparent;
-  cursor: default;
-}
-
-.field-table td.field-cell.group-cell {
-  width: auto;
-  min-width: 50px;
-  font-size: 10px;
-}
-
-@media (max-width: 600px) {
-  .field-table td.field-cell {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-  }
-  
-  .field-table td.row-header {
-    min-width: 40px;
-    font-size: 11px;
-  }
-}
 
 /* ============================================================================
-   FIELD MODE — эстетика overlay (тёмный стиль приложения)
+   FIELD MODE v0.8.6 — полноэкранный overlay, горизонтальная полоса кустов
    ============================================================================ */
 
 #field-mode-overlay {
-  font-family: inherit;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
 }
 
-#field-mode-overlay .fm-shell {
+#field-mode-overlay.fm-visible {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.fm-shell {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background: linear-gradient(180deg, #1c2230 0%, #1a1f2e 100%);
+  background: linear-gradient(180deg, #1c2230 0%, #181c28 100%);
   color: #e8e0d0;
   overflow: hidden;
 }
 
-/* Header с контровым светом */
-#field-mode-overlay .fm-header {
+/* HEADER */
+.fm-header {
   flex-shrink: 0;
-  padding: 16px 20px 14px;
-  background: linear-gradient(180deg, rgba(30, 36, 50, 0.98) 0%, rgba(28, 34, 48, 0.95) 100%);
+  padding: 12px 14px 10px;
+  background: linear-gradient(180deg, rgba(30, 36, 52, 0.98), rgba(26, 31, 46, 0.96));
   border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
   position: relative;
 }
 
-#field-mode-overlay .fm-header::before {
+.fm-header::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(255, 220, 160, 0.3) 30%,
-    rgba(255, 240, 200, 0.6) 50%,
-    rgba(255, 220, 160, 0.3) 70%,
-    transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 220, 160, 0.4) 50%, transparent 100%);
 }
 
-#field-mode-overlay .fm-title-row {
+.fm-title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
-#field-mode-overlay .fm-title {
+.fm-title {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
   color: #f0e8d8;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   letter-spacing: 0.3px;
 }
 
-#field-mode-overlay .fm-close-btn {
+.fm-close-btn {
   background: rgba(255, 255, 255, 0.08);
   color: #e8e0d0;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 14px;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#field-mode-overlay .fm-close-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(212, 175, 55, 0.4);
+.fm-close-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.5);
   color: #ffd866;
 }
 
-#field-mode-overlay .fm-controls-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-#field-mode-overlay .fm-select {
-  flex: 1;
-  min-width: 150px;
-  padding: 10px 12px;
-  font-size: 14px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.3);
+.fm-select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
   color: #f0e8d8;
   border: 1px solid rgba(212, 175, 55, 0.2);
   cursor: pointer;
-  transition: border-color 0.2s;
+  margin-bottom: 8px;
 }
 
-#field-mode-overlay .fm-select:focus {
+.fm-select:focus {
   outline: none;
   border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
-#field-mode-overlay .fm-jump-input {
-  width: 110px;
-  padding: 10px 12px;
-  font-size: 14px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.3);
+.fm-select option {
+  background: #1c2230;
   color: #f0e8d8;
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  transition: border-color 0.2s;
 }
 
-#field-mode-overlay .fm-jump-input::placeholder {
-  color: rgba(232, 224, 208, 0.4);
+.fm-row-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
-#field-mode-overlay .fm-jump-input:focus {
-  outline: none;
-  border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
-}
-
-#field-mode-overlay .fm-jump-btn {
-  background: linear-gradient(135deg, #d4af37 0%, #c49a3c 100%);
-  color: #1c2230;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 16px;
+.fm-row-btn {
+  width: 36px;
+  height: 32px;
+  background: rgba(212, 175, 55, 0.15);
+  color: #ffd866;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+  flex-shrink: 0;
 }
 
-#field-mode-overlay .fm-jump-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+.fm-row-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: rgba(212, 175, 55, 0.5);
 }
 
-#field-mode-overlay .fm-info {
+.fm-row-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.fm-row-display {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 4px 8px;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.fm-row-label-text {
   font-size: 11px;
   color: rgba(212, 175, 55, 0.6);
-  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fm-row-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f0e8d8;
+  min-width: 32px;
+  text-align: center;
+}
+
+.fm-row-total {
+  font-size: 12px;
+  color: rgba(212, 175, 55, 0.5);
+}
+
+.fm-jump-input {
+  width: 44px;
+  padding: 6px 4px;
+  font-size: 12px;
+  text-align: center;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #f0e8d8;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  flex-shrink: 0;
+}
+
+.fm-jump-input::placeholder {
+  color: rgba(232, 224, 208, 0.3);
+}
+
+.fm-info {
+  font-size: 10px;
+  color: rgba(212, 175, 55, 0.5);
   letter-spacing: 0.3px;
 }
 
-/* Основная область с таблицей */
-#field-mode-overlay .fm-grid-area {
+/* ПОЛОСА КУСТОВ */
+.fm-strip-area {
   flex: 1;
-  overflow: auto;
-  padding: 12px;
-  -webkit-overflow-scrolling: touch;
-}
-
-#field-mode-overlay .fm-grid-area::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-#field-mode-overlay .fm-grid-area::-webkit-scrollbar-thumb {
-  background: rgba(212, 175, 55, 0.3);
-  border-radius: 3px;
-}
-
-/* Панель выбора куста */
-#field-mode-overlay .fm-selection-panel {
-  flex-shrink: 0;
-  padding: 10px 20px;
-  background: linear-gradient(180deg, rgba(28, 34, 48, 0.95) 0%, rgba(25, 30, 42, 0.98) 100%);
-  border-top: 1px solid rgba(212, 175, 55, 0.12);
-  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
-  min-height: 44px;
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 8px 0;
+}
+
+.fm-strip-label {
+  padding: 0 14px 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba(212, 175, 55, 0.5);
+  font-weight: 600;
+}
+
+.fm-strip-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 14px;
+  display: flex;
+  gap: 5px;
   align-items: center;
 }
 
-#field-mode-overlay .fm-selection-text {
-  font-size: 14px;
-  font-weight: 500;
+.fm-strip-scroll::-webkit-scrollbar {
+  height: 4px;
 }
 
-#field-mode-overlay .fm-selection-text strong {
-  color: #f0e8d8;
+.fm-strip-scroll::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 2px;
 }
 
-/* Панель статусов */
-#field-mode-overlay .fm-status-panel {
+.fm-seedling {
   flex-shrink: 0;
-  padding: 14px 20px 16px;
-  background: linear-gradient(180deg, rgba(25, 30, 42, 0.98) 0%, rgba(20, 24, 34, 1) 100%);
-  border-top: 1px solid rgba(212, 175, 55, 0.15);
-}
-
-#field-mode-overlay .fm-status-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-#field-mode-overlay .fm-status-btn {
-  padding: 12px 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  border: none;
-  border-radius: 12px;
+  width: 40px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 4px;
   cursor: pointer;
-  transition: all 0.15s;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s var(--ease-out);
+  background: var(--cell-bg, #444);
   box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
   position: relative;
-  overflow: hidden;
-  line-height: 1.3;
 }
 
-#field-mode-overlay .fm-status-btn::before {
+.fm-seedling::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0));
+  border-radius: 8px 8px 0 0;
   pointer-events: none;
 }
 
-#field-mode-overlay .fm-status-btn:hover {
+.fm-seedling:hover {
   transform: translateY(-2px);
   box-shadow: 
-    0 6px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 0 3px rgba(255, 255, 255, 0.1);
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-#field-mode-overlay .fm-status-btn:active {
+.fm-seedling:active {
   transform: translateY(0);
-  box-shadow: 
-    0 2px 4px rgba(0, 0, 0, 0.3),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-#field-mode-overlay .fm-status-btn .fm-status-icon {
-  font-size: 16px;
+.fm-seedling.fm-sel {
+  box-shadow: 
+    0 0 0 2px #fff,
+    0 0 0 4px rgba(212, 175, 55, 0.8),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: scale(1.12);
+  z-index: 5;
+}
+
+.fm-seedling-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  line-height: 1;
+}
+
+/* НИЖНЯЯ ПАНЕЛЬ */
+.fm-bottom-bar {
+  flex-shrink: 0;
+  padding: 10px 14px 14px;
+  background: linear-gradient(180deg, rgba(25, 30, 44, 0.98), rgba(20, 24, 36, 1));
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fm-selection-text {
+  margin-bottom: 8px;
+  min-height: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.fm-selection-text strong {
+  color: #f0e8d8;
+}
+
+.fm-hint {
+  color: rgba(232, 224, 208, 0.4);
+  font-style: italic;
+}
+
+.fm-status-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fm-status-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.fm-status-btn {
+  padding: 10px 2px 8px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 
+    0 3px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  line-height: 1.2;
+  font-size: 10px;
+}
+
+.fm-status-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+.fm-status-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 5px 14px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.fm-status-btn:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fm-s-icon {
   display: block;
+  font-size: 14px;
   margin-bottom: 2px;
 }
 
-#field-mode-overlay .fm-status-btn .fm-status-label {
+.fm-s-label {
   display: block;
-  font-size: 10px;
-  letter-spacing: 0.3px;
+  font-size: 9px;
+  letter-spacing: 0.2px;
 }
 
-/* Цвета статусных кнопок */
-#field-mode-overlay .fm-status-btn.fm-healthy {
-  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
-}
-
-#field-mode-overlay .fm-status-btn.fm-dead {
-  background: linear-gradient(135deg, #6D4C41 0%, #4E342E 100%);
-}
-
-#field-mode-overlay .fm-status-btn.fm-sick {
-  background: linear-gradient(135deg, #E53935 0%, #B71C1C 100%);
-}
-
-#field-mode-overlay .fm-status-btn.fm-stunted {
-  background: linear-gradient(135deg, #FDD835 0%, #F9A825 100%);
+.fm-healthy { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+.fm-dead { background: linear-gradient(135deg, #6D4C41, #4E342E); }
+.fm-sick { background: linear-gradient(135deg, #E53935, #B71C1C); }
+.fm-stunted { 
+  background: linear-gradient(135deg, #FDD835, #F9A825);
   color: #333;
   text-shadow: none;
 }
+.fm-rootstock { background: linear-gradient(135deg, #8E24AA, #6A1B9A); }
 
-#field-mode-overlay .fm-status-btn.fm-rootstock {
-  background: linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%);
-}
-
-/* Кнопка заметки */
-#field-mode-overlay .fm-note-btn {
+.fm-note-btn {
   width: 100%;
-  padding: 12px;
-  font-size: 14px;
+  padding: 10px;
+  font-size: 13px;
   font-weight: 600;
-  margin-top: 10px;
   background: rgba(255, 255, 255, 0.06);
   color: #e8e0d0;
   border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.3px;
 }
 
-#field-mode-overlay .fm-note-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.fm-note-btn:hover {
+  background: rgba(212, 175, 55, 0.12);
   border-color: rgba(212, 175, 55, 0.45);
   color: #ffd866;
 }
 
-#field-mode-overlay .fm-note-btn:active {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* Модальное окно заметки */
-#field-mode-overlay .fm-note-modal {
-  display: none;
+/* МОДАЛКА ЗАМЕТКИ */
+.fm-note-modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.75);
   z-index: 10001;
+  display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-slow) var(--ease-out);
   backdrop-filter: blur(4px);
 }
 
-#field-mode-overlay .fm-note-modal-content {
-  background: linear-gradient(180deg, #242938 0%, #1e2330 100%);
-  padding: 28px;
-  border-radius: 16px;
-  max-width: 500px;
+.fm-note-modal.fm-modal-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fm-note-modal-content {
+  background: linear-gradient(180deg, #242938, #1e2330);
+  padding: 24px;
+  border-radius: 14px;
+  max-width: 460px;
   width: 100%;
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(212, 175, 55, 0.15);
   border: 1px solid rgba(212, 175, 55, 0.1);
+  transform: translateY(20px);
+  transition: transform var(--duration-slow) var(--ease-out);
 }
 
-#field-mode-overlay .fm-note-modal-content h3 {
-  margin: 0 0 8px 0;
+.fm-note-modal.fm-modal-open .fm-note-modal-content {
+  transform: translateY(0);
+}
+
+.fm-note-modal-content h3 {
+  margin: 0 0 6px 0;
   color: #f0e8d8;
-  font-size: 20px;
+  font-size: 18px;
 }
 
-#field-mode-overlay .fm-note-modal-content .fm-note-context {
-  font-size: 13px;
+.fm-note-context {
+  font-size: 12px;
   color: rgba(212, 175, 55, 0.7);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-#field-mode-overlay .fm-note-modal-content textarea {
+.fm-note-modal-content textarea {
   width: 100%;
-  padding: 12px;
-  font-size: 15px;
-  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 8px;
   background: rgba(0, 0, 0, 0.3);
   color: #f0e8d8;
   border: 1px solid rgba(212, 175, 55, 0.2);
   box-sizing: border-box;
   resize: vertical;
   font-family: inherit;
-  transition: border-color 0.2s;
 }
 
-#field-mode-overlay .fm-note-modal-content textarea:focus {
+.fm-note-modal-content textarea:focus {
   outline: none;
   border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
-#field-mode-overlay .fm-note-modal-content .fm-note-actions {
+.fm-note-actions {
   display: flex;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
-#field-mode-overlay .fm-note-modal-content .fm-save-btn {
+.fm-save-btn {
   flex: 1;
-  padding: 12px;
-  font-size: 15px;
+  padding: 11px;
+  font-size: 14px;
   font-weight: 600;
-  background: linear-gradient(135deg, #d4af37 0%, #c49a3c 100%);
+  background: linear-gradient(135deg, #d4af37, #c49a3c);
   color: #1c2230;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.3);
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
 }
 
-#field-mode-overlay .fm-note-modal-content .fm-save-btn:hover {
+.fm-save-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 5px 14px rgba(212, 175, 55, 0.4);
 }
 
-#field-mode-overlay .fm-note-modal-content .fm-cancel-btn {
+.fm-cancel-btn {
   flex: 1;
-  padding: 12px;
-  font-size: 15px;
+  padding: 11px;
+  font-size: 14px;
   font-weight: 600;
   background: rgba(255, 255, 255, 0.06);
   color: #e8e0d0;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-#field-mode-overlay .fm-note-modal-content .fm-cancel-btn:hover {
+.fm-cancel-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-}
-
-/* Подсказка "Показать все" */
-#field-mode-overlay .fm-show-more {
-  text-align: center;
-  padding: 10px;
-  font-size: 12px;
-  color: rgba(212, 175, 55, 0.6);
-}
-
-#field-mode-overlay .fm-show-more button {
-  background: rgba(212, 175, 55, 0.15);
-  color: #ffd866;
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 6px;
-  padding: 4px 12px;
-  margin-left: 8px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-#field-mode-overlay .fm-show-more button:hover {
-  background: rgba(212, 175, 55, 0.25);
 }
