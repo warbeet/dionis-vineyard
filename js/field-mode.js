@@ -265,26 +265,26 @@ function applyFieldStatus(status) {
   const statusInfo = FIELD_STATUSES[status];
   toast(`✅ Р${row} К${position}: ${statusInfo.icon} ${statusInfo.label}`, 'success');
   
-  // Авто-переход: сначала вниз по кустам (в следующий ряд), потом вправо
-  const rowIdx = fieldMode.plot.rows.findIndex(r => r.number === row);
-  if (rowIdx >= 0 && rowIdx < fieldMode.plot.rows.length - 1) {
-    const nextRow = fieldMode.plot.rows[rowIdx + 1];
-    if (position <= nextRow.positions_count) {
-      setTimeout(() => {
-        selectFieldSeedling(nextRow.number, position);
-        scrollToRow(nextRow.number);
-      }, 150);
-      return;
-    }
-  }
-  
-  // Если конец — переход на следующий куст в том же ряду
+  // Авто-переход: сначала вправо по кустам (position+1), если конец ряда — на следующий ряд
   const row_data = fieldMode.plot.rows.find(r => r.number === row);
   if (row_data && position < row_data.positions_count) {
+    // Следующий куст в том же ряду
     setTimeout(() => selectFieldSeedling(row, position + 1), 150);
   } else {
-    fieldMode.selectedCell = null;
-    renderFieldGrid();
+    // Конец ряда — переход на следующий ряд, куст 1
+    const rowIdx = fieldMode.plot.rows.findIndex(r => r.number === row);
+    if (rowIdx >= 0 && rowIdx < fieldMode.plot.rows.length - 1) {
+      const nextRow = fieldMode.plot.rows[rowIdx + 1];
+      setTimeout(() => {
+        selectFieldSeedling(nextRow.number, 1);
+        scrollToRowCol(nextRow.number);
+      }, 150);
+    } else {
+      // Последний куст последнего ряда
+      fieldMode.selectedCell = null;
+      renderFieldGrid();
+      toast('✅ Обход завершён', 'success');
+    }
   }
 }
 
@@ -324,7 +324,8 @@ function openFieldNote() {
   const { row, position } = fieldMode.selectedCell;
   const contextEl = document.getElementById('field-note-context');
   if (contextEl) contextEl.textContent = `Ряд ${row}, куст ${position}`;
-  document.getElementById('field-note-modal').style.display = 'flex';
+  const modal = document.getElementById('field-note-modal');
+  if (modal) modal.style.display = 'flex';
 }
 
 function saveFieldNote() {
@@ -368,12 +369,15 @@ function saveFieldNote() {
   seedling.updated_at = new Date().toISOString();
   saveData();
   toast('✅ Заметка сохранена', 'success');
-  document.getElementById('field-note-modal').style.display = 'none';
-  document.getElementById('field-note-text').value = '';
+  const modal = document.getElementById('field-note-modal');
+  if (modal) modal.style.display = 'none';
+  const textarea = document.getElementById('field-note-text');
+  if (textarea) textarea.value = '';
 }
 
 function closeFieldNote() {
-  document.getElementById('field-note-modal').style.display = 'none';
+  const modal = document.getElementById('field-note-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 // ===== ИНИЦИАЛИЗАЦИЯ OVERLAY =====
@@ -382,77 +386,75 @@ document.addEventListener('DOMContentLoaded', () => {
   overlay.id = 'field-mode-overlay';
   overlay.style.display = 'none';
   overlay.innerHTML = `
-    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg, #e8ebe2); z-index: 10000; display: flex; flex-direction: column; overflow: hidden;">
+    <div class="fm-shell">
       <!-- HEADER -->
-      <div style="padding: 12px 16px; background: var(--bg-card, #fff); box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h2 style="margin: 0; font-size: 20px;">🌱 Полевой режим</h2>
-          <button class="btn" onclick="toggleFieldMode()" style="padding: 6px 12px; font-size: 14px;">✖ Закрыть</button>
+      <div class="fm-header">
+        <div class="fm-title-row">
+          <h2 class="fm-title">🌱 Полевой режим</h2>
+          <button class="fm-close-btn" onclick="toggleFieldMode()">✖ Закрыть</button>
         </div>
         
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <select id="field-plot-select" onchange="selectFieldPlot(this.value)" 
-                  style="flex: 1; min-width: 150px; padding: 10px; font-size: 15px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd);">
-          </select>
+        <div class="fm-controls-row">
+          <select id="field-plot-select" onchange="selectFieldPlot(this.value)" class="fm-select"></select>
           <input type="number" id="field-jump-row" placeholder="Перейти к ряду" min="1" 
-                 style="width: 140px; padding: 10px; font-size: 14px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd);"
+                 class="fm-jump-input"
                  onkeypress="if(event.key==='Enter') jumpToRow()">
-          <button class="btn" onclick="jumpToRow()" style="padding: 10px 12px; font-size: 13px;">→</button>
+          <button class="fm-jump-btn" onclick="jumpToRow()">→</button>
         </div>
-        <div id="field-plot-info" style="font-size: 11px; color: var(--text-muted, #888); margin-top: 6px;">—</div>
+        <div id="field-plot-info" class="fm-info">—</div>
       </div>
       
-      <!-- ТАБЛИЦА -->
-      <div style="flex: 1; overflow: auto; padding: 4px;">
+      <!-- ТАБЛИЦА КУСТОВ -->
+      <div class="fm-grid-area">
         <div id="field-seedlings-grid"></div>
       </div>
       
       <!-- ИНФОРМАЦИЯ О ВЫБОРЕ -->
-      <div style="padding: 8px 16px; background: var(--bg-card, #fff); border-top: 1px solid var(--border-color, #ddd); flex-shrink: 0;">
-        <div id="field-selection-info" style="font-size: 13px;"></div>
+      <div class="fm-selection-panel">
+        <div id="field-selection-info" class="fm-selection-text">
+          <span style="color: rgba(232, 224, 208, 0.5);">Тапните на куст, чтобы выбрать</span>
+        </div>
       </div>
       
       <!-- КНОПКИ СТАТУСОВ -->
-      <div style="padding: 10px 16px; background: var(--bg-card, #fff); border-top: 1px solid var(--border-color, #ddd); flex-shrink: 0;">
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
-          <button onclick="applyFieldStatus('healthy')" 
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.healthy.color}; color: ${FIELD_STATUSES.healthy.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
-            ${FIELD_STATUSES.healthy.icon}<br>Здоровый
+      <div class="fm-status-panel">
+        <div class="fm-status-grid">
+          <button class="fm-status-btn fm-healthy" onclick="applyFieldStatus('healthy')">
+            <span class="fm-status-icon">🟢</span>
+            <span class="fm-status-label">Здоровый</span>
           </button>
-          <button onclick="applyFieldStatus('dead')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.dead.color}; color: ${FIELD_STATUSES.dead.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
-            ${FIELD_STATUSES.dead.icon}<br>Выпад
+          <button class="fm-status-btn fm-dead" onclick="applyFieldStatus('dead')">
+            <span class="fm-status-icon">⚫</span>
+            <span class="fm-status-label">Выпад</span>
           </button>
-          <button onclick="applyFieldStatus('sick')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.sick.color}; color: ${FIELD_STATUSES.sick.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
-            ${FIELD_STATUSES.sick.icon}<br>Больной
+          <button class="fm-status-btn fm-sick" onclick="applyFieldStatus('sick')">
+            <span class="fm-status-icon">🔴</span>
+            <span class="fm-status-label">Больной</span>
           </button>
-          <button onclick="applyFieldStatus('stunted')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.stunted.color}; color: ${FIELD_STATUSES.stunted.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
-            ${FIELD_STATUSES.stunted.icon}<br>Угнетён.
+          <button class="fm-status-btn fm-stunted" onclick="applyFieldStatus('stunted')">
+            <span class="fm-status-icon">🟡</span>
+            <span class="fm-status-label">Угнетён.</span>
           </button>
-          <button onclick="applyFieldStatus('rootstock')"
-                  style="padding: 12px 4px; font-size: 12px; background: ${FIELD_STATUSES.rootstock.color}; color: ${FIELD_STATUSES.rootstock.textColor}; border: none; font-weight: 600; border-radius: 8px; cursor: pointer;">
-            ${FIELD_STATUSES.rootstock.icon}<br>Подвой
+          <button class="fm-status-btn fm-rootstock" onclick="applyFieldStatus('rootstock')">
+            <span class="fm-status-icon">🟣</span>
+            <span class="fm-status-label">Подвой</span>
           </button>
         </div>
-        <button onclick="openFieldNote()" 
-                style="width: 100%; padding: 10px; font-size: 14px; margin-top: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd); border-radius: 8px; cursor: pointer; font-weight: 600;">
+        <button class="fm-note-btn" onclick="openFieldNote()">
           📝 Заметка к кусту
         </button>
       </div>
     </div>
     
     <!-- МОДАЛКА ЗАМЕТКИ -->
-    <div id="field-note-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10001; justify-content: center; align-items: center; padding: 20px;">
-      <div style="background: var(--bg-card, #fff); padding: 24px; border-radius: 12px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
-        <h3 style="margin-top: 0;">📝 Заметка к кусту</h3>
-        <div id="field-note-context" style="font-size: 13px; color: var(--text-muted, #888); margin-bottom: 12px;"></div>
-        <textarea id="field-note-text" rows="5" style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd); box-sizing: border-box;" 
-                  placeholder="Симптомы, наблюдения..."></textarea>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-          <button onclick="saveFieldNote()" style="flex: 1; padding: 12px; font-size: 16px; background: var(--primary, #6b8e5a); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">💾 Сохранить</button>
-          <button onclick="closeFieldNote()" style="flex: 1; padding: 12px; font-size: 16px; background: var(--bg-input, #f0f0f0); color: var(--text, #333); border: 1px solid var(--border-color, #ddd); border-radius: 8px; cursor: pointer; font-weight: 600;">Отмена</button>
+    <div class="fm-note-modal" id="field-note-modal">
+      <div class="fm-note-modal-content">
+        <h3>📝 Заметка к кусту</h3>
+        <div id="field-note-context" class="fm-note-context"></div>
+        <textarea id="field-note-text" rows="5" placeholder="Симптомы, наблюдения..."></textarea>
+        <div class="fm-note-actions">
+          <button class="fm-save-btn" onclick="saveFieldNote()">💾 Сохранить</button>
+          <button class="fm-cancel-btn" onclick="closeFieldNote()">Отмена</button>
         </div>
       </div>
     </div>

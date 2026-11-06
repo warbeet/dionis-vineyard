@@ -349,3 +349,435 @@ section h2 {
     font-size: 11px;
   }
 }
+
+/* ============================================================================
+   FIELD MODE — эстетика overlay (тёмный стиль приложения)
+   ============================================================================ */
+
+#field-mode-overlay {
+  font-family: inherit;
+}
+
+#field-mode-overlay .fm-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(180deg, #1c2230 0%, #1a1f2e 100%);
+  color: #e8e0d0;
+  overflow: hidden;
+}
+
+/* Header с контровым светом */
+#field-mode-overlay .fm-header {
+  flex-shrink: 0;
+  padding: 16px 20px 14px;
+  background: linear-gradient(180deg, rgba(30, 36, 50, 0.98) 0%, rgba(28, 34, 48, 0.95) 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+#field-mode-overlay .fm-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 220, 160, 0.3) 30%,
+    rgba(255, 240, 200, 0.6) 50%,
+    rgba(255, 220, 160, 0.3) 70%,
+    transparent 100%);
+}
+
+#field-mode-overlay .fm-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+#field-mode-overlay .fm-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #f0e8d8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.3px;
+}
+
+#field-mode-overlay .fm-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8e0d0;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+#field-mode-overlay .fm-close-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: #ffd866;
+}
+
+#field-mode-overlay .fm-controls-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#field-mode-overlay .fm-select {
+  flex: 1;
+  min-width: 150px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #f0e8d8;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+#field-mode-overlay .fm-select:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+#field-mode-overlay .fm-jump-input {
+  width: 110px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #f0e8d8;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  transition: border-color 0.2s;
+}
+
+#field-mode-overlay .fm-jump-input::placeholder {
+  color: rgba(232, 224, 208, 0.4);
+}
+
+#field-mode-overlay .fm-jump-input:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+#field-mode-overlay .fm-jump-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #c49a3c 100%);
+  color: #1c2230;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+#field-mode-overlay .fm-jump-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+#field-mode-overlay .fm-info {
+  font-size: 11px;
+  color: rgba(212, 175, 55, 0.6);
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+/* Основная область с таблицей */
+#field-mode-overlay .fm-grid-area {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+#field-mode-overlay .fm-grid-area::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#field-mode-overlay .fm-grid-area::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 3px;
+}
+
+/* Панель выбора куста */
+#field-mode-overlay .fm-selection-panel {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, rgba(28, 34, 48, 0.95) 0%, rgba(25, 30, 42, 0.98) 100%);
+  border-top: 1px solid rgba(212, 175, 55, 0.12);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+#field-mode-overlay .fm-selection-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#field-mode-overlay .fm-selection-text strong {
+  color: #f0e8d8;
+}
+
+/* Панель статусов */
+#field-mode-overlay .fm-status-panel {
+  flex-shrink: 0;
+  padding: 14px 20px 16px;
+  background: linear-gradient(180deg, rgba(25, 30, 42, 0.98) 0%, rgba(20, 24, 34, 1) 100%);
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+#field-mode-overlay .fm-status-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+#field-mode-overlay .fm-status-btn {
+  padding: 12px 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+#field-mode-overlay .fm-status-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+#field-mode-overlay .fm-status-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+#field-mode-overlay .fm-status-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#field-mode-overlay .fm-status-btn .fm-status-icon {
+  font-size: 16px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+#field-mode-overlay .fm-status-btn .fm-status-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* Цвета статусных кнопок */
+#field-mode-overlay .fm-status-btn.fm-healthy {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+#field-mode-overlay .fm-status-btn.fm-dead {
+  background: linear-gradient(135deg, #6D4C41 0%, #4E342E 100%);
+}
+
+#field-mode-overlay .fm-status-btn.fm-sick {
+  background: linear-gradient(135deg, #E53935 0%, #B71C1C 100%);
+}
+
+#field-mode-overlay .fm-status-btn.fm-stunted {
+  background: linear-gradient(135deg, #FDD835 0%, #F9A825 100%);
+  color: #333;
+  text-shadow: none;
+}
+
+#field-mode-overlay .fm-status-btn.fm-rootstock {
+  background: linear-gradient(135deg, #8E24AA 0%, #6A1B9A 100%);
+}
+
+/* Кнопка заметки */
+#field-mode-overlay .fm-note-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8e0d0;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+#field-mode-overlay .fm-note-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(212, 175, 55, 0.45);
+  color: #ffd866;
+}
+
+#field-mode-overlay .fm-note-btn:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Модальное окно заметки */
+#field-mode-overlay .fm-note-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 10001;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+#field-mode-overlay .fm-note-modal-content {
+  background: linear-gradient(180deg, #242938 0%, #1e2330 100%);
+  padding: 28px;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+#field-mode-overlay .fm-note-modal-content h3 {
+  margin: 0 0 8px 0;
+  color: #f0e8d8;
+  font-size: 20px;
+}
+
+#field-mode-overlay .fm-note-modal-content .fm-note-context {
+  font-size: 13px;
+  color: rgba(212, 175, 55, 0.7);
+  margin-bottom: 16px;
+}
+
+#field-mode-overlay .fm-note-modal-content textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #f0e8d8;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+#field-mode-overlay .fm-note-modal-content textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+#field-mode-overlay .fm-note-modal-content .fm-note-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+#field-mode-overlay .fm-note-modal-content .fm-save-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #d4af37 0%, #c49a3c 100%);
+  color: #1c2230;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+#field-mode-overlay .fm-note-modal-content .fm-save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+}
+
+#field-mode-overlay .fm-note-modal-content .fm-cancel-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8e0d0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#field-mode-overlay .fm-note-modal-content .fm-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Подсказка "Показать все" */
+#field-mode-overlay .fm-show-more {
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: rgba(212, 175, 55, 0.6);
+}
+
+#field-mode-overlay .fm-show-more button {
+  background: rgba(212, 175, 55, 0.15);
+  color: #ffd866;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  padding: 4px 12px;
+  margin-left: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#field-mode-overlay .fm-show-more button:hover {
+  background: rgba(212, 175, 55, 0.25);
+}

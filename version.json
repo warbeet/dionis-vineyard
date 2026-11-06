@@ -1,10 +1,22 @@
 {
-  "version": "0.8.4",
-  "release_date": "2026-10-29",
+  "version": "0.8.5",
+  "release_date": "2026-11-06",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.8.5",
+      "date": "2026-11-06",
+      "type": "patch",
+      "title": "Полевой режим: эстетика + авто-переход на куст",
+      "changes": [
+        "Тёмный стиль с контровым светом и золотыми акцентами",
+        "Pill-кнопки статусов с градиентами и glow",
+        "Авто-переход вправо по кустам, затем на следующий ряд",
+        "CSS-классы вместо inline-стилей"
+      ]
+    },
     {
       "version": "0.8.4",
       "date": "2026-10-29",
