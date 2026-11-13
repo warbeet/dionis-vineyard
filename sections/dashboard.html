@@ -11,13 +11,13 @@
       <div class="num" id="sum-area">0<span class="unit"> га</span></div>
       <div class="lbl">Площадь</div>
     </div>
-    <div class="card stat-card">
-      <div class="num" id="sum-seedlings">0</div>
-      <div class="lbl">Кустов</div>
+    <div class="card stat-card" onclick="showReplantingReport()" style="cursor: pointer;">
+      <div class="num" id="sum-seedlings" style="color: var(--success);">0</div>
+      <div class="lbl">Живых</div>
     </div>
-    <div class="card stat-card">
-      <div class="num" id="sum-photos">0</div>
-      <div class="lbl">Фото</div>
+    <div class="card stat-card" onclick="showReplantingReport()" style="cursor: pointer;">
+      <div class="num" id="sum-dead" style="color: var(--danger);">0</div>
+      <div class="lbl">Выпад</div>
     </div>
     <div class="card stat-card">
       <div class="num" id="sum-tasks">0</div>

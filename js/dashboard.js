@@ -17,7 +17,15 @@ function updateDashboard() {
   setStat('sum-area', totalArea.toFixed(2));
   setStat('sum-photos', photosCount);
   setStat('sum-tasks', tasksActive);
-  setStat('sum-seedlings', seedlingsCount);
+  
+  // Реальная статистика из инвентаризации 2026
+  const totalPositions = (data.plots || []).reduce((sum, p) => 
+    sum + (p.rows || []).reduce((s, r) => s + (r.positions_count || 0), 0), 0);
+  const deadCount = (data.seedlings || []).filter(s => s.status === 'dead').length;
+  const liveCount = totalPositions - deadCount;
+  
+  setStat('sum-seedlings', liveCount.toLocaleString('ru-RU'));
+  setStat('sum-dead', deadCount.toLocaleString('ru-RU'));
   setStat('sum-blocks', blocksCount);
   setStat('sum-stations', stationsCount ? `${stationsOnline}/${stationsCount}` : '0');
 

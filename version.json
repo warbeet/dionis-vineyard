@@ -1,10 +1,22 @@
 {
-  "version": "0.8.6",
-  "release_date": "2026-11-06",
+  "version": "0.8.7",
+  "release_date": "2026-11-13",
   "codename": "Geometry+",
   "scheme": "semver",
   "scheme_description": "MAJOR.MINOR.PATCH — v1.0.0 = первый стабильный production-релиз",
   "changelog": [
+    {
+      "version": "0.8.7",
+      "date": "2026-11-13",
+      "type": "patch",
+      "title": "Инвентаризация 2026: 12 712 выпадов + отчёт ремонта",
+      "changes": [
+        "Реальные кадастры и ПВН Минсельхоза",
+        "12 712 записей dead в Sparse Seedlings",
+        "Ведомость весеннего ремонта с разбивкой по сортам",
+        "Дашборд: живых/выпад вместо общего количества"
+      ]
+    },
     {
       "version": "0.8.6",
       "date": "2026-11-06",

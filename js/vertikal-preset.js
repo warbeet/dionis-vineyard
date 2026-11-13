@@ -89,9 +89,10 @@ function _vertikal_kletka4_rows() {
 
 /**
  * Загружает пресет ООО «Вертикаль» в базу приложения
+ * Инвентаризация 2026: 40 869 высажено, 28 157 живых, 12 712 выпадов (31.1%)
  */
 function loadVertikalPreset() {
-  if (!confirm('🍇 Загрузить демо-данные ООО «Вертикаль» (Геленджик)?\n\n4 клетки, 414 рядов, 40 824 кустов.\n\n⚠️ Существующие участки НЕ будут удалены — новые добавятся поверх.\n⚠️ Координаты виноградника будут установлены для прогноза погоды.\n\nПродолжить?')) return;
+  if (!confirm('🍇 Загрузить данные ООО «Вертикаль» (Геленджик)?\n\n4 клетки · 40 869 кустов (2024)\nЖивых: 28 157 (68.9%) · Выпад: 12 712 (31.1%)\n\n⚠️ Будут созданы записи о 12 712 выпадах.\n⚠️ Координаты виноградника будут установлены.\n\nПродолжить?')) return;
   
   toast('⏳ Загрузка пресета...', 'info');
   
@@ -115,14 +116,18 @@ function loadVertikalPreset() {
       console.log('[Dionis] Координаты виноградника установлены:', data.location);
       
       // Клетка 1 — Сира (северная часть виноградника)
+      // Инвентаризация 2026: 8 282 высажено, 6 835 живых, 1 447 выпадов (17.5%)
       data.plots.push({
         id: 'plot_kletka_1_sirah',
         name: 'Клетка 1 (ЗУ2) — Сира',
-        area_ha: 1.87,
+        area_ha: 1.866,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        trellis_length_m: 7286.4,
+        cadaster: '23:40:0301002:276',
+        pvn_number: '03-2025-00010332',
         center: { lat: 44.6175, lng: 38.0830 },
-        notes: 'Посадка 2024 г. ЗУ2, кадастр 23:40:0301002:276. Сира клон 524 + 747 на 140R.',
+        notes: 'Посадка 2024 г. ЗУ2. Сира клон 524 + 747 на 140R. Инв. 2026: 6 835 живых (82.5%), выпад 1 447.',
         blocks: [
           { id: 'b_sirah_524', name: 'Сира клон 524 / 140R', scion: 'Сира', scion_clone: '524', rootstock: '140 R', planting_year: 2024 },
           { id: 'b_sirah_747', name: 'Сира клон 747 / 140R', scion: 'Сира', scion_clone: '747', rootstock: '140 R', planting_year: 2024 }
@@ -132,14 +137,18 @@ function loadVertikalPreset() {
       });
       
       // Клетка 2 — Каберне Совиньон (восточная часть)
+      // Инвентаризация 2026: 12 682 высажено, 8 044 живых, 4 638 выпадов (36.6%)
       data.plots.push({
         id: 'plot_kletka_2_cabernet_sauvignon',
         name: 'Клетка 2 (ЗУ3) — Каберне Совиньон',
-        area_ha: 2.89,
+        area_ha: 2.930,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        trellis_length_m: 11302.2,
+        cadaster: '23:40:0301002:280',
+        pvn_number: '03-2025-00010333',
         center: { lat: 44.6165, lng: 38.0845 },
-        notes: 'Посадка 2024 г. ЗУ3. КС клоны 169 (RSB1) + 338 (RSB1/Fercal).',
+        notes: 'Посадка 2024 г. ЗУ3. КС клоны 169 (RSB1) + 338 (RSB1/Fercal). Инв. 2026: 8 044 живых (63.4%), выпад 4 638.',
         blocks: [
           { id: 'b_cs_169', name: 'КС 169 / RSB1', scion: 'Каберне Совиньон', scion_clone: '169', rootstock: 'RSB1', planting_year: 2024 },
           { id: 'b_cs_338_rsb1', name: 'КС 338 / RSB1', scion: 'Каберне Совиньон', scion_clone: '338', rootstock: 'RSB1', planting_year: 2024 },
@@ -150,14 +159,18 @@ function loadVertikalPreset() {
       });
       
       // Клетка 3 — Мерло + Каберне Фран (южная часть)
+      // Инвентаризация 2026: 14 207 высажено, 9 494 живых, 4 713 выпадов (33.2%)
       data.plots.push({
         id: 'plot_kletka_3_merlot_cf',
         name: 'Клетка 3 (ЗУ4) — Мерло + Каберне Фран',
-        area_ha: 3.30,
+        area_ha: 3.331,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        trellis_length_m: 12586.5,
+        cadaster: '23:40:0301002:278',
+        pvn_number: '03-2025-00010334',
         center: { lat: 44.6155, lng: 38.0825 },
-        notes: 'Посадка 2024 г. ЗУ4. Мерло клоны 346/181 (RSB1) + Каберне Фран 685 (Fercal).',
+        notes: 'Посадка 2024 г. ЗУ4. Мерло клоны 346/181 (RSB1) + Каберне Фран 685 (Fercal). Инв. 2026: 9 494 живых (66.8%), выпад 4 713.',
         blocks: [
           { id: 'b_merlot_346', name: 'Мерло 346 / RSB1', scion: 'Мерло', scion_clone: '346', rootstock: 'RSB1', planting_year: 2024 },
           { id: 'b_merlot_181', name: 'Мерло 181 / RSB1', scion: 'Мерло', scion_clone: '181', rootstock: 'RSB1', planting_year: 2024 },
@@ -168,14 +181,18 @@ function loadVertikalPreset() {
       });
       
       // Клетка 4 — Пти Вердо + Каберне Фран (+ КС остаток) (западная часть)
+      // Инвентаризация 2026: 5 700 высажено, 3 784 живых, 1 914 выпадов (33.6%)
       data.plots.push({
         id: 'plot_kletka_4_pv_cf',
         name: 'Клетка 4 (ЗУ5) — Пти Вердо + Каберне Фран',
-        area_ha: 1.27,
+        area_ha: 1.288,
         row_spacing_m: 2.5,
         vine_spacing_m: 0.9,
+        trellis_length_m: 5127.3,
+        cadaster: '23:40:0301002:277',
+        pvn_number: '03-2025-00010331',
         center: { lat: 44.6170, lng: 38.0815 },
-        notes: 'Посадка 2024 г. ЗУ5. Верх: Пти Вердо 1058 (Fercal). Низ: КФ 678 (140R). Крайний ряд: КС 338 (Fercal) 65 кустов.',
+        notes: 'Посадка 2024 г. ЗУ5. Верх: Пти Вердо 1058 (Fercal). Низ: КФ 678 (140R). Крайний ряд: КС 338 (Fercal) 65 кустов. Инв. 2026: 3 784 живых (66.4%), выпад 1 914.',
         blocks: [
           { id: 'b_pv_1058', name: 'Пти Вердо 1058 / Fercal', scion: 'Пти Вердо', scion_clone: '1058', rootstock: 'Fercal', planting_year: 2024 },
           { id: 'b_cf_678', name: 'КФ 678 / 140R', scion: 'Каберне Фран', scion_clone: '678', rootstock: '140 R', planting_year: 2024 },
@@ -185,10 +202,77 @@ function loadVertikalPreset() {
         created_at: new Date().toISOString()
       });
       
-      // Подсчёт кустов (Sparse Seedlings — виртуально, без создания объектов)
+      // Подсчёт кустов
       let totalSeedlings = 0;
-      data.plots.filter(p => p.id.startsWith('plot_kletka_')).forEach(p => {
+      const vertikalPlots = data.plots.filter(p => p.id.startsWith('plot_kletka_'));
+      vertikalPlots.forEach(p => {
         totalSeedlings += p.rows.reduce((sum, r) => sum + (r.positions_count || 0), 0);
+      });
+      
+      // Генерация выпадов по инвентаризации 2026
+      // Всего: 12 712 выпадов (31.1% от 40 869)
+      const falloutByPlot = {
+        'plot_kletka_1_sirah': 1447,        // 17.5%
+        'plot_kletka_2_cabernet_sauvignon': 4638,  // 36.6%
+        'plot_kletka_3_merlot_cf': 4713,    // 33.2%
+        'plot_kletka_4_pv_cf': 1914         // 33.6%
+      };
+      
+      if (!data.seedlings) data.seedlings = [];
+      let totalFallout = 0;
+      
+      vertikalPlots.forEach(plot => {
+        const falloutCount = falloutByPlot[plot.id] || 0;
+        if (falloutCount <= 0) return;
+        
+        // Распределяем выпады равномерно по рядам
+        const rows = plot.rows;
+        let remaining = falloutCount;
+        let rowIdx = 0;
+        
+        while (remaining > 0 && rowIdx < rows.length) {
+          const row = rows[rowIdx];
+          const posCount = row.positions_count || 0;
+          // Выпады в этом ряду: пропорционально длине ряда
+          const falloutInRow = Math.min(
+            Math.round(falloutCount * posCount / totalSeedlings * rows.length),
+            remaining,
+            posCount
+          );
+          
+          if (falloutInRow > 0) {
+            // Выбираем позиции с конца ряда (типично для выпадов)
+            for (let i = 0; i < falloutInRow; i++) {
+              const pos = posCount - i;
+              if (pos >= 1) {
+                data.seedlings.push({
+                  id: `s_${plot.id}_${row.number}_${pos}_dead`,
+                  plot_id: plot.id,
+                  row: row.number,
+                  position: pos,
+                  status: 'dead',
+                  is_replanted: false,
+                  ai_data: null,
+                  inspections: [{
+                    id: 'i_inventory_2026',
+                    date: '2026-03-15',
+                    type: 'inventory',
+                    inspector: 'Инвентаризация 2026',
+                    status_before: 'healthy',
+                    status_after: 'dead',
+                    notes: 'Выпад по инвентаризации 2026'
+                  }],
+                  created_at: new Date().toISOString(),
+                  updated_at: '2026-03-15T00:00:00.000Z'
+                });
+              }
+            }
+            remaining -= falloutInRow;
+          }
+          rowIdx++;
+        }
+        
+        totalFallout += falloutCount;
       });
       
       saveData();
@@ -200,7 +284,8 @@ function loadVertikalPreset() {
         fetchWeather();
       }
       
-      toast(`✅ Пресет ООО «Вертикаль» загружен: 4 клетки, ${totalSeedlings.toLocaleString('ru-RU')} кустов`, 'success');
+      const liveSeedlings = totalSeedlings - totalFallout;
+      toast(`✅ Загружено: ${liveSeedlings.toLocaleString('ru-RU')} живых, ${totalFallout.toLocaleString('ru-RU')} выпадов (${(totalFallout/totalSeedlings*100).toFixed(1)}%)`, 'success');
       
     } catch (err) {
       console.error('Ошибка загрузки пресета:', err);
